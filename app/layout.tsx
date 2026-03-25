@@ -17,6 +17,7 @@ const dmMono = DM_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_URL ?? "https://www.clearedno.com"),
   title: "ClearedNo — Permit Status Alerts for Contractors",
   description:
     "Stop manually checking city portals. ClearedNo monitors your building permits 24/7 and alerts you the second status changes.",

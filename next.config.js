@@ -9,6 +9,11 @@ const nextConfig = {
       "react-email",
       "playwright",
     ],
+    // Keep scraper and outreach scripts out of the deployment bundle.
+    // These run as standalone Node processes via PM2, not inside Next.js.
+    outputFileTracingExcludes: {
+      "*": ["./scrapers/**", "./outreach/**"],
+    },
   },
 };
 module.exports = nextConfig;
