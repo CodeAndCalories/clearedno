@@ -35,12 +35,13 @@ function NavBar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#FF6B00]/20 bg-[#0A0A0A]/95 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <span className="font-heading text-2xl tracking-widest text-[#FF6B00]">
+        <div className="flex items-center gap-4 min-w-0">
+          {/* Logo — whitespace-nowrap prevents "NO" wrapping to a new line */}
+          <Link href="/" className="font-heading text-2xl tracking-widest text-[#FF6B00] whitespace-nowrap flex-shrink-0">
             CLEARED<span className="text-[#F5F0E8]">NO</span>
-          </span>
-          {/* Nav tagline */}
-          <span className="hidden sm:block text-[10px] tracking-[0.15em] text-[#F5F0E8]/30 uppercase border-l border-[#FF6B00]/20 pl-4">
+          </Link>
+          {/* Nav tagline — only visible on wider screens, never competes with logo */}
+          <span className="hidden lg:block text-[10px] tracking-[0.15em] text-[#F5F0E8]/30 uppercase border-l border-[#FF6B00]/20 pl-4 whitespace-nowrap">
             Built for Contractors. Not Bureaucrats.
           </span>
         </div>
