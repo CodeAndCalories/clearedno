@@ -1,13 +1,14 @@
 // GET /api/stripe/portal
-// Server-side redirect to the Stripe Customer Portal.
-// Keeping the URL in a server-only env var (no NEXT_PUBLIC_ prefix) means
-// it is never embedded in the client bundle or visible in the browser.
-// The user must be authenticated — unauthenticated requests get a 401.
+// Creates a dynamic Stripe Billing Portal session for the authenticated user
+// and redirects them to it. Each session is single-use and short-lived (~5 min),
+// which is more secure than a static portal URL.
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
+import { stripe } from "@/lib/stripe";
 
 export async function GET() {
-  // Verify the user is logged in before redirecting
+  // 1. Verify the user is authenticated
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -15,16 +16,28 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const portalUrl = process.env.STRIPE_CUSTOMER_PORTAL_URL;
+  // 2. Look up their Stripe customer ID from the profiles table
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("stripe_customer_id")
+    .eq("user_id", user.id)
+    .single();
 
-  if (!portalUrl) {
-    // Portal URL not configured yet — return a clear server error
+  const stripeCustomerId = profile?.stripe_customer_id;
+
+  if (!stripeCustomerId) {
     return NextResponse.json(
-      { error: "Customer portal URL is not configured." },
-      { status: 503 }
+      { error: "No billing account found" },
+      { status: 400 }
     );
   }
 
-  // 303 See Other — correct status for a POST-to-GET style redirect
-  return NextResponse.redirect(portalUrl, { status: 303 });
+  // 3. Create a dynamic portal session — single-use, expires in ~5 minutes
+  const portalSession = await stripe.billingPortal.sessions.create({
+    customer: stripeCustomerId,
+    return_url: `${process.env.NEXT_PUBLIC_URL}/dashboard`,
+  });
+
+  // 4. Redirect the user to the session URL
+  return NextResponse.redirect(portalSession.url, { status: 303 });
 }
