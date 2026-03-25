@@ -179,7 +179,7 @@ export default async function DashboardPage() {
           <form action="/auth/signout" method="post">
             <button
               type="submit"
-              className="text-[10px] tracking-widest text-[#F5F0E8]/30 hover:text-[#FF6B00] uppercase transition-colors"
+              className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors"
             >
               Sign Out
             </button>
@@ -319,13 +319,28 @@ export default async function DashboardPage() {
       {isPaid && (
         <footer className="border-t border-[#FF6B00]/10 px-6 py-4 flex-shrink-0">
           <div className="max-w-6xl mx-auto flex items-center justify-between gap-4">
-            <span className="text-[10px] text-[#F5F0E8]/20 tracking-widest uppercase font-mono">
-              Monitoring active
-            </span>
-            {nextBillingDate && (
-              <span className="text-[10px] text-[#F5F0E8]/25 tracking-widest font-mono">
-                Next billing date: {nextBillingDate}
+            {/* Left: monitoring status + next billing date */}
+            <div className="flex items-center gap-5">
+              <span className="text-[10px] text-[#F5F0E8]/20 tracking-widest uppercase font-mono">
+                Monitoring active
               </span>
+              {nextBillingDate && (
+                <span className="text-[10px] text-[#F5F0E8]/25 tracking-widest font-mono">
+                  Next billing date: {nextBillingDate}
+                </span>
+              )}
+            </div>
+
+            {/* Right: manage subscription — links to Stripe customer portal */}
+            {process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL && (
+              <a
+                href={process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors whitespace-nowrap"
+              >
+                Manage Subscription
+              </a>
             )}
           </div>
         </footer>
