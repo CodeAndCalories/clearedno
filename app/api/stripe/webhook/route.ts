@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { sendWelcomeEmail } from "@/lib/email";
 import type Stripe from "stripe";
 
 // App Router reads the raw body via req.text() — no config needed.
@@ -57,6 +58,55 @@ export async function POST(req: NextRequest) {
 
   // Handle relevant subscription lifecycle events
   switch (event.type) {
+
+    // ── Checkout completed: first-time subscription created ──────────────────
+    // This is the authoritative event for initial signup. We:
+    //   1. Confirm stripe_customer_id is persisted (belt-and-suspenders)
+    //   2. Sync subscription status from the freshly-created subscription
+    //   3. Send the welcome email exactly once
+    case "checkout.session.completed": {
+      const session = event.data.object as Stripe.Checkout.Session;
+
+      // Only handle subscription-mode checkouts
+      if (!session.subscription || !session.customer) break;
+
+      // Retrieve the subscription so we can read supabase_user_id from its metadata
+      const subscription = await stripe.subscriptions.retrieve(
+        session.subscription as string
+      );
+      const userId = subscription.metadata?.supabase_user_id;
+      if (!userId) break;
+
+      // Persist customer + subscription state (handles race with subscription.created)
+      await supabaseAdmin
+        .from("profiles")
+        .update({
+          stripe_customer_id:     session.customer as string,
+          stripe_subscription_id: subscription.id,
+          subscription_status:    mapStatus(subscription.status),
+        })
+        .eq("user_id", userId);
+
+      // Send welcome email — fetch user's email from auth.users
+      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);
+      const userEmail = userData?.user?.email;
+      if (!userEmail) break;
+
+      const { data: profile } = await supabaseAdmin
+        .from("profiles")
+        .select("full_name")
+        .eq("user_id", userId)
+        .single();
+
+      await sendWelcomeEmail({
+        to:       userEmail,
+        userName: profile?.full_name ?? "there",
+      });
+
+      break;
+    }
+
+    // ── Ongoing subscription lifecycle ────────────────────────────────────────
     case "customer.subscription.created":
     case "customer.subscription.updated":
     case "customer.subscription.resumed":

@@ -217,7 +217,23 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* ── Trial warning ────────────────────────────────────────── */}
+        {/* ── Subscription status banner ───────────────────────────── */}
+        {/* ACTIVE — clean confirmation, no upsell needed */}
+        {profile?.subscription_status === "active" && (
+          <div className="mt-10 border border-[#16A34A]/40 bg-[#16A34A]/5 px-6 py-4 flex items-center gap-4">
+            <span className="w-2 h-2 rounded-full bg-[#16A34A] flex-shrink-0" />
+            <div>
+              <div className="text-xs font-mono text-[#16A34A] uppercase tracking-widest font-medium mb-0.5">
+                Subscription Active
+              </div>
+              <div className="text-xs text-[#F5F0E8]/50">
+                Your permits are being monitored 24/7. You&apos;ll be alerted the moment anything changes.
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TRIALING — show trial end date + upgrade CTA */}
         {profile?.subscription_status === "trialing" && profile.trial_ends_at && (
           <div className="mt-10 border border-[#FF6B00]/40 bg-[#FF6B00]/5 px-6 py-4 flex items-center justify-between gap-4">
             <div>
@@ -239,6 +255,50 @@ export default async function DashboardPage() {
                 className="flex-shrink-0 bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-medium tracking-widest uppercase px-6 py-3 hover:bg-[#F5F0E8] transition-colors"
               >
                 Upgrade — $79/mo →
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* PAST DUE — payment failed, needs action */}
+        {profile?.subscription_status === "past_due" && (
+          <div className="mt-10 border border-[#DC2626]/40 bg-[#DC2626]/5 px-6 py-4 flex items-center justify-between gap-4">
+            <div>
+              <div className="text-xs font-mono text-[#DC2626] uppercase tracking-widest font-medium mb-0.5">
+                Payment Failed
+              </div>
+              <div className="text-xs text-[#F5F0E8]/50">
+                Your last payment didn&apos;t go through. Update your billing details to keep monitoring active.
+              </div>
+            </div>
+            <a
+              href="https://billing.stripe.com/p/login/test_00g"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 bg-[#DC2626] text-[#F5F0E8] font-mono text-xs font-medium tracking-widest uppercase px-6 py-3 hover:bg-[#F5F0E8] hover:text-[#0A0A0A] transition-colors"
+            >
+              Update Payment →
+            </a>
+          </div>
+        )}
+
+        {/* CANCELED — subscription ended */}
+        {profile?.subscription_status === "canceled" && (
+          <div className="mt-10 border border-[#6B7280]/40 bg-[#6B7280]/5 px-6 py-4 flex items-center justify-between gap-4">
+            <div>
+              <div className="text-xs font-mono text-[#6B7280] uppercase tracking-widest font-medium mb-0.5">
+                Subscription Canceled
+              </div>
+              <div className="text-xs text-[#F5F0E8]/50">
+                Permit monitoring is paused. Resubscribe to start watching your permits again.
+              </div>
+            </div>
+            <form action="/api/stripe/checkout" method="post">
+              <button
+                type="submit"
+                className="flex-shrink-0 bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-medium tracking-widest uppercase px-6 py-3 hover:bg-[#F5F0E8] transition-colors"
+              >
+                Resubscribe — $79/mo →
               </button>
             </form>
           </div>
