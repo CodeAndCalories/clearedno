@@ -1,0 +1,63 @@
+name: Permit Status Scraper
+
+on:
+  # Manual trigger with optional dry-run flag
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (scrape + log, skip DB writes and emails)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+  # Scheduled runs — weekdays every 2 hours 6am–6pm ET, weekends 3x/day
+  schedule:
+    - cron: '0 6,8,10,12,14,16,18 * * 1-5'   # Mon–Fri 06:00–18:00 UTC
+    - cron: '0 8,12,16 * * 0,6'               # Sat–Sun 08:00, 12:00, 16:00 UTC
+
+jobs:
+  scrape:
+    name: Run permit scraper
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL:      ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY:     ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY:                ${{ secrets.RESEND_API_KEY }}
+      FROM_EMAIL:                    ${{ secrets.FROM_EMAIL }}
+      FROM_NAME:                     ${{ secrets.FROM_NAME }}
+      ADMIN_EMAIL:                   ${{ secrets.ADMIN_EMAIL }}
+      NEXT_PUBLIC_URL:               ${{ secrets.NEXT_PUBLIC_URL }}
+      # DRY_RUN comes from workflow_dispatch input on manual runs;
+      # defaults to 'false' on scheduled runs.
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium --with-deps
+
+      - name: Run scraper
+        run: npx ts-node --project tsconfig.scripts.json scrapers/index.ts
+
+      - name: Log failure notice
+        if: failure()
+        run: |
+          echo "::error::Scraper job failed. Check the logs above for details."
+          echo "Tip: re-run with dry_run=true via workflow_dispatch to test without side effects."
