@@ -21,19 +21,23 @@ interface Props {
 }
 
 const STATUS_COLORS: Record<string, string> = {
-  CLEARED:  "#16A34A",
-  APPROVED: "#FF6B00",
-  REJECTED: "#DC2626",
-  PENDING:  "#6B7280",
-  UNKNOWN:  "#6B7280",
+  CLEARED:      "#16A34A",
+  APPROVED:     "#FF6B00",
+  REJECTED:     "#DC2626",
+  UNDER_REVIEW: "#EAB308",
+  EXPIRED:      "#6B7280",
+  PENDING:      "#6B7280",
+  UNKNOWN:      "#6B7280",
 };
 
 const STATUS_LABELS: Record<string, string> = {
-  CLEARED:  "✅ PERMIT CLEARED",
-  APPROVED: "🟠 PERMIT APPROVED",
-  REJECTED: "❌ PERMIT REJECTED",
-  PENDING:  "⏳ PERMIT PENDING",
-  UNKNOWN:  "❓ STATUS UNKNOWN",
+  CLEARED:      "✅ PERMIT CLEARED",
+  APPROVED:     "🟠 PERMIT APPROVED",
+  REJECTED:     "❌ PERMIT REJECTED",
+  UNDER_REVIEW: "👀 PERMIT UNDER REVIEW",
+  EXPIRED:      "⚠️ PERMIT EXPIRED",
+  PENDING:      "⏳ PERMIT PENDING",
+  UNKNOWN:      "❓ STATUS UNKNOWN",
 };
 
 export function PermitClearedEmail({ userName, permit }: Props) {

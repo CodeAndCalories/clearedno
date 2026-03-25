@@ -1,7 +1,16 @@
 // Central type definitions for ClearedNo
 // Keep these in sync with schema.sql
 
-export type PermitStatus = "PENDING" | "APPROVED" | "CLEARED" | "REJECTED" | "UNKNOWN";
+// UNDER_REVIEW: flagged by the city for additional review
+// EXPIRED: permit lapsed without action
+export type PermitStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "CLEARED"
+  | "UNDER_REVIEW"
+  | "REJECTED"
+  | "EXPIRED"
+  | "UNKNOWN";
 
 export type SubscriptionStatus = "trialing" | "active" | "past_due" | "canceled";
 
@@ -20,8 +29,8 @@ export interface Profile {
 
 export interface StatusHistoryEntry {
   status: PermitStatus;
-  timestamp: string;
-  raw?: string; // Raw text from the city portal
+  timestamp: string; // ISO 8601
+  raw?: string;      // Verbatim text captured from the city portal
 }
 
 export interface Permit {
@@ -48,10 +57,10 @@ export interface Alert {
   sent_at: string;
 }
 
-// Shape returned by city scrapers
+// Shape returned by every city scraper
 export interface ScrapeResult {
   permit_number: string;
   status: PermitStatus;
-  raw_text: string; // Verbatim text from the city portal for the audit trail
-  scrape_url: string;
+  raw_text: string;   // Verbatim text from portal — stored in status_history
+  scrape_url: string; // The exact URL that was scraped (for audit)
 }

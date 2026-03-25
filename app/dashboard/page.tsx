@@ -21,11 +21,13 @@ const STATUS_CONFIG: Record<
   PermitStatus,
   { label: string; color: string; bg: string; dot: string }
 > = {
-  PENDING:  { label: "PENDING",  color: "#6B7280", bg: "rgba(107,114,128,0.12)", dot: "#6B7280" },
-  APPROVED: { label: "APPROVED", color: "#FF6B00", bg: "rgba(255,107,0,0.12)",   dot: "#FF6B00" },
-  CLEARED:  { label: "CLEARED",  color: "#16A34A", bg: "rgba(22,163,74,0.12)",   dot: "#16A34A" },
-  REJECTED: { label: "REJECTED", color: "#DC2626", bg: "rgba(220,38,38,0.12)",   dot: "#DC2626" },
-  UNKNOWN:  { label: "UNKNOWN",  color: "#6B7280", bg: "rgba(107,114,128,0.12)", dot: "#6B7280" },
+  PENDING:      { label: "PENDING",      color: "#6B7280", bg: "rgba(107,114,128,0.12)", dot: "#6B7280" },
+  APPROVED:     { label: "APPROVED",     color: "#FF6B00", bg: "rgba(255,107,0,0.12)",   dot: "#FF6B00" },
+  CLEARED:      { label: "CLEARED",      color: "#16A34A", bg: "rgba(22,163,74,0.12)",   dot: "#16A34A" },
+  REJECTED:     { label: "REJECTED",     color: "#DC2626", bg: "rgba(220,38,38,0.12)",   dot: "#DC2626" },
+  UNDER_REVIEW: { label: "UNDER REVIEW", color: "#EAB308", bg: "rgba(234,179,8,0.12)",   dot: "#EAB308" },
+  EXPIRED:      { label: "EXPIRED",      color: "#6B7280", bg: "rgba(107,114,128,0.08)", dot: "#6B7280" },
+  UNKNOWN:      { label: "UNKNOWN",      color: "#6B7280", bg: "rgba(107,114,128,0.12)", dot: "#6B7280" },
 };
 
 function StatusBadge({ status }: { status: PermitStatus }) {
