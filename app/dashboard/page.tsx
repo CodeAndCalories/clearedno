@@ -331,17 +331,13 @@ export default async function DashboardPage() {
               )}
             </div>
 
-            {/* Right: manage subscription — links to Stripe customer portal */}
-            {process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL && (
-              <a
-                href={process.env.NEXT_PUBLIC_STRIPE_CUSTOMER_PORTAL_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors whitespace-nowrap"
-              >
+            {/* Right: manage subscription — server route keeps portal URL out of the bundle */}
+            <a
+              href="/api/stripe/portal"
+              className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors whitespace-nowrap"
+            >
                 Manage Subscription
               </a>
-            )}
           </div>
         </footer>
       )}
