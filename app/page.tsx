@@ -2,6 +2,7 @@
 // Industrial utility aesthetic: black, safety orange, off-white.
 // Bebas Neue headings, DM Mono for data/body.
 import Link from "next/link";
+import Image from "next/image";
 
 // ── Shared CTA button ────────────────────────────────────────────────────────
 // Single source of truth for the primary CTA so every instance is identical.
@@ -37,8 +38,18 @@ function NavBar() {
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-4 min-w-0">
           {/* Logo — whitespace-nowrap prevents "NO" wrapping to a new line */}
-          <Link href="/" className="font-heading text-2xl tracking-widest text-[#FF6B00] whitespace-nowrap flex-shrink-0">
-            CLEARED<span className="text-[#F5F0E8]">NO</span>
+          <Link href="/" className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
+            <Image
+              src="/clearedno-icon.png"
+              alt="ClearedNo"
+              width={28}
+              height={28}
+              className="rounded-sm"
+              priority
+            />
+            <span className="font-heading text-2xl tracking-widest text-[#FF6B00]">
+              CLEARED<span className="text-[#F5F0E8]">NO</span>
+            </span>
           </Link>
           {/* Nav tagline — only visible on wider screens, never competes with logo */}
           <span className="hidden lg:block text-[10px] tracking-[0.15em] text-[#F5F0E8]/30 uppercase border-l border-[#FF6B00]/20 pl-4 whitespace-nowrap">

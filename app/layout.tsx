@@ -20,11 +20,23 @@ export const metadata: Metadata = {
   title: "ClearedNo — Permit Status Alerts for Contractors",
   description:
     "Stop manually checking city portals. ClearedNo monitors your building permits 24/7 and alerts you the second status changes.",
+  icons: {
+    icon: "/favicon.ico",
+    apple: "/clearedno-icon.png",
+  },
   openGraph: {
     title: "ClearedNo — Know When Your Permit Clears",
     description:
       "Instant permit status alerts for contractors. $79/mo. Start free trial.",
     type: "website",
+    images: [
+      {
+        url: "/clearedno-icon.png",
+        width: 512,
+        height: 512,
+        alt: "ClearedNo — Permit Status Alerts",
+      },
+    ],
   },
 };
 
