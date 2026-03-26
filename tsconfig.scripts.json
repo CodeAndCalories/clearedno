@@ -5,20 +5,19 @@
     "esModuleInterop": true,
     "resolveJsonModule": true,
     "strict": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "outDir": "dist/scraper",
+    "noEmit": false
   },
   "include": [
     "scrapers/**/*",
     "lib/email.ts",
     "lib/supabase/**/*",
-    "types/**/*",
-    "outreach/**/*"
+    "types/**/*"
   ],
   "exclude": [
     "node_modules",
     "app",
-    "emails",
-    "emails-next",
     ".next",
     "lib/email-app.ts"
   ]

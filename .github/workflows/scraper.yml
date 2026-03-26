@@ -24,29 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
-    env:
-      NEXT_PUBLIC_SUPABASE_URL:      ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
-      SUPABASE_SERVICE_ROLE_KEY:     ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-      RESEND_API_KEY:                ${{ secrets.RESEND_API_KEY }}
-      FROM_EMAIL:                    ${{ secrets.FROM_EMAIL }}
-      FROM_NAME:                     ${{ secrets.FROM_NAME }}
-      ADMIN_EMAIL:                   ${{ secrets.ADMIN_EMAIL }}
-      NEXT_PUBLIC_URL:               ${{ secrets.NEXT_PUBLIC_URL }}
-      # DRY_RUN comes from workflow_dispatch input on manual runs;
-      # defaults to 'false' on scheduled runs.
-      DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
-
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           clean: true
-
-      - name: Hard clean workspace
-        run: |
-          rm -rf emails emails-next .next dist node_modules
 
       - name: Debug - find TSX files
         run: |
@@ -61,25 +44,27 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Clean
-        run: rm -rf emails .next dist
-
       - name: Install dependencies
         run: npm ci
 
-      - name: Guard - no TSX imports in scrapers
-        run: |
-          if grep -rn "\.tsx" scrapers/ lib/email.ts lib/supabase/ types/; then
-            echo "::error::TSX import detected in scraper runtime files. Aborting."
-            exit 1
-          fi
-          echo "Guard passed: zero TSX references in scraper runtime."
+      - name: Build scraper
+        run: npm run build:scraper
 
       - name: Install Playwright Chromium
         run: npx playwright install chromium --with-deps
 
       - name: Run scraper
-        run: TS_NODE_PROJECT=tsconfig.scripts.json NODE_OPTIONS="--no-warnings" npx ts-node --transpile-only scrapers/index.ts
+        run: node dist/scraper/scrapers/index.js
+        env:
+          DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          FROM_NAME: ${{ secrets.FROM_NAME }}
+          ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+          NEXT_PUBLIC_URL: ${{ secrets.NEXT_PUBLIC_URL }}
 
       - name: Log failure notice
         if: failure()
