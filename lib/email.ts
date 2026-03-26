@@ -2,9 +2,9 @@
 // All transactional emails route through this file.
 import { Resend } from "resend";
 import { render } from "@react-email/components";
-import { PermitClearedEmail } from "@/emails/permit-cleared";
-import { WelcomeEmail } from "@/emails/welcome";
-import type { Permit, PermitStatus } from "@/types";
+import { PermitClearedEmail } from "../emails/permit-cleared";
+import { WelcomeEmail } from "../emails/welcome";
+import type { Permit, PermitStatus } from "../types";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 
