@@ -40,6 +40,20 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          clean: true
+
+      - name: Hard clean workspace
+        run: |
+          rm -rf emails emails-next .next dist node_modules
+
+      - name: Debug - find TSX files
+        run: |
+          echo "=== TSX files found ==="
+          find . -name "*.tsx" -not -path "*/node_modules/*" -not -path "*/.next/*"
+          echo "=== emails folder check ==="
+          ls -la emails 2>/dev/null || echo "emails/ folder NOT found - good"
 
       - name: Set up Node.js 20
         uses: actions/setup-node@v4
