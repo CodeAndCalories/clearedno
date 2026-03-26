@@ -4,7 +4,7 @@
 // sendWelcomeEmail — rendered React template, sent on Stripe checkout completion
 import { Resend } from "resend";
 import { render } from "@react-email/components";
-import { WelcomeEmail } from "../emails-next/welcome";
+import { WelcomeEmail } from "../app/emails/welcome";
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 

@@ -16,8 +16,9 @@
   ],
   "exclude": [
     "node_modules",
-    "emails-next",
     "app",
+    "emails",
+    "emails-next",
     ".next",
     "lib/email-app.ts"
   ]
