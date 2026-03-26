@@ -1,9 +1,10 @@
-// Resend email sending functions
-// All transactional emails route through this file.
+// Scraper-safe email functions — NO TSX, NO react-email, NO emails/ imports.
+// Safe to import from ts-node (scrapers) and Next.js alike.
 //
-// sendPermitStatusAlert — plain HTML, safe for ts-node / scraper runtime
-// sendWelcomeEmail      — React email template, only called from Next.js API routes
-// sendAdminAlert        — plain text, safe everywhere
+// sendPermitStatusAlert — plain HTML alert for permit status changes
+// sendAdminAlert        — plain text health alert to ops inbox
+//
+// For the welcome email (React template) see lib/email-app.ts
 import { Resend } from "resend";
 import type { Permit, PermitStatus } from "../types";
 
@@ -84,33 +85,6 @@ export async function sendPermitStatusAlert({
     from: FROM,
     to,
     subject: buildSubject(permit),
-    html,
-  });
-}
-
-// ── Welcome / onboarding email ────────────────────────────────────────────────
-// Uses React email template — only called from Next.js API routes, never scrapers.
-
-export async function sendWelcomeEmail({
-  to,
-  userName,
-}: {
-  to: string;
-  userName: string;
-}) {
-  // Lazy-import so this module remains ts-node-safe when imported by scrapers.
-  // In Next.js API routes the dynamic import resolves fine; in ts-node it's never called.
-  const { render } = await import("@react-email/components");
-  const { WelcomeEmail } = await import("../emails/welcome");
-
-  const html = await render(
-    (WelcomeEmail as any)({ userName }) as React.ReactElement
-  );
-
-  return resend.emails.send({
-    from: FROM,
-    to,
-    subject: "Welcome to ClearedNo — Your permits are now being watched.",
     html,
   });
 }

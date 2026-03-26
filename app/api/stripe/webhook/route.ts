@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { sendWelcomeEmail } from "@/lib/email";
+import { sendWelcomeEmail } from "@/lib/email-app";
 import type Stripe from "stripe";
 
 // App Router reads the raw body via req.text() — no config needed.
