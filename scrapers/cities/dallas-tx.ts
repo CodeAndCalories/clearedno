@@ -17,7 +17,7 @@
 
 import { chromium } from "playwright";
 import { BaseScraper, type ScraperConfig } from "../base-scraper";
-import type { ScrapeResult, PermitStatus } from "@/types";
+import type { ScrapeResult, PermitStatus } from "../../types";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 

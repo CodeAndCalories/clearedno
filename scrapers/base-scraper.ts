@@ -15,7 +15,7 @@
 //   - Up to 3 attempts with exponential backoff (2s, 4s)
 //   - Fallback normalizeStatus() if you don't override mapStatus()
 
-import type { ScrapeResult, PermitStatus } from "@/types";
+import type { ScrapeResult, PermitStatus } from "../types";
 
 export interface ScraperConfig {
   cityName: string;   // Human-readable, e.g. "Austin, TX"

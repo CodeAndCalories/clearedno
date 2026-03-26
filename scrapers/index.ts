@@ -20,9 +20,9 @@
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 
-import { supabaseAdmin } from "@/lib/supabase/admin";
-import { sendPermitStatusAlert, sendAdminAlert } from "@/lib/email";
-import type { Permit, PermitStatus, StatusHistoryEntry } from "@/types";
+import { supabaseAdmin } from "../lib/supabase/admin";
+import { sendPermitStatusAlert, sendAdminAlert } from "../lib/email";
+import type { Permit, PermitStatus, StatusHistoryEntry } from "../types";
 
 // ── City scraper registry ─────────────────────────────────────────────────────
 // Add new city scrapers here. Order doesn't matter.
