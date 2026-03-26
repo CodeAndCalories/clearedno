@@ -11,8 +11,8 @@
 // 6. Test with DRY_RUN=true first.
 //
 // The base class handles:
-//   - 30-second per-attempt timeout (via Promise.race)
-//   - Up to 3 attempts with exponential backoff (2s, 4s)
+//   - 60-second per-attempt timeout (via Promise.race)
+//   - Up to 5 attempts with exponential backoff (2s, 4s, 6s, 8s)
 //   - Fallback normalizeStatus() if you don't override mapStatus()
 
 import type { ScrapeResult, PermitStatus } from "../types";
