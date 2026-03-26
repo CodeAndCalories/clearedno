@@ -3,7 +3,7 @@ const config: Config = {
   content: [
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
-    "./emails/**/*.{js,ts,jsx,tsx,mdx}",
+    "./emails-next/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
