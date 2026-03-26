@@ -13,7 +13,7 @@ import {
   Hr,
   Font,
 } from "@react-email/components";
-import type { Permit } from "@/types";
+import type { Permit } from "../types";
 
 interface Props {
   userName: string;
