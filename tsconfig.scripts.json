@@ -4,7 +4,11 @@
     "noEmit": false,
     "module": "commonjs",
     "moduleResolution": "node",
-    "outDir": "dist-scripts"
+    "outDir": "dist-scripts",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
-  "include": ["outreach/**/*.ts", "lib/**/*.ts", "types/**/*.ts"]
+  "include": ["outreach/**/*.ts", "scrapers/**/*.ts", "lib/**/*.ts", "types/**/*.ts"]
 }

@@ -54,7 +54,7 @@ jobs:
         run: npx playwright install chromium --with-deps
 
       - name: Run scraper
-        run: npx ts-node --project tsconfig.scripts.json scrapers/index.ts
+        run: npx ts-node --project tsconfig.scripts.json -r tsconfig-paths/register scrapers/index.ts
 
       - name: Log failure notice
         if: failure()
