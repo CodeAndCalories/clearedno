@@ -114,16 +114,17 @@ export class AustinTxScraper extends BaseScraper {
       const context = await browser.newContext({
         // Appear as a normal desktop browser to avoid bot detection
         userAgent:
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       });
       const page = await context.newPage();
 
       // ── Step 1: Load the search page ──────────────────────────────────────
-      // Timeout is 25s — gives 5s margin before the base class 30s limit kicks in
       await page.goto(PORTAL_URL, {
-        waitUntil: "networkidle",
-        timeout: 25_000,
+        waitUntil: "domcontentloaded",
+        timeout: 60_000,
       });
+      // Give the React SPA time to hydrate after initial DOM load
+      await page.waitForTimeout(3000);
 
       // ── Step 2: Fill in the permit number ─────────────────────────────────
       // TODO: Update SEL.permitInput if this step fails in production

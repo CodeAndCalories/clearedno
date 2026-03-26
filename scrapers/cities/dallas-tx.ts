@@ -124,7 +124,7 @@ export class DallasTxScraper extends BaseScraper {
     try {
       const context = await browser.newContext({
         userAgent:
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
       });
       const page = await context.newPage();
 
@@ -132,9 +132,11 @@ export class DallasTxScraper extends BaseScraper {
       // TODO: If the homepage requires navigating to a sub-page for search,
       //       add a second goto() and a click() to get to the search form.
       await page.goto(SEARCH_URL, {
-        waitUntil: "networkidle",
-        timeout: 25_000,
+        waitUntil: "domcontentloaded",
+        timeout: 60_000,
       });
+      // Give the portal JS time to initialise after DOM load
+      await page.waitForTimeout(3000);
 
       // ── Step 2: Fill in the permit number ─────────────────────────────────
       // TODO: Verify SEL.permitInput targets the correct input field

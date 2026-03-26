@@ -94,11 +94,16 @@ function LoginForm() {
         </button>
       </form>
 
-      <div className="mt-6 pt-6 border-t border-[#FF6B00]/20 text-center">
+      <div className="mt-6 pt-6 border-t border-[#FF6B00]/20 space-y-3 text-center">
         <p className="text-xs text-[#F5F0E8]/40">
           No account?{" "}
           <Link href="/signup" className="text-[#FF6B00] hover:text-[#F5F0E8] transition-colors">
             Start your free trial
+          </Link>
+        </p>
+        <p className="text-xs text-[#F5F0E8]/40">
+          <Link href="/forgot-password" className="text-[#F5F0E8]/50 hover:text-[#FF6B00] transition-colors">
+            Forgot password?
           </Link>
         </p>
       </div>

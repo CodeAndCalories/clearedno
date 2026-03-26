@@ -24,7 +24,7 @@ export interface ScraperConfig {
 }
 
 // Max time (ms) allowed for a single scrape attempt before it's killed
-const SCRAPE_TIMEOUT_MS = 30_000;
+const SCRAPE_TIMEOUT_MS = 60_000;
 
 export abstract class BaseScraper {
   protected config: ScraperConfig;
@@ -44,12 +44,12 @@ export abstract class BaseScraper {
   }
 
   /**
-   * Runs the scraper with a 30-second timeout per attempt and exponential
+   * Runs the scraper with a 60-second timeout per attempt and exponential
    * backoff between retries. Returns null after all attempts fail so the
    * engine can track consecutive failures without crashing the run.
    */
   async run(permitNumber: string, address: string): Promise<ScrapeResult | null> {
-    const maxAttempts = 3;
+    const maxAttempts = 5;
     let lastError: unknown;
 
     for (let attempt = 1; attempt <= maxAttempts; attempt++) {
