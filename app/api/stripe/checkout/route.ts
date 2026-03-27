@@ -1,11 +1,17 @@
 // POST /api/stripe/checkout
 // Creates a Stripe Checkout session and redirects the user to it.
-import { NextResponse } from "next/server";
+//
+// Query params:
+//   ?plan=founding  → uses STRIPE_FOUNDING_PRICE_ID ($49/mo locked forever)
+//   (default)       → uses STRIPE_PRICE_ID ($79/mo standard)
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { stripe, PRICE_ID } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
-export async function POST() {
+const FOUNDING_PRICE_ID = process.env.STRIPE_FOUNDING_PRICE_ID ?? "";
+
+export async function POST(req: NextRequest) {
   const supabase = await createClient();
 
   const {
@@ -15,6 +21,12 @@ export async function POST() {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Resolve price: founding member vs standard
+  const plan    = req.nextUrl.searchParams.get("plan");
+  const priceId = plan === "founding" && FOUNDING_PRICE_ID
+    ? FOUNDING_PRICE_ID
+    : PRICE_ID;
 
   // Fetch or create a Stripe customer for this user
   const { data: profile } = await supabaseAdmin
@@ -33,7 +45,6 @@ export async function POST() {
     });
     customerId = customer.id;
 
-    // Persist the customer ID so we can look it up later in webhooks
     await supabaseAdmin
       .from("profiles")
       .update({ stripe_customer_id: customerId })
@@ -46,9 +57,9 @@ export async function POST() {
     customer: customerId,
     mode: "subscription",
     payment_method_types: ["card"],
-    line_items: [{ price: PRICE_ID, quantity: 1 }],
+    line_items: [{ price: priceId, quantity: 1 }],
     success_url: `${baseUrl}/dashboard?checkout=success`,
-    cancel_url: `${baseUrl}/dashboard`,
+    cancel_url:  `${baseUrl}/dashboard`,
     subscription_data: {
       trial_period_days: 14,
       metadata: { supabase_user_id: user.id },

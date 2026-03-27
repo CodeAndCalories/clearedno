@@ -1,34 +1,20 @@
 // Admin dashboard — restricted to ADMIN_EMAIL only.
-// Server Component: all data fetched on server, never exposed to client.
+// Server Component: all Supabase queries run on the server.
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
-// ── Types ─────────────────────────────────────────────────────────────────────
+// ── Data fetching ─────────────────────────────────────────────────────────────
 
-interface Metrics {
-  totalUsers:      number;
-  activeSubsCount: number;
-  trialCount:      number;
-  mrr:             number;
-  permitsTracked:  number;
-  citySuggestions: Array<{ city: string; state: string; votes: number; email: string | null }>;
-  outreach: {
-    total:        number;
-    contacted:    number;
-    replied:      number;
-    converted:    number;
-    doNotContact: number;
-  };
-}
-
-async function fetchMetrics(): Promise<Metrics> {
+async function fetchAll() {
   const [
     usersRes,
     activeRes,
     trialRes,
     permitsRes,
+    permitsByCityRes,
+    recentProfilesRes,
     suggestionsRes,
     outreachRes,
   ] = await Promise.all([
@@ -36,10 +22,53 @@ async function fetchMetrics(): Promise<Metrics> {
     supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("subscription_status", "active"),
     supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("subscription_status", "trialing"),
     supabaseAdmin.from("permits").select("*", { count: "exact", head: true }).eq("is_active", true),
-    supabaseAdmin.from("city_suggestions").select("city, state, votes, email").order("votes", { ascending: false }).limit(20),
+    // Permits grouped by city — fetch all active and aggregate in JS
+    supabaseAdmin.from("permits").select("city, state").eq("is_active", true),
+    // Recent signups: last 10 profiles with user_id + sub status + created_at
+    supabaseAdmin.from("profiles")
+      .select("user_id, subscription_status, created_at")
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabaseAdmin.from("city_suggestions").select("city, state, votes, email").order("votes", { ascending: false }).limit(15),
     supabaseAdmin.from("outreach_leads").select("status"),
   ]);
 
+  // Aggregate permits by city
+  const permitCities = (permitsByCityRes.data ?? []) as Array<{ city: string; state: string }>;
+  const cityCount: Record<string, number> = {};
+  for (const p of permitCities) {
+    const key = `${p.city}, ${p.state}`;
+    cityCount[key] = (cityCount[key] ?? 0) + 1;
+  }
+  const permitsByCity = Object.entries(cityCount)
+    .sort((a, b) => b[1] - a[1])
+    .map(([city, count]) => ({ city, count }));
+
+  // Get user emails for recent signups via admin auth API
+  const recentProfiles = (recentProfilesRes.data ?? []) as Array<{
+    user_id: string;
+    subscription_status: string | null;
+    created_at: string;
+  }>;
+
+  // Fetch auth user emails in one call
+  let emailMap: Record<string, string> = {};
+  try {
+    const { data: { users } } = await supabaseAdmin.auth.admin.listUsers({ perPage: 100 });
+    for (const u of users) {
+      emailMap[u.id] = u.email ?? u.id.slice(0, 8);
+    }
+  } catch {
+    // Auth admin API may not be available in all environments — fall back to user_id
+  }
+
+  const recentSignups = recentProfiles.map((p) => ({
+    email:  emailMap[p.user_id] ?? p.user_id.slice(0, 12) + "…",
+    status: p.subscription_status ?? "—",
+    date:   new Date(p.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }),
+  }));
+
+  // Outreach funnel
   const outreachRows = (outreachRes.data ?? []) as Array<{ status: string }>;
   const outreachByStatus = outreachRows.reduce<Record<string, number>>((acc, r) => {
     acc[r.status] = (acc[r.status] ?? 0) + 1;
@@ -52,12 +81,14 @@ async function fetchMetrics(): Promise<Metrics> {
     trialCount:      trialRes.count      ?? 0,
     mrr:             (activeRes.count ?? 0) * 79,
     permitsTracked:  permitsRes.count    ?? 0,
-    citySuggestions: (suggestionsRes.data ?? []) as Metrics["citySuggestions"],
+    permitsByCity,
+    recentSignups,
+    citySuggestions: (suggestionsRes.data ?? []) as Array<{ city: string; state: string; votes: number; email: string | null }>,
     outreach: {
       total:        outreachRows.length,
-      contacted:    outreachByStatus["contacted"]     ?? 0,
-      replied:      outreachByStatus["replied"]       ?? 0,
-      converted:    outreachByStatus["converted"]     ?? 0,
+      contacted:    outreachByStatus["contacted"]      ?? 0,
+      replied:      outreachByStatus["replied"]        ?? 0,
+      converted:    outreachByStatus["converted"]      ?? 0,
       doNotContact: outreachByStatus["do_not_contact"] ?? 0,
     },
   };
@@ -72,11 +103,11 @@ export default async function AdminPage() {
   if (!user) redirect("/login");
 
   const adminEmail = process.env.ADMIN_EMAIL;
-  if (!adminEmail || user.email !== adminEmail) {
-    redirect("/dashboard");
-  }
+  if (!adminEmail || user.email !== adminEmail) redirect("/dashboard");
 
-  const m = await fetchMetrics();
+  const d = await fetchAll();
+
+  const ghBase = "https://github.com/CodeAndCalories/clearedno/actions/workflows";
 
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
@@ -89,49 +120,127 @@ export default async function AdminPage() {
           <span className="text-[#F5F0E8]/20">/</span>
           <span className="text-xs tracking-widest text-[#FF6B00] uppercase font-mono">Admin</span>
         </div>
-        <Link href="/dashboard" className="text-xs text-[#F5F0E8]/40 hover:text-[#F5F0E8] tracking-widest uppercase transition-colors">
-          Dashboard →
-        </Link>
+        <div className="flex items-center gap-4">
+          <a
+            href={`${ghBase}/scraper.yml`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-mono tracking-widest uppercase px-3 py-1.5 border border-[#FF6B00]/30 text-[#FF6B00]/70 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors"
+          >
+            ▶ Run Scraper
+          </a>
+          <a
+            href={`${ghBase}/outreach.yml`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-[10px] font-mono tracking-widest uppercase px-3 py-1.5 border border-[#FF6B00]/30 text-[#FF6B00]/70 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors"
+          >
+            ▶ Send Outreach
+          </a>
+          <Link href="/dashboard" className="text-xs text-[#F5F0E8]/40 hover:text-[#F5F0E8] tracking-widest uppercase transition-colors">
+            Dashboard →
+          </Link>
+        </div>
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-10 space-y-10">
 
-        {/* ── Key metrics strip ── */}
+        {/* ── Key metrics ── */}
         <section>
           <SectionLabel>Key Metrics</SectionLabel>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-            <MetricCard label="Total Users"     value={m.totalUsers}      />
-            <MetricCard label="Active Subs"     value={m.activeSubsCount} accent />
-            <MetricCard label="On Trial"        value={m.trialCount}      />
-            <MetricCard label="MRR"             value={`$${m.mrr}`}       accent />
-            <MetricCard label="Permits Tracked" value={m.permitsTracked}  />
+            <MetricCard label="Total Users"     value={d.totalUsers}      />
+            <MetricCard label="Active Subs"     value={d.activeSubsCount} accent />
+            <MetricCard label="On Trial"        value={d.trialCount}      />
+            <MetricCard label="MRR"             value={`$${d.mrr}`}       accent />
+            <MetricCard label="Permits Tracked" value={d.permitsTracked}  />
           </div>
         </section>
 
-        {/* ── Outreach ── */}
+        {/* ── Recent signups + Permits by city ── */}
+        <div className="grid sm:grid-cols-2 gap-6">
+
+          {/* Recent signups */}
+          <section>
+            <SectionLabel>Recent Signups</SectionLabel>
+            <div className="border border-[#FF6B00]/20 overflow-hidden">
+              {d.recentSignups.length === 0 ? (
+                <p className="px-4 py-3 text-xs text-[#F5F0E8]/30 font-mono">No signups yet.</p>
+              ) : (
+                <table className="w-full text-xs font-mono">
+                  <thead>
+                    <tr className="border-b border-[#FF6B00]/10 bg-[#FF6B00]/5">
+                      <Th>Email</Th>
+                      <Th>Status</Th>
+                      <Th right>Date</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {d.recentSignups.map((s, i) => (
+                      <tr key={i} className="border-b border-[#FF6B00]/10 last:border-0">
+                        <Td muted>{s.email}</Td>
+                        <Td highlight={s.status === "active"}>{s.status}</Td>
+                        <Td right muted>{s.date}</Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </section>
+
+          {/* Permits by city */}
+          <section>
+            <SectionLabel>Permits by City</SectionLabel>
+            <div className="border border-[#FF6B00]/20 overflow-hidden">
+              {d.permitsByCity.length === 0 ? (
+                <p className="px-4 py-3 text-xs text-[#F5F0E8]/30 font-mono">No permits tracked yet.</p>
+              ) : (
+                <table className="w-full text-xs font-mono">
+                  <thead>
+                    <tr className="border-b border-[#FF6B00]/10 bg-[#FF6B00]/5">
+                      <Th>City</Th>
+                      <Th right>Permits</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {d.permitsByCity.map((c, i) => (
+                      <tr key={i} className="border-b border-[#FF6B00]/10 last:border-0">
+                        <Td>{c.city}</Td>
+                        <Td right highlight>{c.count}</Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </section>
+        </div>
+
+        {/* ── Outreach funnel ── */}
         <section>
-          <SectionLabel>Outreach</SectionLabel>
+          <SectionLabel>Outreach Funnel</SectionLabel>
           <div className="border border-[#FF6B00]/20 overflow-hidden">
             <table className="w-full text-sm font-mono">
               <thead>
                 <tr className="border-b border-[#FF6B00]/10 bg-[#FF6B00]/5">
                   <Th>Stage</Th>
                   <Th right>Count</Th>
-                  <Th right>%</Th>
+                  <Th right>Rate</Th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { label: "Total leads",    val: m.outreach.total,        pct: null },
-                  { label: "Contacted",      val: m.outreach.contacted,    pct: pct(m.outreach.contacted,    m.outreach.total) },
-                  { label: "Replied",        val: m.outreach.replied,      pct: pct(m.outreach.replied,      m.outreach.total) },
-                  { label: "Converted",      val: m.outreach.converted,    pct: pct(m.outreach.converted,    m.outreach.total) },
-                  { label: "Do not contact", val: m.outreach.doNotContact, pct: null },
+                  { label: "Total leads",    val: d.outreach.total,        base: d.outreach.total },
+                  { label: "Contacted",      val: d.outreach.contacted,    base: d.outreach.total },
+                  { label: "Replied",        val: d.outreach.replied,      base: d.outreach.contacted },
+                  { label: "Converted",      val: d.outreach.converted,    base: d.outreach.replied },
+                  { label: "Do not contact", val: d.outreach.doNotContact, base: null },
                 ].map((row) => (
                   <tr key={row.label} className="border-b border-[#FF6B00]/10 last:border-0">
                     <Td>{row.label}</Td>
                     <Td right highlight={row.label === "Replied" || row.label === "Converted"}>{row.val}</Td>
-                    <Td right muted>{row.pct ?? "—"}</Td>
+                    <Td right muted>{row.base != null ? pct(row.val, row.base) : "—"}</Td>
                   </tr>
                 ))}
               </tbody>
@@ -142,7 +251,7 @@ export default async function AdminPage() {
         {/* ── City suggestions ── */}
         <section>
           <SectionLabel>City Suggestions (by votes)</SectionLabel>
-          {m.citySuggestions.length === 0 ? (
+          {d.citySuggestions.length === 0 ? (
             <p className="text-xs text-[#F5F0E8]/30 font-mono">No suggestions yet.</p>
           ) : (
             <div className="border border-[#FF6B00]/20 overflow-hidden">
@@ -156,7 +265,7 @@ export default async function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {m.citySuggestions.map((s, i) => (
+                  {d.citySuggestions.map((s, i) => (
                     <tr key={i} className="border-b border-[#FF6B00]/10 last:border-0">
                       <Td>{s.city}</Td>
                       <Td>{s.state}</Td>
@@ -170,9 +279,9 @@ export default async function AdminPage() {
           )}
         </section>
 
-        {/* ── Referral tip ── */}
+        {/* ── Migrations ── */}
         <section>
-          <SectionLabel>Migrations Needed</SectionLabel>
+          <SectionLabel>Migrations (run in Supabase SQL editor)</SectionLabel>
           <div className="border border-[#FF6B00]/10 bg-[#FF6B00]/5 px-5 py-4 space-y-1">
             {[
               "001_subscription_columns.sql",
@@ -180,9 +289,9 @@ export default async function AdminPage() {
               "003_referrals.sql",
               "004_city_suggestions.sql",
               "005_outreach_leads.sql",
-            ].map((m) => (
-              <div key={m} className="text-xs text-[#F5F0E8]/60 font-mono flex items-center gap-2">
-                <span className="text-[#FF6B00]">■</span>{m}
+            ].map((mig) => (
+              <div key={mig} className="text-xs text-[#F5F0E8]/60 font-mono flex items-center gap-2">
+                <span className="text-[#FF6B00]">■</span>{mig}
               </div>
             ))}
           </div>

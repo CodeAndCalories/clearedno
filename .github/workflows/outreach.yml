@@ -1,0 +1,79 @@
+name: Outreach Agent
+
+# Required GitHub Secrets (Settings → Secrets and variables → Actions):
+#
+#   NEXT_PUBLIC_SUPABASE_URL       — Supabase Dashboard → Settings → API → Project URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY  — Supabase Dashboard → Settings → API → anon public key
+#   SUPABASE_SERVICE_ROLE_KEY      — Supabase Dashboard → Settings → API → service_role key
+#   RESEND_API_KEY                 — resend.com → API Keys
+#   FROM_EMAIL                     — verified sender address (e.g. alex@clearedno.com)
+#   FROM_NAME                      — sender display name (e.g. "Alex at ClearedNo")
+#   ADMIN_EMAIL                    — your ops inbox; receives alerts on interested replies
+#   NEXT_PUBLIC_URL                — https://www.clearedno.com
+#   ANTHROPIC_API_KEY              — console.anthropic.com → API Keys (for email writing + reply classification)
+#   GOOGLE_MAPS_API_KEY            — console.cloud.google.com → APIs & Services → Credentials
+#                                    Enable: "Places API" on the project
+
+on:
+  # Manual trigger with dry-run option
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (find leads + write emails, skip sending)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+  # Scheduled: weekdays at 9:00 AM UTC (4 AM CT — before business hours start)
+  schedule:
+    - cron: '0 9 * * 1-5'
+
+jobs:
+  outreach:
+    name: Run outreach agent
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL:      ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY:     ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY:                ${{ secrets.RESEND_API_KEY }}
+      FROM_EMAIL:                    ${{ secrets.FROM_EMAIL }}
+      FROM_NAME:                     ${{ secrets.FROM_NAME }}
+      ADMIN_EMAIL:                   ${{ secrets.ADMIN_EMAIL }}
+      NEXT_PUBLIC_URL:               ${{ secrets.NEXT_PUBLIC_URL }}
+      ANTHROPIC_API_KEY:             ${{ secrets.ANTHROPIC_API_KEY }}
+      GOOGLE_MAPS_API_KEY:           ${{ secrets.GOOGLE_MAPS_API_KEY }}
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          clean: true
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build outreach agent
+        run: npm run build:scraper
+
+      - name: Run outreach agent
+        run: node dist/scraper/outreach/index.js
+
+      - name: Log failure notice
+        if: failure()
+        run: |
+          echo "::error::Outreach job failed. Check logs above."
+          echo "Tip: re-run with dry_run=true to test without sending emails."
