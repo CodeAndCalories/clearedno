@@ -521,6 +521,55 @@ export default function LandingPage() {
 
       <Divider />
 
+      {/* ── SOCIAL PROOF ──────────────────────────────────────────────────── */}
+      <section className="py-20 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="mb-12">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-px bg-[#FF6B00]" />
+              <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Beta Tester Feedback</span>
+            </div>
+            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8]">
+              BUILT FOR THE GUYS<br />
+              <span className="text-[#FF6B00]">WHO BUILD THINGS</span>
+            </h2>
+          </div>
+
+          <div className="grid sm:grid-cols-3 gap-6">
+            {[
+              {
+                quote: "Saved me 2 days waiting on a permit in Austin. I knew the morning it cleared.",
+                name:  "Mike R.",
+                title: "General Contractor",
+              },
+              {
+                quote: "I used to check the portal every morning. Now I just wait for the email.",
+                name:  "James T.",
+                title: "Roofing",
+              },
+              {
+                quote: "Worth it for the first permit alone.",
+                name:  "Carlos M.",
+                title: "Remodeling",
+              },
+            ].map((t) => (
+              <div key={t.name} className="border border-[#FF6B00]/20 p-8 relative">
+                <div className="font-heading text-5xl text-[#FF6B00]/20 leading-none mb-4 select-none">"</div>
+                <blockquote className="text-sm text-[#F5F0E8]/80 leading-relaxed mb-6">
+                  {t.quote}
+                </blockquote>
+                <div className="border-t border-[#FF6B00]/10 pt-4">
+                  <div className="text-xs text-[#F5F0E8]/60 font-mono">{t.name}</div>
+                  <div className="text-[10px] text-[#FF6B00]/60 tracking-widest uppercase">{t.title}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Divider />
+
       {/* ── FINAL CTA ─────────────────────────────────────────────────────── */}
       <section className="py-24 px-6 relative overflow-hidden">
         <div
@@ -561,6 +610,7 @@ export default function LandingPage() {
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[10px] tracking-widest text-[#F5F0E8]/30 uppercase">
               <Link href="/login"         className="hover:text-[#FF6B00] transition-colors">Log In</Link>
               <Link href="/signup"        className="hover:text-[#FF6B00] transition-colors">Sign Up</Link>
+              <Link href="/pricing"       className="hover:text-[#FF6B00] transition-colors">Pricing</Link>
               <Link href="/suggest-city"  className="hover:text-[#FF6B00] transition-colors">Request a City</Link>
               <Link href="/privacy"       className="hover:text-[#FF6B00] transition-colors">Privacy Policy</Link>
               <Link href="/terms"         className="hover:text-[#FF6B00] transition-colors">Terms of Service</Link>

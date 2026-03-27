@@ -1,12 +1,12 @@
-// Lead finder — discovers general contractor businesses via Google Maps API.
-// Outputs a list of leads to pass to the email-writer.
-//
-// Google Maps Places API docs:
-// https://developers.google.com/maps/documentation/places/web-service/search-text
+// Lead finder — discovers contractor businesses via Google Maps Places API.
+// Saves discovered leads to Supabase outreach_leads table.
+// Deduplicates by email (unique constraint in DB).
 
 import axios from "axios";
+import { supabaseAdmin } from "../lib/supabase/admin";
 
 export interface Lead {
+  id?: string;            // Supabase row ID (set after upsert)
   name: string;
   address: string;
   city: string;
@@ -16,6 +16,8 @@ export interface Lead {
   googleMapsUrl?: string;
   rating?: number;
   reviewCount?: number;
+  contractorType: string;
+  email?: string;
 }
 
 interface PlaceResult {
@@ -28,75 +30,81 @@ interface PlaceResult {
   user_ratings_total?: number;
 }
 
-// ── Configuration ────────────────────────────────────────────────────────────
+// ── Configuration ─────────────────────────────────────────────────────────────
 
-// Target cities to search. Add more as you expand.
 const TARGET_CITIES: Array<{ city: string; state: string }> = [
-  { city: "Austin", state: "TX" },
+  { city: "Austin",  state: "TX" },
+  { city: "Dallas",  state: "TX" },
   { city: "Houston", state: "TX" },
-  { city: "Dallas", state: "TX" },
-  { city: "Denver", state: "CO" },
-  { city: "Phoenix", state: "AZ" },
 ];
 
-const SEARCH_QUERIES = [
-  "general contractor",
-  "building contractor",
-  "construction company",
-  "custom home builder",
+// Each query = one Google Maps text search
+const SEARCH_QUERIES: Array<{ query: string; contractorType: string }> = [
+  { query: "general contractor",   contractorType: "general"  },
+  { query: "roofing contractor",   contractorType: "roofing"  },
+  { query: "plumbing contractor",  contractorType: "plumbing" },
+  { query: "HVAC contractor",      contractorType: "hvac"     },
 ];
 
-// ── Main ─────────────────────────────────────────────────────────────────────
+// ── Main ──────────────────────────────────────────────────────────────────────
 
 /**
- * Finds contractor leads in target cities.
- * Returns a de-duplicated list of leads sorted by review count.
+ * Finds contractor leads across target cities, derives emails from websites,
+ * saves them to Supabase outreach_leads, and returns the newly inserted rows.
  */
-export async function findLeads(maxPerCity = 20): Promise<Lead[]> {
+export async function findAndSaveLeads(maxPerQuery = 10): Promise<Lead[]> {
   const apiKey = process.env.GOOGLE_MAPS_API_KEY;
   if (!apiKey) throw new Error("GOOGLE_MAPS_API_KEY is not set");
 
   const allLeads: Lead[] = [];
-  const seen = new Set<string>();
+  const seenNames = new Set<string>();
 
   for (const { city, state } of TARGET_CITIES) {
-    for (const query of SEARCH_QUERIES) {
-      const leads = await searchCity(apiKey, query, city, state, maxPerCity);
+    for (const { query, contractorType } of SEARCH_QUERIES) {
+      const leads = await searchCity(apiKey, query, contractorType, city, state, maxPerQuery);
 
       for (const lead of leads) {
-        // Deduplicate by name + city
         const key = `${lead.name.toLowerCase()}|${city.toLowerCase()}`;
-        if (!seen.has(key)) {
-          seen.add(key);
-          allLeads.push(lead);
-        }
-      }
-    }
+        if (seenNames.has(key)) continue;
+        seenNames.add(key);
 
-    // Respect Google's rate limit
-    await sleep(200);
+        // Derive email from website domain
+        lead.email = deriveEmail(lead.website);
+        allLeads.push(lead);
+      }
+
+      await sleep(200); // Respect Google rate limit
+    }
   }
 
-  // Sort by review count descending — more established businesses first
-  return allLeads.sort((a, b) => (b.reviewCount ?? 0) - (a.reviewCount ?? 0));
+  // Save to Supabase — skip rows where email already exists (unique constraint)
+  const saved = await saveLeads(allLeads);
+  return saved;
 }
+
+/** Legacy export used by index.ts — same as findAndSaveLeads */
+export async function findLeads(maxPerQuery = 10): Promise<Lead[]> {
+  return findAndSaveLeads(maxPerQuery);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
 
 async function searchCity(
   apiKey: string,
   query: string,
+  contractorType: string,
   city: string,
   state: string,
   max: number
 ): Promise<Lead[]> {
   try {
-    // Use Text Search to find businesses
     const response = await axios.get(
       "https://maps.googleapis.com/maps/api/place/textsearch/json",
       {
         params: {
           query: `${query} in ${city} ${state}`,
-          key: apiKey,
-          type: "general_contractor",
+          key:   apiKey,
+          type:  "general_contractor",
         },
       }
     );
@@ -106,21 +114,71 @@ async function searchCity(
     return results.slice(0, max).map((r) => {
       const parts = r.formatted_address?.split(",") ?? [];
       return {
-        name: r.name,
-        address: parts[0]?.trim() ?? "",
-        city: parts[1]?.trim() ?? city,
-        state: state,
-        phone: r.formatted_phone_number,
-        website: r.website,
-        googleMapsUrl: r.url,
-        rating: r.rating,
-        reviewCount: r.user_ratings_total,
+        name:           r.name,
+        address:        parts[0]?.trim() ?? "",
+        city:           parts[1]?.trim() ?? city,
+        state,
+        phone:          r.formatted_phone_number,
+        website:        r.website,
+        googleMapsUrl:  r.url,
+        rating:         r.rating,
+        reviewCount:    r.user_ratings_total,
+        contractorType,
       };
     });
   } catch (err) {
     console.error(`[LeadFinder] Error searching ${city}, ${state} for "${query}":`, err);
     return [];
   }
+}
+
+function deriveEmail(website?: string): string | undefined {
+  if (!website) return undefined;
+  try {
+    const domain = new URL(
+      website.startsWith("http") ? website : `https://${website}`
+    ).hostname.replace(/^www\./, "");
+    return `info@${domain}`;
+  } catch {
+    return undefined;
+  }
+}
+
+async function saveLeads(leads: Lead[]): Promise<Lead[]> {
+  const saved: Lead[] = [];
+
+  for (const lead of leads) {
+    if (!lead.email) continue; // Skip leads with no email — nothing to send to
+
+    const { data, error } = await supabaseAdmin
+      .from("outreach_leads")
+      .insert({
+        business_name:   lead.name,
+        email:           lead.email,
+        phone:           lead.phone ?? null,
+        city:            lead.city,
+        state:           lead.state,
+        contractor_type: lead.contractorType,
+        website:         lead.website ?? null,
+        source:          "google_maps",
+        status:          "new",
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      if (error.code === "23505") {
+        // Unique constraint — email already in table, skip silently
+        continue;
+      }
+      console.error(`[LeadFinder] DB insert failed for ${lead.name}:`, error.message);
+      continue;
+    }
+
+    saved.push({ ...lead, id: data.id });
+  }
+
+  return saved;
 }
 
 function sleep(ms: number) {
