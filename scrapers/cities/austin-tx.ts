@@ -1,25 +1,20 @@
 // Austin, TX — Build + Development Services permit scraper
 //
-// Portal: Austin Build Central (ABC)
-// Search URL: https://abc.austintexas.gov/web/permit/public-search-other
+// PRIMARY:  Austin Open Data API (fast, no browser)
+// FALLBACK: Austin Build Central (ABC) portal via Playwright
 //
-// The portal is a React SPA. We use Playwright so the page fully hydrates
-// before we try to interact with it.
+// The Open Data API is a public Socrata endpoint — no auth required, sub-second
+// response times, and no bot-detection issues. We prefer it over the portal.
 //
-// ── HOW TO UPDATE SELECTORS ──────────────────────────────────────────────────
-// If the portal is redesigned and selectors break:
-//   1. Open the URL in Chrome DevTools
+// Open Data dataset: "Austin Building Permits"
+// Endpoint: https://data.austintexas.gov/resource/3syk-w9eu.json
+//
+// ── HOW TO UPDATE SELECTORS (Playwright fallback) ─────────────────────────────
+// If the portal fallback needs updating:
+//   1. Open https://abc.austintexas.gov/web/permit/public-search-other in Chrome
 //   2. Search for a known permit number manually
 //   3. Right-click the status element → Inspect
-//   4. Copy the selector and update the constant below
-//   5. Run: DRY_RUN=true node scrapers/dist/index.js
-// ─────────────────────────────────────────────────────────────────────────────
-//
-// ── FALLBACK BEHAVIOR ────────────────────────────────────────────────────────
-// If the portal cannot be scraped (selectors broken, timeout, bot detection),
-// the scraper returns status=PENDING with raw_text="manual check required".
-// This prevents the health alarm from firing and keeps the permit in the queue.
-// The next scheduled run will retry. If it keeps failing, check the portal.
+//   4. Copy the selector and update the SEL constant below
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { chromium } from "playwright";
@@ -34,20 +29,15 @@ const CONFIG: ScraperConfig = {
   handles:  ["austin"],
 };
 
-// The public permit search page (no login required)
+// Open Data API — primary method
+const API_URL  = "https://data.austintexas.gov/resource/3syk-w9eu.json";
+
+// Portal fallback
 const PORTAL_URL = "https://abc.austintexas.gov/web/permit/public-search-other";
 
-// ── Selectors ─────────────────────────────────────────────────────────────────
-// Each selector is documented with what it targets in the portal DOM.
-// If the portal is redesigned, these are the only values that need updating.
-//
-// HOW TO VERIFY: Open PORTAL_URL in Chrome, open DevTools → Elements tab,
-// search for a known permit number, then inspect the matching element.
+// ── Selectors (Playwright fallback only) ──────────────────────────────────────
 
 const SEL = {
-  // The text input where the permit/record number is typed.
-  // ABC uses a "Record Number" field in the primary search form.
-  // Fallback chain: placeholder match → id match → any text input.
   permitInput: [
     'input[placeholder*="Record Number"]',
     'input[placeholder*="Permit"]',
@@ -58,8 +48,6 @@ const SEL = {
     'input[type="text"]:not([type="hidden"])',
   ].join(", "),
 
-  // The "Search" or "Submit" button on the search form.
-  // ABC uses a button with text "Search" or a submit input.
   searchButton: [
     'button[type="submit"]',
     'input[type="submit"]',
@@ -68,9 +56,6 @@ const SEL = {
     'button:has-text("Submit")',
   ].join(", "),
 
-  // The cell or span containing the current status in the results table.
-  // ABC typically renders status in a <td> with a data-label or a labeled span.
-  // These selectors are tried in order via page.locator().first()
   statusCell: [
     'td[data-label="Status"]',
     'td[data-label="Record Status"]',
@@ -81,8 +66,6 @@ const SEL = {
     'td:nth-child(4)',
   ].join(", "),
 
-  // The container for results — used to confirm results have loaded.
-  // ABC wraps results in a div or table with "result" in the class.
   resultsContainer: [
     '.search-results',
     'table[class*="result"]',
@@ -94,11 +77,9 @@ const SEL = {
 };
 
 // ── Status mapping ────────────────────────────────────────────────────────────
-// Maps Austin's exact portal status strings → our canonical PermitStatus.
-// Source: Austin Development Services status documentation.
 
 const AUSTIN_STATUS_MAP: Record<string, PermitStatus> = {
-  // Work completed, certificate of occupancy may be issued
+  // Work completed
   "FINAL":                     "CLEARED",
   "FINALED":                   "CLEARED",
   "CERTIFICATE OF OCCUPANCY":  "CLEARED",
@@ -106,32 +87,32 @@ const AUSTIN_STATUS_MAP: Record<string, PermitStatus> = {
   "COMPLETED":                 "CLEARED",
   "FINAL INSPECTION":          "CLEARED",
 
-  // Permit issued, work may proceed
-  "ISSUED":                    "CLEARED",   // Austin uses "Issued" to mean the permit is ready
+  // Permit issued — work may proceed
+  "ISSUED":                    "CLEARED",
   "ACTIVE":                    "APPROVED",
 
-  // Submitted and being reviewed
+  // Submitted and in review
   "INTAKE":                    "PENDING",
   "SUBMITTED":                 "PENDING",
   "APPLICATION RECEIVED":      "PENDING",
   "PENDING":                   "PENDING",
   "IN QUEUE":                  "PENDING",
 
-  // Flagged for additional city review
+  // Flagged / additional review
   "ON HOLD":                   "UNDER_REVIEW",
   "HOLD":                      "UNDER_REVIEW",
   "UNDER REVIEW":              "UNDER_REVIEW",
   "IN REVIEW":                 "UNDER_REVIEW",
   "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
 
-  // Permit denied or pulled
+  // Denied / pulled
   "WITHDRAWN":                 "REJECTED",
   "DENIED":                    "REJECTED",
   "REVOKED":                   "REJECTED",
   "CANCELLED":                 "REJECTED",
   "VOID":                      "REJECTED",
 
-  // Permit lapsed without final inspection
+  // Lapsed
   "EXPIRED":                   "EXPIRED",
 };
 
@@ -146,69 +127,147 @@ export class AustinTxScraper extends BaseScraper {
     permitNumber: string,
     _address: string
   ): Promise<ScrapeResult> {
+    // ── 1. Try Open Data API first ─────────────────────────────────────────
+    try {
+      const result = await this.scrapeViaApi(permitNumber);
+      if (result) return result;
+      // null means permit not found in API dataset — fall through to portal
+    } catch (apiErr) {
+      console.error(
+        JSON.stringify({
+          level: "warn",
+          scraper: "Austin, TX",
+          method: "api",
+          permit_number: permitNumber,
+          message: "Open Data API failed, falling back to portal",
+          error: apiErr instanceof Error ? apiErr.message : String(apiErr),
+          timestamp: new Date().toISOString(),
+        })
+      );
+    }
+
+    // ── 2. Fall back to Playwright portal scrape ───────────────────────────
+    return this.scrapeViaPortal(permitNumber);
+  }
+
+  // ── Open Data API ──────────────────────────────────────────────────────────
+  // Returns null if the permit isn't in the dataset (caller falls back to portal).
+  // Throws on network / parse errors (caller catches and falls back to portal).
+
+  private async scrapeViaApi(permitNumber: string): Promise<ScrapeResult | null> {
+    // Try multiple field names — Austin's dataset uses permit_num or permitnum
+    const fields = ["permit_num", "permitnum", "permit_number", "record_number"];
+    const queries = fields.map(
+      (f) => `${API_URL}?${f}=${encodeURIComponent(permitNumber)}&$limit=1`
+    );
+
+    for (const url of queries) {
+      const res = await fetch(url, {
+        headers: {
+          "Accept":     "application/json",
+          "User-Agent": "ClearedNo/1.0 (permit status monitor; support@clearedno.com)",
+        },
+        signal: AbortSignal.timeout(15_000),
+      });
+
+      if (!res.ok) continue;
+
+      const rows = await res.json() as Record<string, unknown>[];
+      if (!Array.isArray(rows) || rows.length === 0) continue;
+
+      const row = rows[0];
+
+      // Extract status from common field names
+      const rawText = (
+        (row.status_current as string) ||
+        (row.permit_type_desc as string) ||
+        (row.status as string) ||
+        (row.current_status as string) ||
+        ""
+      ).trim();
+
+      if (!rawText) {
+        // Row found but no status — still report permit exists as PENDING
+        return {
+          permit_number: permitNumber,
+          status:        "PENDING",
+          raw_text:      "found in dataset, no status field",
+          scrape_url:    url,
+        };
+      }
+
+      const status = this.mapStatus(rawText);
+
+      console.error(
+        JSON.stringify({
+          level: "info",
+          scraper: "Austin, TX",
+          method: "api",
+          permit_number: permitNumber,
+          raw_text: rawText,
+          status,
+          timestamp: new Date().toISOString(),
+        })
+      );
+
+      return {
+        permit_number: permitNumber,
+        status,
+        raw_text:   rawText,
+        scrape_url: url,
+      };
+    }
+
+    // Permit not found in any field variant
+    return null;
+  }
+
+  // ── Playwright portal fallback ─────────────────────────────────────────────
+
+  private async scrapeViaPortal(permitNumber: string): Promise<ScrapeResult> {
     const browser = await chromium.launch({
       headless: true,
-      // Required for Linux production environments (no display server)
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
     });
 
     try {
       const context = await browser.newContext({
-        // Appear as a normal desktop browser to avoid bot detection
         userAgent:
           "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        // Set viewport to desktop size
         viewport: { width: 1280, height: 800 },
       });
       const page = await context.newPage();
 
-      // ── Step 1: Load the search page ──────────────────────────────────────
-      // Use domcontentloaded — networkidle can hang on analytics/tracking scripts
-      let pageLoaded = false;
+      // Step 1: Load search page
       try {
         await page.goto(PORTAL_URL, {
           waitUntil: "domcontentloaded",
-          timeout: 30_000,
+          timeout:   60_000,
         });
-        pageLoaded = true;
       } catch (navErr) {
-        // Navigation failed — portal may be down or network blocked
         return this.pendingFallback(
           permitNumber,
           `Navigation failed: ${navErr instanceof Error ? navErr.message : String(navErr)}`
         );
       }
 
-      if (!pageLoaded) {
-        return this.pendingFallback(permitNumber, "Page did not load");
-      }
-
-      // Give the React SPA time to hydrate and render the form
+      // Give the React SPA time to hydrate
       await page.waitForTimeout(3000);
 
-      // ── Step 2: Fill in the permit number ─────────────────────────────────
-      // Try each selector variant in order; fall back if none found within 8s
-      let inputFound = false;
+      // Step 2: Fill permit number
       try {
         const inputEl = await page.waitForSelector(SEL.permitInput, { timeout: 8_000 });
         await inputEl.fill(permitNumber.trim());
-        inputFound = true;
       } catch {
-        // Permit input not found — portal may have changed its form structure
         return this.pendingFallback(
           permitNumber,
           "Permit number input field not found. Check SEL.permitInput selector."
         );
       }
 
-      if (!inputFound) {
-        return this.pendingFallback(permitNumber, "Permit number input could not be filled");
-      }
-
-      // Small delay so the SPA can react to the input (debounce, validation)
       await page.waitForTimeout(400);
 
-      // ── Step 3: Submit the search ─────────────────────────────────────────
+      // Step 3: Submit
       try {
         const searchBtn = await page.waitForSelector(SEL.searchButton, { timeout: 5_000 });
         await searchBtn.click();
@@ -219,36 +278,32 @@ export class AustinTxScraper extends BaseScraper {
         );
       }
 
-      // ── Step 4: Wait for results ──────────────────────────────────────────
-      // Wait for either the results container OR an error/no-results message
+      // Step 4: Wait for results
       try {
         await page.waitForSelector(
           `${SEL.resultsContainer}, [class*="no-result"], [class*="error"], [class*="not-found"], [class*="empty"]`,
-          { timeout: 15_000 }
+          { timeout: 20_000 }
         );
       } catch {
-        // Results never appeared — could be a bot block or portal change
         return this.pendingFallback(
           permitNumber,
-          "Results container did not appear after search. Portal may have changed."
+          "Results container did not appear after search."
         );
       }
 
-      // ── Step 5: Extract status ─────────────────────────────────────────────
-      // Attempt the primary selector first, fall back to text search
+      // Step 5: Extract status
       let rawText = "";
 
       try {
         rawText = await page.locator(SEL.statusCell).first().innerText({ timeout: 5_000 });
       } catch {
-        // Status cell selector failed — scan full page body as last resort
         try {
           const bodyText = await page.locator("body").innerText({ timeout: 5_000 });
           rawText = extractStatusFromBody(bodyText, permitNumber);
         } catch {
           return this.pendingFallback(
             permitNumber,
-            "Could not extract page text. Portal may be blocking automated access."
+            "Could not extract page text."
           );
         }
       }
@@ -256,7 +311,7 @@ export class AustinTxScraper extends BaseScraper {
       if (!rawText || rawText.trim() === "") {
         return this.pendingFallback(
           permitNumber,
-          "Status text not found on page. Permit may not exist or SEL.statusCell is wrong."
+          "Status text not found. Permit may not exist or selectors need updating."
         );
       }
 
@@ -271,15 +326,12 @@ export class AustinTxScraper extends BaseScraper {
       };
 
     } finally {
-      // Always close the browser — even on timeout or error
       await browser.close().catch(() => {});
     }
   }
 
   // ── Fallback result ────────────────────────────────────────────────────────
-  // Returns a PENDING result instead of throwing, so BaseScraper won't count
-  // this as a failure and trigger the health alarm. The permit stays in the
-  // queue and will be retried next run.
+
   private pendingFallback(permitNumber: string, reason: string): ScrapeResult {
     console.error(
       JSON.stringify({
@@ -300,39 +352,30 @@ export class AustinTxScraper extends BaseScraper {
     };
   }
 
-  // ── Austin-specific status mapping ────────────────────────────────────────
+  // ── Status mapping ─────────────────────────────────────────────────────────
+
   private mapStatus(rawText: string): PermitStatus {
     const key = rawText.toUpperCase().trim();
 
-    // Check exact matches first (most reliable)
     for (const [portalText, status] of Object.entries(AUSTIN_STATUS_MAP)) {
       if (key === portalText || key.includes(portalText)) {
         return status;
       }
     }
 
-    // Fall back to the generic normalizer in BaseScraper
     return this.normalizeStatus(rawText);
   }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/**
- * Last-resort status extraction: scans the full body text for known status
- * keywords when the specific selector fails. Not as precise but better than
- * throwing and wasting a retry.
- */
 function extractStatusFromBody(bodyText: string, permitNumber: string): string {
-  // Look for the permit number followed by status text within ~150 chars
   const escaped = permitNumber.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const re = new RegExp(`${escaped}[\\s\\S]{0,150}`, "i");
   const match = bodyText.match(re);
   if (match) return match[0];
 
-  // If permit number not found at all, the search returned no results
   if (!bodyText.toLowerCase().includes(permitNumber.toLowerCase())) {
-    // Don't throw — return empty so caller can decide (pendingFallback)
     return "";
   }
 

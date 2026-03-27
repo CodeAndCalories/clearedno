@@ -76,6 +76,14 @@ function EmptyState() {
         <p className="mt-4 text-[10px] text-[#F5F0E8]/20 tracking-widest uppercase">
           More cities added weekly
         </p>
+        <div className="mt-5">
+          <Link
+            href="/suggest-city"
+            className="text-[10px] tracking-widest text-[#FF6B00]/60 uppercase hover:text-[#FF6B00] transition-colors"
+          >
+            Don&apos;t see your city? Request it →
+          </Link>
+        </div>
       </div>
     </div>
   );

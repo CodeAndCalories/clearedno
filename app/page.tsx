@@ -559,11 +559,12 @@ export default function LandingPage() {
               CLEARED<span className="text-[#F5F0E8]/40">NO</span>
             </span>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2 text-[10px] tracking-widest text-[#F5F0E8]/30 uppercase">
-              <Link href="/login"    className="hover:text-[#FF6B00] transition-colors">Log In</Link>
-              <Link href="/signup"   className="hover:text-[#FF6B00] transition-colors">Sign Up</Link>
-              <Link href="/privacy"  className="hover:text-[#FF6B00] transition-colors">Privacy Policy</Link>
-              <Link href="/terms"    className="hover:text-[#FF6B00] transition-colors">Terms of Service</Link>
-              <Link href="/refunds"  className="hover:text-[#FF6B00] transition-colors">Refund Policy</Link>
+              <Link href="/login"         className="hover:text-[#FF6B00] transition-colors">Log In</Link>
+              <Link href="/signup"        className="hover:text-[#FF6B00] transition-colors">Sign Up</Link>
+              <Link href="/suggest-city"  className="hover:text-[#FF6B00] transition-colors">Request a City</Link>
+              <Link href="/privacy"       className="hover:text-[#FF6B00] transition-colors">Privacy Policy</Link>
+              <Link href="/terms"         className="hover:text-[#FF6B00] transition-colors">Terms of Service</Link>
+              <Link href="/refunds"       className="hover:text-[#FF6B00] transition-colors">Refund Policy</Link>
               <a
                 href="mailto:support@clearedno.com"
                 className="hover:text-[#FF6B00] transition-colors normal-case"

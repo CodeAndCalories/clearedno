@@ -159,6 +159,12 @@ export default function AddPermitPage() {
                 </select>
               </div>
             </div>
+            <p className="text-[10px] text-[#F5F0E8]/25 -mt-2">
+              Don&apos;t see your city?{" "}
+              <Link href="/suggest-city" className="text-[#FF6B00]/60 hover:text-[#FF6B00] transition-colors">
+                Request it →
+              </Link>
+            </p>
 
             {error && (
               <div className="border border-[#DC2626]/40 bg-[#DC2626]/10 px-4 py-3">
