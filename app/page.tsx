@@ -1,11 +1,43 @@
 // ClearedNo — Landing Page
 // Industrial utility aesthetic: black, safety orange, off-white.
 // Bebas Neue headings, DM Mono for data/body.
+import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 
+// ── Page-specific metadata (overrides layout defaults) ───────────────────────
+export const metadata: Metadata = {
+  title: "ClearedNo — Permit Monitoring for Contractors",
+  description:
+    "Stop manually checking city portals. Get instant alerts the moment your building permit clears. Built for contractors.",
+  alternates: {
+    canonical: "https://www.clearedno.com",
+  },
+  openGraph: {
+    title: "ClearedNo — Permit Monitoring for Contractors",
+    description:
+      "Stop manually checking city portals. Get instant alerts the moment your building permit clears. Built for contractors.",
+    url: "https://www.clearedno.com",
+    type: "website",
+    images: [
+      {
+        url: "/clearedno-icon.png",
+        width: 512,
+        height: 512,
+        alt: "ClearedNo — Permit Monitoring for Contractors",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary",
+    title: "ClearedNo — Permit Monitoring for Contractors",
+    description:
+      "Stop manually checking city portals. Get instant alerts the moment your building permit clears. Built for contractors.",
+    images: ["/clearedno-icon.png"],
+  },
+};
+
 // ── Shared CTA button ────────────────────────────────────────────────────────
-// Single source of truth for the primary CTA so every instance is identical.
 function PrimaryCTA({
   label = "START WATCHING MY PERMITS",
   href = "/signup",
@@ -18,7 +50,7 @@ function PrimaryCTA({
   return (
     <Link
       href={href}
-      className={`group bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors inline-flex items-center gap-3 ${className}`}
+      className={`group bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors inline-flex items-center gap-3 w-full sm:w-auto justify-center ${className}`}
     >
       {label}
       <span className="group-hover:translate-x-1 transition-transform">→</span>
@@ -37,7 +69,7 @@ function NavBar() {
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#FF6B00]/20 bg-[#0A0A0A]/95 backdrop-blur-sm">
       <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-4 min-w-0">
-          {/* Logo — whitespace-nowrap prevents "NO" wrapping to a new line */}
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
             <Image
               src="/clearedno-icon.png"
@@ -51,33 +83,33 @@ function NavBar() {
               CLEARED<span className="text-[#F5F0E8]">NO</span>
             </span>
           </Link>
-          {/* Nav tagline — only visible on wider screens, never competes with logo */}
+          {/* Nav tagline — hidden on mobile */}
           <span className="hidden lg:block text-[10px] tracking-[0.15em] text-[#F5F0E8]/30 uppercase border-l border-[#FF6B00]/20 pl-4 whitespace-nowrap">
             Built for Contractors. Not Bureaucrats.
           </span>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
           <a
             href="#how-it-works"
-            className="text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
+            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
           >
             How It Works
           </a>
           <a
             href="#pricing"
-            className="text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
+            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
           >
             Pricing
           </a>
           <Link
             href="/login"
-            className="text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
+            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
           >
             Log In
           </Link>
           <Link
             href="/signup"
-            className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors"
+            className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors whitespace-nowrap"
           >
             Start Free Trial
           </Link>
@@ -88,7 +120,6 @@ function NavBar() {
 }
 
 // ── Hero permit card (right side) ────────────────────────────────────────────
-// 3 rows max. CLEARED row is the hero row — orange, large, high contrast.
 function HeroPermitCard() {
   const permits = [
     { num: "2024-BC-03991", addr: "530 Industrial Blvd", status: "PENDING",  color: "#6B7280", hero: false },
@@ -98,7 +129,6 @@ function HeroPermitCard() {
 
   return (
     <div>
-      {/* Label */}
       <div className="flex items-center gap-3 mb-3">
         <div className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] animate-pulse" />
         <span className="text-[10px] tracking-[0.25em] text-[#FF6B00] uppercase font-mono font-medium">
@@ -106,9 +136,7 @@ function HeroPermitCard() {
         </span>
       </div>
 
-      {/* Card */}
       <div className="border border-[#FF6B00]/30 bg-[#0A0A0A] overflow-hidden">
-        {/* Column headers */}
         <div className="grid grid-cols-3 border-b border-[#FF6B00]/20 px-5 py-3 bg-[#FF6B00]/5">
           <span className="text-[10px] tracking-[0.2em] text-[#FF6B00]/60 uppercase">Permit #</span>
           <span className="text-[10px] tracking-[0.2em] text-[#FF6B00]/60 uppercase">Address</span>
@@ -139,7 +167,6 @@ function HeroPermitCard() {
           </div>
         ))}
 
-        {/* Footer */}
         <div className="px-5 py-3 flex items-center gap-2 bg-[#FF6B00]/5">
           <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] animate-pulse" />
           <span className="text-[10px] text-[#F5F0E8]/40 tracking-widest uppercase">
@@ -148,7 +175,6 @@ function HeroPermitCard() {
         </div>
       </div>
 
-      {/* Hook line below card */}
       <p className="mt-3 text-sm text-[#FF6B00] font-mono font-medium">
         → You could&apos;ve started work this morning.
       </p>
@@ -207,7 +233,7 @@ export default function LandingPage() {
 
             {/* ── Left col ── */}
             <div>
-              {/* Situation lines — sets the scene before the headline */}
+              {/* Situation lines */}
               <div className="border-l-2 border-[#FF6B00]/40 pl-4 mb-5 space-y-1">
                 <p className="text-sm text-[#F5F0E8]/50 font-mono leading-relaxed">
                   Your permit clears at 7:12 AM. Your crew is still waiting at noon.
@@ -217,8 +243,9 @@ export default function LandingPage() {
                 </p>
               </div>
 
-              {/* Main headline */}
-              <h1 className="font-heading text-[clamp(3.5rem,8vw,7rem)] leading-[0.9] tracking-wider text-[#F5F0E8] mb-6">
+              {/* Main headline — clamp keeps it readable on small screens */}
+              <h1 className="font-heading leading-[0.9] tracking-wider text-[#F5F0E8] mb-6"
+                  style={{ fontSize: "clamp(2rem, 8vw, 7rem)" }}>
                 YOUR PERMIT{" "}
                 <span className="text-[#FF6B00]">CLEARED.</span>
                 <br />
@@ -234,7 +261,7 @@ export default function LandingPage() {
                 and alerts you the moment anything changes — so work starts the same day.
               </p>
 
-              {/* CTAs */}
+              {/* CTAs — full width on mobile */}
               <div className="flex flex-col sm:flex-row gap-4">
                 <PrimaryCTA />
                 <a
@@ -245,13 +272,12 @@ export default function LandingPage() {
                 </a>
               </div>
 
-              {/* Below-CTA reassurance line */}
               <p className="mt-4 text-xs text-[#F5F0E8]/30 font-mono">
                 No setup. No integrations. Works with your city portal.
               </p>
 
               {/* Trust strip */}
-              <div className="mt-4 flex items-center gap-4 text-[10px] tracking-widest text-[#F5F0E8]/40 uppercase">
+              <div className="mt-4 flex items-center gap-4 text-[10px] tracking-widest text-[#F5F0E8]/40 uppercase flex-wrap">
                 <span>No credit card</span>
                 <span className="text-[#FF6B00]">·</span>
                 <span>14-day free trial</span>
@@ -259,12 +285,12 @@ export default function LandingPage() {
                 <span>Cancel anytime</span>
               </div>
               <div className="mt-2 text-[10px] tracking-widest text-[#FF6B00]/50 uppercase">
-                Monitoring Austin permits 24/7
+                Monitoring Austin & Dallas permits 24/7
               </div>
             </div>
 
-            {/* ── Right col: permit card ── */}
-            <div className="hidden lg:block">
+            {/* ── Right col: permit card — hidden on small screens ── */}
+            <div className="hidden sm:block">
               <HeroPermitCard />
             </div>
 
@@ -282,26 +308,29 @@ export default function LandingPage() {
               <div className="w-8 h-px bg-[#FF6B00]" />
               <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">The Problem</span>
             </div>
-            <h2 className="font-heading text-5xl tracking-widest text-[#F5F0E8]">
+            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8]">
               EVERY DAY YOU WAIT IS MONEY LOST.
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-0 border border-[#FF6B00]/20">
+          {/* Stack on mobile, 3-col on md+ */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-0 border border-[#FF6B00]/20">
             <PainPoint
               stat="$2,400"
               label="Average daily cost of crew sitting idle while a permit clears"
             />
-            <div className="border-l border-r border-[#FF6B00]/20">
+            <div className="border-t md:border-t-0 md:border-l md:border-r border-[#FF6B00]/20">
               <PainPoint
                 stat="3–5×"
                 label="Times per week contractors manually check city portals hoping for an update"
               />
             </div>
-            <PainPoint
-              stat="48hrs"
-              label="Typical delay between permit clearing and contractor finding out"
-            />
+            <div className="border-t md:border-t-0">
+              <PainPoint
+                stat="48hrs"
+                label="Typical delay between permit clearing and contractor finding out"
+              />
+            </div>
           </div>
 
           <div className="mt-6 border border-[#FF6B00]/20 bg-[#FF6B00]/5 p-6">
@@ -312,7 +341,6 @@ export default function LandingPage() {
             </p>
           </div>
 
-          {/* Bottom note */}
           <p className="mt-8 text-xs text-[#F5F0E8]/30 italic text-center">
             Most contractors don&apos;t realize how much time they&apos;re losing.
           </p>
@@ -329,7 +357,7 @@ export default function LandingPage() {
               <div className="w-8 h-px bg-[#FF6B00]" />
               <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">How It Works</span>
             </div>
-            <h2 className="font-heading text-5xl tracking-widest text-[#F5F0E8]">
+            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8]">
               THREE STEPS. ZERO CHECKING.
             </h2>
           </div>
@@ -356,7 +384,6 @@ export default function LandingPage() {
                 desc="The second it changes, you know."
               />
 
-              {/* Action line after steps */}
               <p className="text-sm text-[#FF6B00] font-mono font-medium pl-0">
                 → Start work immediately instead of waiting.
               </p>
@@ -368,13 +395,11 @@ export default function LandingPage() {
 
             {/* ── Email mockup ── */}
             <div>
-              {/* Label above mockup */}
               <div className="text-[10px] tracking-[0.25em] text-[#FF6B00] uppercase font-mono font-medium mb-3">
                 You get this the moment it changes
               </div>
 
               <div className="border border-[#FF6B00]/30 bg-[#0F0F0F]">
-                {/* Window chrome */}
                 <div className="border-b border-[#FF6B00]/20 px-4 py-3 flex items-center gap-2">
                   <span className="w-2.5 h-2.5 rounded-full bg-[#DC2626]" />
                   <span className="w-2.5 h-2.5 rounded-full bg-[#FF6B00]" />
@@ -389,12 +414,10 @@ export default function LandingPage() {
                     From: ClearedNo &lt;alerts@clearedno.com&gt;
                   </div>
 
-                  {/* Big status line */}
                   <div className="font-heading text-4xl text-[#FF6B00] tracking-widest">
                     ✅ PERMIT CLEARED
                   </div>
 
-                  {/* Permit detail block */}
                   <div className="border-l-2 border-[#FF6B00] pl-5 space-y-2">
                     <div className="text-sm text-[#F5F0E8]/80">
                       <span className="text-[#F5F0E8]/40">Permit:</span>{" "}
@@ -419,7 +442,6 @@ export default function LandingPage() {
                 </div>
               </div>
 
-              {/* Hook line below mockup */}
               <p className="mt-4 text-sm text-[#FF6B00] font-mono font-medium">
                 → Your permit has cleared. You can proceed.
               </p>
@@ -439,7 +461,7 @@ export default function LandingPage() {
               <div className="w-8 h-px bg-[#FF6B00]" />
               <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Pricing</span>
             </div>
-            <h2 className="font-heading text-5xl tracking-widest text-[#F5F0E8]">
+            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8]">
               ONE PLAN. NO NONSENSE.
             </h2>
           </div>
@@ -485,7 +507,7 @@ export default function LandingPage() {
             </div>
 
             {/* THE MATH */}
-            <div className="border border-[#FF6B00]/20 border-l-0 p-8 bg-[#FF6B00]/5">
+            <div className="border border-[#FF6B00]/20 border-t-0 lg:border-t lg:border-l-0 p-8 bg-[#FF6B00]/5">
               <div className="font-heading text-xl tracking-widest text-[#FF6B00] mb-6">
                 THE MATH
               </div>
@@ -511,7 +533,6 @@ export default function LandingPage() {
             </div>
           </div>
 
-          {/* Below-the-math note */}
           <p className="mt-6 text-xs text-[#F5F0E8]/30 text-center">
             This is one of those tools you don&apos;t think twice about.
           </p>
@@ -530,13 +551,18 @@ export default function LandingPage() {
           }}
         />
         <div className="relative max-w-3xl mx-auto text-center">
-          <h2 className="font-heading text-[clamp(3rem,7vw,6rem)] leading-[0.95] tracking-widest text-[#F5F0E8] mb-4">
+          <h2
+            className="font-heading leading-[0.95] tracking-widest text-[#F5F0E8] mb-4"
+            style={{ fontSize: "clamp(2rem, 7vw, 6rem)" }}
+          >
             YOUR CREW IS WAITING.
             <br />
             <span className="text-[#FF6B00]">THE PERMIT ALREADY CLEARED.</span>
           </h2>
-          {/* Interstitial line — Bebas Neue, white, smaller */}
-          <p className="font-heading text-[clamp(1.5rem,3vw,2.5rem)] tracking-widest text-[#F5F0E8] mb-6 leading-tight">
+          <p
+            className="font-heading tracking-widest text-[#F5F0E8] mb-6 leading-tight"
+            style={{ fontSize: "clamp(1.25rem, 3vw, 2.5rem)" }}
+          >
             You just don&apos;t know it yet.
           </p>
           <p className="text-sm text-[#F5F0E8]/50 mb-10 tracking-widest uppercase font-mono">
@@ -568,8 +594,13 @@ export default function LandingPage() {
               </a>
             </div>
           </div>
-          {/* Bottom row: copyright */}
-          <div className="border-t border-[#FF6B00]/10 pt-4">
+
+          {/* Cities notice */}
+          <div className="border-t border-[#FF6B00]/10 pt-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2">
+            <div className="text-[10px] text-[#FF6B00]/40 tracking-widest uppercase font-mono">
+              Currently monitoring: Austin, TX · Dallas, TX · Houston, TX
+              <span className="text-[#F5F0E8]/20 ml-3">· More cities added weekly based on demand</span>
+            </div>
             <span className="text-[10px] text-[#F5F0E8]/20 tracking-widest">
               © {new Date().getFullYear()} ClearedNo. All rights reserved.
             </span>

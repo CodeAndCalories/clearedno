@@ -129,7 +129,7 @@ export default function AddPermitPage() {
             </div>
 
             {/* City + State */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-[10px] tracking-[0.2em] text-[#FF6B00]/80 uppercase mb-2">
                   City <span className="text-[#DC2626]">*</span>

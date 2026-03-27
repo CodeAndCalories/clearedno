@@ -18,26 +18,37 @@ const dmMono = DM_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_URL ?? "https://www.clearedno.com"),
-  title: "ClearedNo — Permit Status Alerts for Contractors",
+  title: "ClearedNo — Permit Monitoring for Contractors",
   description:
-    "Stop manually checking city portals. ClearedNo monitors your building permits 24/7 and alerts you the second status changes.",
+    "Stop manually checking city portals. Get instant alerts the moment your building permit clears. Built for contractors.",
   icons: {
     icon: "/favicon.ico",
     apple: "/clearedno-icon.png",
   },
   openGraph: {
-    title: "ClearedNo — Know When Your Permit Clears",
+    title: "ClearedNo — Permit Monitoring for Contractors",
     description:
-      "Instant permit status alerts for contractors. $79/mo. Start free trial.",
+      "Stop manually checking city portals. Get instant alerts the moment your building permit clears. Built for contractors.",
     type: "website",
+    url: "https://www.clearedno.com",
     images: [
       {
         url: "/clearedno-icon.png",
         width: 512,
         height: 512,
-        alt: "ClearedNo — Permit Status Alerts",
+        alt: "ClearedNo — Permit Monitoring for Contractors",
       },
     ],
+  },
+  twitter: {
+    card: "summary",
+    title: "ClearedNo — Permit Monitoring for Contractors",
+    description:
+      "Stop manually checking city portals. Get instant alerts the moment your building permit clears. Built for contractors.",
+    images: ["/clearedno-icon.png"],
+  },
+  alternates: {
+    canonical: "https://www.clearedno.com",
   },
 };
 
