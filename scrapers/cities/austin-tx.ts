@@ -8,6 +8,9 @@
 //
 // Open Data dataset: "Austin Building Permits"
 // Endpoint: https://data.austintexas.gov/resource/3syk-w9eu.json
+// Search field:  permit_number
+// Status field:  status_current
+// Example permit format: "2026-033822 PP"
 //
 // ── HOW TO UPDATE SELECTORS (Playwright fallback) ─────────────────────────────
 // If the portal fallback needs updating:
@@ -79,41 +82,52 @@ const SEL = {
 // ── Status mapping ────────────────────────────────────────────────────────────
 
 const AUSTIN_STATUS_MAP: Record<string, PermitStatus> = {
-  // Work completed
+  // ── Confirmed from live API (status_current field values) ─────────────────
+
+  // Permit issued and active — work may proceed
+  "ACTIVE":                    "APPROVED",
+
+  // Work finished / CO issued
+  "CLOSED":                    "CLEARED",
+
+  // Under inspection — awaiting sign-off
+  "INSPECTION":                "UNDER_REVIEW",
+
+  // Application received, not yet reviewed
+  "APPLICATION":               "PENDING",
+  "INTAKE":                    "PENDING",
+
+  // Permit lapsed without final inspection
+  "EXPIRED":                   "EXPIRED",
+
+  // Denied / pulled / voided
+  "CANCELLED":                 "REJECTED",
+  "VOID":                      "REJECTED",
+
+  // ── Additional portal values (Playwright fallback) ─────────────────────────
+
   "FINAL":                     "CLEARED",
   "FINALED":                   "CLEARED",
   "CERTIFICATE OF OCCUPANCY":  "CLEARED",
   "CO ISSUED":                 "CLEARED",
   "COMPLETED":                 "CLEARED",
   "FINAL INSPECTION":          "CLEARED",
-
-  // Permit issued — work may proceed
   "ISSUED":                    "CLEARED",
-  "ACTIVE":                    "APPROVED",
 
-  // Submitted and in review
-  "INTAKE":                    "PENDING",
   "SUBMITTED":                 "PENDING",
   "APPLICATION RECEIVED":      "PENDING",
   "PENDING":                   "PENDING",
   "IN QUEUE":                  "PENDING",
 
-  // Flagged / additional review
   "ON HOLD":                   "UNDER_REVIEW",
   "HOLD":                      "UNDER_REVIEW",
   "UNDER REVIEW":              "UNDER_REVIEW",
   "IN REVIEW":                 "UNDER_REVIEW",
   "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
 
-  // Denied / pulled
   "WITHDRAWN":                 "REJECTED",
   "DENIED":                    "REJECTED",
   "REVOKED":                   "REJECTED",
-  "CANCELLED":                 "REJECTED",
-  "VOID":                      "REJECTED",
-
-  // Lapsed
-  "EXPIRED":                   "EXPIRED",
 };
 
 // ── Scraper class ─────────────────────────────────────────────────────────────
@@ -153,73 +167,71 @@ export class AustinTxScraper extends BaseScraper {
   // ── Open Data API ──────────────────────────────────────────────────────────
   // Returns null if the permit isn't in the dataset (caller falls back to portal).
   // Throws on network / parse errors (caller catches and falls back to portal).
+  //
+  // Confirmed field names from live API (dataset 3syk-w9eu):
+  //   permit_number  — search key
+  //   status_current — current permit status string
+  //   permit_type_desc — human-readable permit type
+  //   issue_date     — date permit was issued (ISO string or null)
 
   private async scrapeViaApi(permitNumber: string): Promise<ScrapeResult | null> {
-    // Try multiple field names — Austin's dataset uses permit_num or permitnum
-    const fields = ["permit_num", "permitnum", "permit_number", "record_number"];
-    const queries = fields.map(
-      (f) => `${API_URL}?${f}=${encodeURIComponent(permitNumber)}&$limit=1`
-    );
+    const url = `${API_URL}?permit_number=${encodeURIComponent(permitNumber)}&$limit=1`;
 
-    for (const url of queries) {
-      const res = await fetch(url, {
-        headers: {
-          "Accept":     "application/json",
-          "User-Agent": "ClearedNo/1.0 (permit status monitor; support@clearedno.com)",
-        },
-        signal: AbortSignal.timeout(15_000),
-      });
+    const res = await fetch(url, {
+      headers: {
+        "Accept":     "application/json",
+        "User-Agent": "ClearedNo/1.0 (permit status monitor; support@clearedno.com)",
+      },
+      signal: AbortSignal.timeout(15_000),
+    });
 
-      if (!res.ok) continue;
+    if (!res.ok) {
+      throw new Error(`API returned HTTP ${res.status}`);
+    }
 
-      const rows = await res.json() as Record<string, unknown>[];
-      if (!Array.isArray(rows) || rows.length === 0) continue;
+    const rows = await res.json() as Record<string, unknown>[];
+    if (!Array.isArray(rows) || rows.length === 0) {
+      // Permit not in dataset — fall back to portal
+      return null;
+    }
 
-      const row = rows[0];
+    const row        = rows[0];
+    const rawText    = ((row.status_current  as string) ?? "").trim();
+    const typeDesc   = ((row.permit_type_desc as string) ?? "").trim();
+    const issueDate  = ((row.issue_date       as string) ?? "").trim();
 
-      // Extract status from common field names
-      const rawText = (
-        (row.status_current as string) ||
-        (row.permit_type_desc as string) ||
-        (row.status as string) ||
-        (row.current_status as string) ||
-        ""
-      ).trim();
-
-      if (!rawText) {
-        // Row found but no status — still report permit exists as PENDING
-        return {
-          permit_number: permitNumber,
-          status:        "PENDING",
-          raw_text:      "found in dataset, no status field",
-          scrape_url:    url,
-        };
-      }
-
-      const status = this.mapStatus(rawText);
-
-      console.error(
-        JSON.stringify({
-          level: "info",
-          scraper: "Austin, TX",
-          method: "api",
-          permit_number: permitNumber,
-          raw_text: rawText,
-          status,
-          timestamp: new Date().toISOString(),
-        })
-      );
-
+    if (!rawText) {
+      // Row found but status field empty — report as PENDING
       return {
         permit_number: permitNumber,
-        status,
-        raw_text:   rawText,
-        scrape_url: url,
+        status:        "PENDING",
+        raw_text:      "found in dataset, status_current empty",
+        scrape_url:    url,
       };
     }
 
-    // Permit not found in any field variant
-    return null;
+    const status = this.mapStatus(rawText);
+
+    console.error(
+      JSON.stringify({
+        level:         "info",
+        scraper:       "Austin, TX",
+        method:        "api",
+        permit_number: permitNumber,
+        status_current: rawText,
+        permit_type:   typeDesc,
+        issue_date:    issueDate || null,
+        status,
+        timestamp:     new Date().toISOString(),
+      })
+    );
+
+    return {
+      permit_number: permitNumber,
+      status,
+      raw_text:   rawText,
+      scrape_url: url,
+    };
   }
 
   // ── Playwright portal fallback ─────────────────────────────────────────────
