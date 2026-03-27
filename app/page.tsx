@@ -473,10 +473,13 @@ export default function LandingPage() {
                 </div>
                 <div className="flex items-baseline gap-1 mb-1">
                   <span className="font-heading text-7xl text-[#FF6B00]">$49</span>
-                  <span className="text-[#F5F0E8]/40 text-sm">/mo</span>
+                  <span className="text-[#F5F0E8]/40 text-sm">first mo</span>
                 </div>
-                <p className="text-[10px] text-[#FF6B00]/60 tracking-widest uppercase mb-6">
-                  Locked in forever
+                <p className="text-[10px] text-[#FF6B00]/70 tracking-widest uppercase mb-1">
+                  Then $79/mo — locked forever
+                </p>
+                <p className="text-[10px] text-[#F5F0E8]/30 mb-6">
+                  New customers after founding period pay $149/mo
                 </p>
 
                 <ul className="space-y-3 mb-8">
@@ -556,7 +559,7 @@ export default function LandingPage() {
                   <div className="text-[#F5F0E8]/40 text-xs uppercase tracking-widest mb-1">
                     Founding member / mo
                   </div>
-                  <div className="font-heading text-3xl text-[#FF6B00]">$49</div>
+                  <div className="font-heading text-3xl text-[#FF6B00]">$79</div>
                 </div>
                 <div className="w-full h-px bg-[#FF6B00]/20" />
                 <p className="text-xs text-[#F5F0E8]/60 leading-relaxed">

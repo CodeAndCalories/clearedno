@@ -2,14 +2,12 @@
 // Creates a Stripe Checkout session and redirects the user to it.
 //
 // Query params:
-//   ?plan=founding  → uses STRIPE_FOUNDING_PRICE_ID ($49/mo locked forever)
-//   (default)       → uses STRIPE_PRICE_ID ($79/mo standard)
+//   ?plan=founding  → applies FOUNDING49 coupon (first month $49, then $79/mo)
+//   (default)       → standard $79/mo, no discount
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { stripe, PRICE_ID } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-
-const FOUNDING_PRICE_ID = process.env.STRIPE_FOUNDING_PRICE_ID ?? "";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -22,11 +20,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Resolve price: founding member vs standard
-  const plan    = req.nextUrl.searchParams.get("plan");
-  const priceId = plan === "founding" && FOUNDING_PRICE_ID
-    ? FOUNDING_PRICE_ID
-    : PRICE_ID;
+  const plan = req.nextUrl.searchParams.get("plan");
 
   // Fetch or create a Stripe customer for this user
   const { data: profile } = await supabaseAdmin
@@ -57,7 +51,8 @@ export async function POST(req: NextRequest) {
     customer: customerId,
     mode: "subscription",
     payment_method_types: ["card"],
-    line_items: [{ price: priceId, quantity: 1 }],
+    line_items: [{ price: PRICE_ID, quantity: 1 }],
+    ...(plan === "founding" ? { discounts: [{ coupon: "FOUNDING49" }] } : {}),
     success_url: `${baseUrl}/dashboard?checkout=success`,
     cancel_url:  `${baseUrl}/dashboard`,
     subscription_data: {
