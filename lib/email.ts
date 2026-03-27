@@ -8,7 +8,12 @@
 import { Resend } from "resend";
 import type { Permit, PermitStatus } from "../types";
 
-const resend = new Resend(process.env.RESEND_API_KEY!);
+// Lazy initialization — prevents build failure when RESEND_API_KEY is not set.
+let _resend: Resend | null = null;
+function getResend(): Resend {
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY ?? "");
+  return _resend;
+}
 
 const FROM = `${process.env.FROM_NAME || "ClearedNo"} <${process.env.FROM_EMAIL || "alerts@clearedno.com"}>`;
 
@@ -81,7 +86,7 @@ export async function sendPermitStatusAlert({
 </body>
 </html>`;
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to,
     subject: buildSubject(permit),
@@ -107,7 +112,7 @@ export async function sendAdminAlert({
     return null;
   }
 
-  return resend.emails.send({
+  return getResend().emails.send({
     from: FROM,
     to:   adminEmail,
     subject: `[ClearedNo] ${subject}`,

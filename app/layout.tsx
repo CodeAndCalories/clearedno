@@ -18,26 +18,42 @@ const dmMono = DM_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_URL ?? "https://www.clearedno.com"),
-  title: "ClearedNo — Permit Status Alerts for Contractors",
+  title: "ClearedNo — Permit Status Monitoring for Contractors",
   description:
-    "Stop manually checking city portals. ClearedNo monitors your building permits 24/7 and alerts you the second status changes.",
+    "Stop manually checking city portals. ClearedNo monitors your building permits 24/7 and alerts you the moment your permit clears.",
+  keywords: [
+    "building permit tracking",
+    "contractor permit alerts",
+    "permit status monitoring",
+    "Austin TX permits",
+    "building permit notification",
+    "permit cleared alert",
+  ],
   icons: {
     icon: "/favicon.ico",
     apple: "/clearedno-icon.png",
   },
   openGraph: {
-    title: "ClearedNo — Know When Your Permit Clears",
+    title: "ClearedNo — Permit Status Monitoring for Contractors",
     description:
-      "Instant permit status alerts for contractors. $79/mo. Start free trial.",
+      "Stop manually checking city portals. ClearedNo monitors your building permits 24/7 and alerts you the moment your permit clears.",
     type: "website",
+    siteName: "ClearedNo",
     images: [
       {
         url: "/clearedno-icon.png",
         width: 512,
         height: 512,
-        alt: "ClearedNo — Permit Status Alerts",
+        alt: "ClearedNo — Permit Status Monitoring",
       },
     ],
+  },
+  twitter: {
+    card: "summary",
+    title: "ClearedNo — Permit Status Monitoring for Contractors",
+    description:
+      "Stop manually checking city portals. ClearedNo monitors your building permits 24/7 and alerts you the moment your permit clears.",
+    images: ["/clearedno-icon.png"],
   },
 };
 

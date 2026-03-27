@@ -28,12 +28,13 @@ import type { Permit, PermitStatus, StatusHistoryEntry } from "../types";
 // Add new city scrapers here. Order doesn't matter.
 import { AustinTxScraper }  from "./cities/austin-tx";
 import { DallasTxScraper }  from "./cities/dallas-tx";
+import { HoustonTxScraper } from "./cities/houston-tx";
 import type { BaseScraper } from "./base-scraper";
 
 const SCRAPERS: BaseScraper[] = [
   new AustinTxScraper(),
   new DallasTxScraper(),
-  // new HoustonTxScraper(),
+  new HoustonTxScraper(),
   // new PhoenixAzScraper(),
 ];
 

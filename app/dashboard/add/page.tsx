@@ -74,7 +74,7 @@ export default function AddPermitPage() {
         <span className="ml-4 text-xs text-[#FF6B00] tracking-widest uppercase">Add Permit</span>
       </header>
 
-      <main className="max-w-2xl mx-auto px-6 py-16">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-10 sm:py-16">
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-8 h-px bg-[#FF6B00]" />
@@ -166,17 +166,17 @@ export default function AddPermitPage() {
               </div>
             )}
 
-            <div className="flex gap-4 pt-2">
+            <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Adding Permit..." : "Start Monitoring →"}
               </button>
               <Link
                 href="/dashboard"
-                className="border border-[#FF6B00]/30 text-[#F5F0E8]/60 font-mono text-sm tracking-widest uppercase px-6 py-4 hover:border-[#FF6B00] hover:text-[#F5F0E8] transition-colors"
+                className="text-center sm:text-left border border-[#FF6B00]/30 text-[#F5F0E8]/60 font-mono text-sm tracking-widest uppercase px-6 py-4 hover:border-[#FF6B00] hover:text-[#F5F0E8] transition-colors"
               >
                 Cancel
               </Link>

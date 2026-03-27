@@ -35,7 +35,7 @@ function Divider() {
 function NavBar() {
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#FF6B00]/20 bg-[#0A0A0A]/95 backdrop-blur-sm">
-      <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         <div className="flex items-center gap-4 min-w-0">
           {/* Logo — whitespace-nowrap prevents "NO" wrapping to a new line */}
           <Link href="/" className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
@@ -51,33 +51,34 @@ function NavBar() {
               CLEARED<span className="text-[#F5F0E8]">NO</span>
             </span>
           </Link>
-          {/* Nav tagline — only visible on wider screens, never competes with logo */}
+          {/* Nav tagline — only visible on wider screens */}
           <span className="hidden lg:block text-[10px] tracking-[0.15em] text-[#F5F0E8]/30 uppercase border-l border-[#FF6B00]/20 pl-4 whitespace-nowrap">
             Built for Contractors. Not Bureaucrats.
           </span>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-3 sm:gap-6">
+          {/* Hide text links on mobile — show only the CTA */}
           <a
             href="#how-it-works"
-            className="text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
+            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
           >
             How It Works
           </a>
           <a
             href="#pricing"
-            className="text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
+            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
           >
             Pricing
           </a>
           <Link
             href="/login"
-            className="text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
+            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
           >
             Log In
           </Link>
           <Link
             href="/signup"
-            className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors"
+            className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors whitespace-nowrap"
           >
             Start Free Trial
           </Link>
@@ -236,7 +237,7 @@ export default function LandingPage() {
 
               {/* CTAs */}
               <div className="flex flex-col sm:flex-row gap-4">
-                <PrimaryCTA />
+                <PrimaryCTA className="justify-center sm:justify-start" />
                 <a
                   href="#how-it-works"
                   className="border border-[#FF6B00]/40 text-[#F5F0E8]/70 font-mono text-sm tracking-widest uppercase px-8 py-4 hover:border-[#FF6B00] hover:text-[#F5F0E8] transition-colors text-center"
@@ -292,7 +293,7 @@ export default function LandingPage() {
               stat="$2,400"
               label="Average daily cost of crew sitting idle while a permit clears"
             />
-            <div className="border-l border-r border-[#FF6B00]/20">
+            <div className="border-t border-b md:border-t-0 md:border-b-0 md:border-l md:border-r border-[#FF6B00]/20">
               <PainPoint
                 stat="3–5×"
                 label="Times per week contractors manually check city portals hoping for an update"
@@ -485,7 +486,7 @@ export default function LandingPage() {
             </div>
 
             {/* THE MATH */}
-            <div className="border border-[#FF6B00]/20 border-l-0 p-8 bg-[#FF6B00]/5">
+            <div className="border border-[#FF6B00]/20 border-t-0 lg:border-t lg:border-l-0 p-8 bg-[#FF6B00]/5">
               <div className="font-heading text-xl tracking-widest text-[#FF6B00] mb-6">
                 THE MATH
               </div>
@@ -550,7 +551,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ────────────────────────────────────────────────────────── */}
-      <footer className="border-t border-[#FF6B00]/20 px-6 py-10">
+      <footer className="border-t border-[#FF6B00]/20 px-4 sm:px-6 py-10">
         <div className="max-w-6xl mx-auto">
           {/* Top row: logo + nav links */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mb-6">
@@ -563,11 +564,28 @@ export default function LandingPage() {
               <Link href="/privacy"  className="hover:text-[#FF6B00] transition-colors">Privacy Policy</Link>
               <Link href="/terms"    className="hover:text-[#FF6B00] transition-colors">Terms of Service</Link>
               <Link href="/refunds"  className="hover:text-[#FF6B00] transition-colors">Refund Policy</Link>
-              <a href="mailto:support@clearedno.com" className="hover:text-[#FF6B00] transition-colors">
+              <a
+                href="mailto:support@clearedno.com"
+                className="hover:text-[#FF6B00] transition-colors normal-case"
+              >
                 support@clearedno.com
               </a>
             </div>
           </div>
+
+          {/* City coverage + "more cities" note */}
+          <div className="border-t border-[#FF6B00]/10 pt-5 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] flex-shrink-0" />
+              <span className="text-[10px] text-[#F5F0E8]/40 tracking-widest uppercase">
+                Currently monitoring Austin, TX and Dallas, TX permits
+              </span>
+            </div>
+            <span className="text-[10px] text-[#FF6B00]/50 tracking-widest uppercase">
+              More cities added weekly
+            </span>
+          </div>
+
           {/* Bottom row: copyright */}
           <div className="border-t border-[#FF6B00]/10 pt-4">
             <span className="text-[10px] text-[#F5F0E8]/20 tracking-widest">
