@@ -11,8 +11,10 @@ node_modules/
 .env.local
 .env*.local
 
-# Outreach — contains real lead data and sent logs
+# Outreach — never commit credentials or auth tokens
 outreach/sent-log.json
+outreach/credentials.json
+outreach/token.json
 
 # Misc
 .DS_Store

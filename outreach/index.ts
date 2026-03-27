@@ -11,7 +11,7 @@
 //   1. If DB has < MIN_LEADS new/uncontacted leads → run lead finder to top up
 //   2. Pull up to DAILY_LIMIT uncontacted leads from DB
 //   3. Generate personalized emails with Claude
-//   4. Send via Resend (Supabase-tracked, deduped)
+//   4. Send via Gmail API (Supabase-tracked, deduped, 30/day hard limit)
 
 import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });

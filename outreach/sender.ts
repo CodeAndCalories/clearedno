@@ -1,30 +1,29 @@
-// Outreach sender — sends cold emails via Resend.
+// outreach/sender.ts
 //
-// Tracking is Supabase-backed (outreach_leads table), NOT file-based.
-// This means:
+// Sends cold emails via Gmail API (OAuth2).
+//
+// Tracking is Supabase-backed (outreach_leads table), NOT file-based:
 //   - "already sent" check: outreach_leads.last_contacted_at IS NOT NULL
-//   - Daily quota check: count rows with last_contacted_at >= today
-//   - After sending: update outreach_leads.status = 'contacted', last_contacted_at = now()
+//   - Daily quota check:    count rows with last_contacted_at >= today's midnight
+//   - After sending:        update status = 'contacted', last_contacted_at = now()
 
-import { Resend } from "resend";
 import { supabaseAdmin } from "../lib/supabase/admin";
+import { sendViaGmail }  from "./gmail-sender";
 import type { EmailDraft } from "./email-writer";
-
-const resend = new Resend(process.env.RESEND_API_KEY!);
 
 // Hard cap: never send more than this many emails per day
 const DAILY_LIMIT = 30;
 
 export interface SendResult {
-  sent: number;
+  sent:    number;
   skipped: number;
-  errors: number;
+  errors:  number;
 }
 
 export interface SendItem {
-  draft: EmailDraft;
+  draft:          EmailDraft;
   recipientEmail: string;
-  leadId: string;         // Supabase outreach_leads.id
+  leadId:         string;   // Supabase outreach_leads.id
 }
 
 // ── Daily quota ───────────────────────────────────────────────────────────────
@@ -44,14 +43,13 @@ async function countTodaysSent(): Promise<number> {
 // ── Main send function ────────────────────────────────────────────────────────
 
 /**
- * Sends emails for a batch of leads. Respects DAILY_LIMIT and deduplicates
- * against outreach_leads.last_contacted_at (never resends to same lead).
- *
+ * Sends emails for a batch of leads.
+ * Respects DAILY_LIMIT and deduplicates against last_contacted_at.
  * Pass dryRun=true to skip actual sending and DB writes.
  */
 export async function sendBatch(
-  items: SendItem[],
-  dryRun = false
+  items:  SendItem[],
+  dryRun  = false
 ): Promise<SendResult> {
   const todaySent = await countTodaysSent();
   let remaining   = DAILY_LIMIT - todaySent;
@@ -65,8 +63,7 @@ export async function sendBatch(
       break;
     }
 
-    // Check if already contacted (the lead-finder inserts new rows with status='new',
-    // but an existing lead that was already mailed will have last_contacted_at set)
+    // Never send twice to the same lead
     const { data: lead } = await supabaseAdmin
       .from("outreach_leads")
       .select("last_contacted_at")
@@ -74,7 +71,7 @@ export async function sendBatch(
       .single();
 
     if (lead?.last_contacted_at) {
-      console.log(`[Sender] Already contacted ${recipientEmail}, skipping.`);
+      console.log(`[Sender] Already contacted ${recipientEmail} — skipping.`);
       result.skipped++;
       continue;
     }
@@ -86,29 +83,25 @@ export async function sendBatch(
       continue;
     }
 
-    try {
-      await resend.emails.send({
-        from:    `${process.env.FROM_NAME || "Alex at ClearedNo"} <${process.env.FROM_EMAIL || "alex@clearedno.com"}>`,
-        to:      recipientEmail,
-        subject: draft.subject,
-        text:    draft.body,
-      });
+    const ok = await sendViaGmail({
+      to:      recipientEmail,
+      subject: draft.subject,
+      text:    draft.body,
+    });
 
-      // Mark as contacted in Supabase
+    if (ok) {
       await supabaseAdmin
         .from("outreach_leads")
         .update({ status: "contacted", last_contacted_at: new Date().toISOString() })
         .eq("id", leadId);
 
-      console.log(`[Sender] Sent to ${recipientEmail}: "${draft.subject}"`);
+      console.log(`[Sender] ✓ Sent to ${recipientEmail}: "${draft.subject}"`);
       result.sent++;
       remaining--;
 
-      // Throttle: Resend free tier is 2 emails/second
-      await new Promise((r) => setTimeout(r, 600));
-
-    } catch (err) {
-      console.error(`[Sender] Failed to send to ${recipientEmail}:`, err);
+      // Gentle throttle — avoid Gmail rate limits (250 emails/day free, 1/sec safe)
+      await new Promise((r) => setTimeout(r, 1_200));
+    } else {
       result.errors++;
     }
   }
