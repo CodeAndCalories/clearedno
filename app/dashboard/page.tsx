@@ -112,8 +112,8 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Fetch profile, permits, and referral count in parallel
-  const [profileResult, permitsResult, referralCountResult] = await Promise.all([
+  // Fetch profile and permits in parallel
+  const [profileResult, permitsResult] = await Promise.all([
     supabase.from("profiles").select("*").eq("user_id", user.id).single(),
     supabase
       .from("permits")
@@ -121,15 +121,10 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .eq("is_active", true)
       .order("created_at", { ascending: false }),
-    supabase
-      .from("referrals")
-      .select("id", { count: "exact", head: true })
-      .eq("referrer_user_id", user.id),
   ]);
 
   const profile = profileResult.data as Profile | null;
   const permits = (permitsResult.data ?? []) as Permit[];
-  const referralCount = referralCountResult.count ?? 0;
 
   const isPaid     = profile?.subscription_status === "active";
   const isTrialing = profile?.subscription_status === "trialing";
