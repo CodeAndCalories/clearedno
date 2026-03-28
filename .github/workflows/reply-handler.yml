@@ -1,0 +1,88 @@
+name: Reply Handler
+
+# Polls clearedno@gmail.com every hour for contractor replies.
+# Classifies each reply with Claude and auto-responds.
+# No human needed.
+#
+# Required GitHub Secrets (Settings → Secrets and variables → Actions):
+#
+#   NEXT_PUBLIC_SUPABASE_URL       — Supabase Dashboard → Settings → API → Project URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY  — Supabase Dashboard → Settings → API → anon public key
+#   SUPABASE_SERVICE_ROLE_KEY      — Supabase Dashboard → Settings → API → service_role key
+#   RESEND_API_KEY                 — resend.com → API Keys (for admin alert emails)
+#   FROM_EMAIL                     — your Gmail address (e.g. clearedno@gmail.com)
+#   FROM_NAME                      — sender display name (e.g. "Alex at ClearedNo")
+#   ADMIN_EMAIL                    — your ops inbox for INTERESTED / QUESTION alerts
+#   NEXT_PUBLIC_URL                — https://www.clearedno.com
+#   ANTHROPIC_API_KEY              — console.anthropic.com → API Keys
+#   GMAIL_APP_PASSWORD             — myaccount.google.com/apppasswords
+#                                    Required for both reading (IMAP) and sending (SMTP)
+#                                    Must have IMAP enabled in Gmail settings:
+#                                    Settings → See all settings → Forwarding and POP/IMAP
+
+on:
+  # Every hour, 24/7
+  schedule:
+    - cron: '0 * * * *'
+
+  # Manual trigger with dry-run option
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (read + classify, skip replies and DB writes)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  check-replies:
+    name: Check Gmail for contractor replies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL:      ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY:     ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY:                ${{ secrets.RESEND_API_KEY }}
+      FROM_EMAIL:                    ${{ secrets.FROM_EMAIL }}
+      FROM_NAME:                     ${{ secrets.FROM_NAME }}
+      ADMIN_EMAIL:                   ${{ secrets.ADMIN_EMAIL }}
+      NEXT_PUBLIC_URL:               ${{ secrets.NEXT_PUBLIC_URL }}
+      ANTHROPIC_API_KEY:             ${{ secrets.ANTHROPIC_API_KEY }}
+      GMAIL_APP_PASSWORD:            ${{ secrets.GMAIL_APP_PASSWORD }}
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          clean: true
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build outreach agent
+        run: npm run build:scraper
+
+      - name: Check Gmail for replies
+        run: node dist/scraper/outreach/check-replies.js
+
+      - name: Log failure notice
+        if: failure()
+        run: |
+          echo "::error::Reply handler failed. Check logs above."
+          echo "Common causes:"
+          echo "  - IMAP not enabled in Gmail (Settings → See all settings → Forwarding and POP/IMAP)"
+          echo "  - GMAIL_APP_PASSWORD incorrect or expired"
+          echo "  - App Password requires 2-Step Verification to be enabled on the account"
