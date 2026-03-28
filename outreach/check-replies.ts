@@ -21,6 +21,8 @@ import * as dotenv from "dotenv";
 dotenv.config({ path: ".env.local" });
 
 import { ImapFlow } from "imapflow";
+import { supabaseAdmin } from "../lib/supabase/admin";
+import { sendAdminAlert } from "../lib/email";
 import { handleInboundWebhook } from "./reply-handler";
 
 const DRY_RUN = process.env.DRY_RUN === "true" || false;
@@ -124,6 +126,35 @@ async function main() {
 
       if (DRY_RUN) {
         console.log(`[CheckReplies] DRY_RUN — would classify and auto-reply, would mark read`);
+        processed++;
+        continue;
+      }
+
+      // Check if this lead has already received an auto-reply.
+      // If so, send admin alert and skip — no more auto-replies to this person.
+      const { data: lead } = await supabaseAdmin
+        .from("outreach_leads")
+        .select("id, business_name, city, state, auto_replied")
+        .ilike("email", fromAddr)
+        .maybeSingle();
+
+      if (lead?.auto_replied) {
+        console.log(`[CheckReplies] ${fromAddr} already auto-replied — forwarding to admin`);
+        await sendAdminAlert({
+          subject: `Follow-up from ${fromAddr} — handle manually`,
+          message: [
+            `This lead already received an auto-reply.`,
+            ``,
+            `From:    ${fromAddr}`,
+            `Lead:    ${lead.business_name} (${lead.city}, ${lead.state})`,
+            `Subject: ${subject}`,
+            ``,
+            `Their message:`,
+            body.slice(0, 600),
+          ].join("\n"),
+        }).catch(() => {});
+        // Still mark read so it doesn't reappear next hour
+        await client.messageFlagsAdd({ uid: message.uid }, ["\\Seen"], { uid: true });
         processed++;
         continue;
       }

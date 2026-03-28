@@ -2,10 +2,14 @@
 //
 // Wire to an inbound email webhook at: app/api/outreach/reply/route.ts
 //
-// INTERESTED    → send reply with signup link + FOUNDING49 promo → update lead status
-// QUESTION      → Claude drafts a specific answer → auto-send → update lead status
-// NOT_INTERESTED → send polite one-liner → mark do_not_contact in DB
-// OUT_OF_OFFICE  → no reply → set follow_up_after = now + 7 days in DB
+// First reply from a lead:
+//   INTERESTED    → auto-reply with signup link + FOUNDING49 → mark auto_replied = true
+//   QUESTION      → Claude answers question → auto-send → mark auto_replied = true
+//   NOT_INTERESTED → polite one-liner → mark do_not_contact
+//   OUT_OF_OFFICE  → no reply → set follow_up_after = now + 7 days
+//
+// Subsequent replies (auto_replied = true):
+//   → Admin alert only — no further auto-replies. Human takes over.
 
 import Anthropic from "@anthropic-ai/sdk";
 import { supabaseAdmin } from "../lib/supabase/admin";
@@ -123,15 +127,21 @@ Rules:
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-/** Extracts a first name from a business name or email address. */
 function extractFirstName(businessName: string | undefined, email: string): string {
   if (businessName) {
     const first = businessName.split(/[\s,]+/)[0];
     if (first && first.length > 1 && first.length < 20) return first;
   }
-  // Fall back to local part of email, capitalize
   const local = email.split("@")[0].split(/[._-]/)[0];
   return local.charAt(0).toUpperCase() + local.slice(1);
+}
+
+/** Marks the lead as auto_replied and updates status/reply_received. */
+async function markAutoReplied(leadId: string, status: string) {
+  await supabaseAdmin
+    .from("outreach_leads")
+    .update({ status, reply_received: true, auto_replied: true })
+    .eq("id", leadId);
 }
 
 // ── Main webhook handler ──────────────────────────────────────────────────────
@@ -147,35 +157,45 @@ export async function handleInboundWebhook(payload: {
     `[ReplyHandler] ${payload.from} → ${classified.intent} (${classified.confidence}) — ${classified.summary}`
   );
 
+  // Fetch lead — include auto_replied flag
   const { data: lead } = await supabaseAdmin
     .from("outreach_leads")
-    .select("id, business_name, city, state, contractor_type, status")
+    .select("id, business_name, city, state, contractor_type, status, auto_replied")
     .ilike("email", payload.from)
     .maybeSingle();
 
   const firstName = extractFirstName(lead?.business_name, payload.from);
 
+  // ── Guard: already auto-replied once → hand off to admin, no more auto-replies
+  if (lead?.auto_replied) {
+    console.log(`[ReplyHandler] ${payload.from} already received auto-reply — forwarding to admin`);
+    await sendAdminAlert({
+      subject: `Follow-up from ${payload.from} — handle manually`,
+      message: [
+        `This lead already received an auto-reply. Respond manually.`,
+        ``,
+        `From:   ${payload.from}`,
+        `Lead:   ${lead.business_name} (${lead.city}, ${lead.state})`,
+        `Status: ${lead.status}`,
+        ``,
+        `Their message:`,
+        payload.text.slice(0, 600),
+      ].join("\n"),
+    });
+    return classified;
+  }
+
   switch (classified.intent) {
 
-    // ── INTERESTED ──────────────────────────────────────────────────────────
+    // ── INTERESTED ────────────────────────────────────────────────────────────
     case "interested": {
-      if (lead) {
-        await supabaseAdmin
-          .from("outreach_leads")
-          .update({ status: "replied", reply_received: true })
-          .eq("id", lead.id);
-      }
-
       const reply = buildInterestedReply(firstName, payload.subject);
       const sent  = await sendSingleEmail({ to: payload.from, ...reply });
 
-      if (sent) {
-        console.log(`[ReplyHandler] ✓ Auto-replied INTERESTED to ${payload.from}`);
-      } else {
-        console.error(`[ReplyHandler] Failed to auto-reply to ${payload.from} — notifying admin`);
-      }
+      if (sent && lead) await markAutoReplied(lead.id, "replied");
 
-      // Also notify admin so they can follow up if needed
+      console.log(`[ReplyHandler] ${sent ? "✓" : "✗"} Auto-replied INTERESTED to ${payload.from}`);
+
       await sendAdminAlert({
         subject: `INTERESTED reply from ${payload.from}`,
         message: [
@@ -193,15 +213,8 @@ export async function handleInboundWebhook(payload: {
       break;
     }
 
-    // ── QUESTION ────────────────────────────────────────────────────────────
+    // ── QUESTION ──────────────────────────────────────────────────────────────
     case "question": {
-      if (lead) {
-        await supabaseAdmin
-          .from("outreach_leads")
-          .update({ status: "replied", reply_received: true })
-          .eq("id", lead.id);
-      }
-
       let reply: { subject: string; text: string };
       try {
         reply = await buildQuestionReply(
@@ -211,14 +224,13 @@ export async function handleInboundWebhook(payload: {
           payload.subject
         );
       } catch {
-        // Claude failed — notify admin to reply manually
         await sendAdminAlert({
           subject: `QUESTION from ${payload.from} — reply manually`,
           message: [
             `Auto-reply generation failed. Reply manually.`,
             ``,
-            `From:     ${payload.from}`,
-            `Lead:     ${lead ? `${lead.business_name} (${lead.city}, ${lead.state})` : "(unknown)"}`,
+            `From: ${payload.from}`,
+            `Lead: ${lead ? `${lead.business_name} (${lead.city}, ${lead.state})` : "(unknown)"}`,
             ``,
             `Their question:`,
             payload.text.slice(0, 600),
@@ -228,13 +240,14 @@ export async function handleInboundWebhook(payload: {
       }
 
       const sent = await sendSingleEmail({ to: payload.from, ...reply });
+      if (sent && lead) await markAutoReplied(lead.id, "replied");
+
       console.log(`[ReplyHandler] Auto-replied to question from ${payload.from} — sent: ${sent}`);
 
       await sendAdminAlert({
         subject: `QUESTION auto-replied → ${payload.from}`,
         message: [
           `Auto-reply sent to question.`,
-          ``,
           `From: ${payload.from}`,
           ``,
           `Their question:`,
@@ -249,34 +262,31 @@ export async function handleInboundWebhook(payload: {
       break;
     }
 
-    // ── NOT INTERESTED ───────────────────────────────────────────────────────
+    // ── NOT INTERESTED ────────────────────────────────────────────────────────
     case "not_interested": {
+      const reply = buildNotInterestedReply(payload.subject);
+      const sent  = await sendSingleEmail({ to: payload.from, ...reply });
+
       if (lead) {
         await supabaseAdmin
           .from("outreach_leads")
-          .update({ status: "do_not_contact", reply_received: true })
+          .update({ status: "do_not_contact", reply_received: true, auto_replied: true })
           .eq("id", lead.id);
       }
 
-      const reply = buildNotInterestedReply(payload.subject);
-      await sendSingleEmail({ to: payload.from, ...reply });
-
-      console.log(`[ReplyHandler] Marked ${payload.from} do_not_contact + sent polite close`);
+      console.log(`[ReplyHandler] Marked ${payload.from} do_not_contact + sent polite close (sent: ${sent})`);
       break;
     }
 
-    // ── OUT OF OFFICE ────────────────────────────────────────────────────────
+    // ── OUT OF OFFICE ─────────────────────────────────────────────────────────
     case "out_of_office": {
-      // No reply — set a follow-up flag 7 days out
       if (lead) {
         const followUpDate = new Date();
         followUpDate.setDate(followUpDate.getDate() + 7);
-
         await supabaseAdmin
           .from("outreach_leads")
           .update({ follow_up_after: followUpDate.toISOString() })
           .eq("id", lead.id);
-
         console.log(
           `[ReplyHandler] OOO from ${payload.from} — follow_up_after set to ${followUpDate.toDateString()}`
         );

@@ -254,7 +254,7 @@ function extractAllEmails(html: string): string[] {
 
   // ── Method 1: JSON-LD structured data ─────────────────────────────────────
   // <script type="application/ld+json">{"@type":"LocalBusiness","email":"..."}
-  const ldJsonBlocks = html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+  const ldJsonBlocks = Array.from(html.matchAll(/<script[^>]+type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi));
   for (const block of ldJsonBlocks) {
     try {
       const obj = JSON.parse(block[1]);
@@ -266,7 +266,7 @@ function extractAllEmails(html: string): string[] {
   }
 
   // ── Method 2: mailto: href links ──────────────────────────────────────────
-  for (const match of html.matchAll(/mailto:([^"'\s>?&]+)/gi)) {
+  for (const match of Array.from(html.matchAll(/mailto:([^"'\s>?&]+)/gi))) {
     const raw = match[1].toLowerCase().split("?")[0].trim();
     if (raw.includes("@")) candidates.add(raw);
   }
@@ -280,18 +280,18 @@ function extractAllEmails(html: string): string[] {
     .replace(/\s*\(dot\)\s*/gi, ".")
     .replace(/\s+dot\s+/gi,     ".");
 
-  for (const match of deobfuscated.matchAll(new RegExp(EMAIL_REGEX.source, "g"))) {
+  for (const match of Array.from(deobfuscated.matchAll(new RegExp(EMAIL_REGEX.source, "g")))) {
     candidates.add(match[0].toLowerCase());
   }
 
   // ── Method 4: JSON string patterns "email":"..." and 'email':'...' ─────────
-  for (const match of html.matchAll(/["']email["']\s*:\s*["']([^"']+)["']/gi)) {
+  for (const match of Array.from(html.matchAll(/["']email["']\s*:\s*["']([^"']+)["']/gi))) {
     const e = match[1].toLowerCase().trim();
     if (e.includes("@")) candidates.add(e);
   }
 
   // ── Method 5: Raw regex on full source (catches anything missed above) ─────
-  for (const match of html.matchAll(new RegExp(EMAIL_REGEX.source, "g"))) {
+  for (const match of Array.from(html.matchAll(new RegExp(EMAIL_REGEX.source, "g")))) {
     candidates.add(match[0].toLowerCase());
   }
 
