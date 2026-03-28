@@ -10,6 +10,7 @@ import type { Permit, PermitStatus, Profile } from "@/types";
 import { PermitCard } from "./permit-card";
 import { ReferralSection } from "./referral-section";
 import { PushToggle } from "./push-toggle";
+import { DigestToggle } from "./digest-toggle";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -162,6 +163,7 @@ export default async function DashboardPage() {
   let referralCount = 0;
   let existingReferralCode: string | undefined;
   let hasPushSub = false;
+  let digestOptedOut = false;
 
   if (profile?.id) {
     const [referralResult, profileExtraResult] = await Promise.all([
@@ -172,13 +174,14 @@ export default async function DashboardPage() {
         .eq("status", "completed"),
       supabaseAdmin
         .from("profiles")
-        .select("referral_code, push_subscription")
+        .select("referral_code, push_subscription, digest_opted_out")
         .eq("id", profile.id)
         .single(),
     ]);
     referralCount        = referralResult.count ?? 0;
     existingReferralCode = profileExtraResult.data?.referral_code ?? undefined;
     hasPushSub           = !!profileExtraResult.data?.push_subscription;
+    digestOptedOut       = !!profileExtraResult.data?.digest_opted_out;
   }
 
   return (
@@ -355,12 +358,17 @@ export default async function DashboardPage() {
           existingCode={existingReferralCode}
         />
 
-        {/* ── Settings: push notifications ─────────────────────────── */}
+        {/* ── Settings: notifications + email preferences ──────────── */}
         <div className="mt-6 border border-[#FF6B00]/10 bg-[#FF6B00]/3 px-4 sm:px-6 py-5">
           <div className="text-[10px] tracking-[0.3em] text-[#FF6B00]/40 uppercase mb-4">
             Notification Settings
           </div>
-          <PushToggle hasExistingSubscription={hasPushSub} />
+          <div className="space-y-4">
+            <PushToggle hasExistingSubscription={hasPushSub} />
+            <div className="border-t border-[#FF6B00]/10 pt-4">
+              <DigestToggle digestOptedOut={digestOptedOut} />
+            </div>
+          </div>
         </div>
 
       </main>

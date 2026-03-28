@@ -16,8 +16,13 @@ interface Props {
 }
 
 export function WelcomeEmail({ userName }: Props) {
+  const addPermitUrl = `${process.env.NEXT_PUBLIC_URL}/dashboard/add`;
   const dashboardUrl = `${process.env.NEXT_PUBLIC_URL}/dashboard`;
-  const addPermitUrl  = `${process.env.NEXT_PUBLIC_URL}/dashboard/add`;
+  const unsubscribeUrl = `${process.env.NEXT_PUBLIC_URL}/unsubscribe`;
+
+  const greeting = userName && userName !== "there"
+    ? `Hi ${userName},`
+    : "Hi there,";
 
   return (
     <Html lang="en">
@@ -59,104 +64,51 @@ export function WelcomeEmail({ userName }: Props) {
             </Text>
           </Section>
 
-          {/* Headline */}
+          {/* Greeting */}
           <Section
             style={{
               borderTop: "4px solid #FF6B00",
-              padding: "40px 32px 32px",
+              padding: "40px 32px 24px",
               backgroundColor: "#0A0A0A",
             }}
           >
             <Text
               style={{
                 fontFamily: "'Bebas Neue', 'Arial Black', sans-serif",
-                fontSize: "42px",
+                fontSize: "38px",
                 letterSpacing: "0.08em",
                 color: "#F5F0E8",
                 lineHeight: 1,
-                margin: "0 0 8px",
+                margin: "0 0 20px",
               }}
             >
-              YOUR PERMITS ARE NOW BEING WATCHED.
+              YOU&apos;RE IN.
+            </Text>
+            <Text
+              style={{
+                fontSize: "14px",
+                color: "rgba(245,240,232,0.8)",
+                margin: "0 0 8px",
+                lineHeight: "1.6",
+              }}
+            >
+              {greeting}
             </Text>
             <Text
               style={{
                 fontSize: "13px",
                 color: "rgba(245,240,232,0.6)",
-                margin: "16px 0 0",
+                margin: "0",
                 lineHeight: "1.7",
               }}
             >
-              Welcome, {userName}. Your 14-day free trial is active. Add your first permit
-              and we&apos;ll start monitoring it within the hour.
+              Welcome to ClearedNo. Add your first permit now and we&apos;ll start monitoring
+              it within the hour — no setup required.
             </Text>
           </Section>
 
-          {/* Steps */}
-          <Section
-            style={{
-              backgroundColor: "#0F0F0F",
-              padding: "32px",
-              borderLeft: "4px solid #FF6B00",
-              margin: "0 0 0",
-            }}
-          >
-            {[
-              {
-                num: "01",
-                title: "Add Your Permits",
-                desc: "Log in and enter your permit numbers. Takes 30 seconds each.",
-              },
-              {
-                num: "02",
-                title: "We Monitor 24/7",
-                desc: "Our scrapers check every city portal every few hours.",
-              },
-              {
-                num: "03",
-                title: "Get Instant Alerts",
-                desc: "Email the moment a status changes. Move your crew the same day.",
-              },
-            ].map(({ num, title, desc }) => (
-              <Section key={num} style={{ marginBottom: "20px" }}>
-                <Text
-                  style={{
-                    fontSize: "10px",
-                    letterSpacing: "0.2em",
-                    color: "#FF6B00",
-                    textTransform: "uppercase",
-                    margin: "0 0 2px",
-                  }}
-                >
-                  Step {num}
-                </Text>
-                <Text
-                  style={{
-                    fontFamily: "'Bebas Neue', 'Arial Black', sans-serif",
-                    fontSize: "20px",
-                    letterSpacing: "0.08em",
-                    color: "#F5F0E8",
-                    margin: "0 0 4px",
-                  }}
-                >
-                  {title}
-                </Text>
-                <Text
-                  style={{
-                    fontSize: "12px",
-                    color: "rgba(245,240,232,0.5)",
-                    margin: 0,
-                    lineHeight: "1.6",
-                  }}
-                >
-                  {desc}
-                </Text>
-              </Section>
-            ))}
-          </Section>
-
-          {/* CTA */}
-          <Section style={{ padding: "32px", backgroundColor: "#0A0A0A" }}>
+          {/* CTA Button */}
+          <Section style={{ padding: "0 32px 32px", backgroundColor: "#0A0A0A" }}>
             <Link
               href={addPermitUrl}
               style={{
@@ -165,35 +117,130 @@ export function WelcomeEmail({ userName }: Props) {
                 color: "#0A0A0A",
                 fontFamily: "'DM Mono', monospace",
                 fontSize: "12px",
-                fontWeight: "500",
+                fontWeight: "700",
                 letterSpacing: "0.15em",
                 textTransform: "uppercase",
                 textDecoration: "none",
-                padding: "14px 32px",
-                marginRight: "12px",
+                padding: "16px 36px",
               }}
             >
               Add Your First Permit →
             </Link>
+            <Text
+              style={{
+                fontSize: "11px",
+                color: "rgba(245,240,232,0.3)",
+                margin: "10px 0 0",
+                letterSpacing: "0.05em",
+              }}
+            >
+              Takes about 30 seconds.
+            </Text>
+          </Section>
+
+          {/* What to expect */}
+          <Section
+            style={{
+              backgroundColor: "#0F0F0F",
+              padding: "28px 32px 24px",
+              borderLeft: "4px solid #FF6B00",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: "10px",
+                letterSpacing: "0.25em",
+                color: "#FF6B00",
+                textTransform: "uppercase",
+                margin: "0 0 16px",
+              }}
+            >
+              What to Expect
+            </Text>
+            {[
+              "We check your permits every 2 hours, 24/7",
+              "You'll get an email the moment anything changes",
+              "Push notifications available in your dashboard settings",
+            ].map((item, i) => (
+              <Text
+                key={i}
+                style={{
+                  fontSize: "13px",
+                  color: "rgba(245,240,232,0.65)",
+                  margin: "0 0 10px",
+                  lineHeight: "1.6",
+                  paddingLeft: "16px",
+                  borderLeft: "2px solid rgba(255,107,0,0.4)",
+                }}
+              >
+                {item}
+              </Text>
+            ))}
+          </Section>
+
+          {/* Social proof */}
+          <Section
+            style={{
+              padding: "28px 32px",
+              backgroundColor: "#0A0A0A",
+            }}
+          >
+            <Text
+              style={{
+                fontSize: "12px",
+                color: "rgba(245,240,232,0.4)",
+                lineHeight: "1.7",
+                margin: 0,
+                fontStyle: "italic",
+                borderTop: "1px solid rgba(255,107,0,0.1)",
+                paddingTop: "20px",
+              }}
+            >
+              Join contractors in Austin, Dallas, Houston, and San Antonio who
+              stopped checking permit portals manually.
+            </Text>
           </Section>
 
           {/* Footer */}
           <Hr style={{ borderColor: "rgba(255,107,0,0.15)", margin: 0 }} />
-          <Section style={{ padding: "24px 32px" }}>
+          <Section style={{ padding: "20px 32px" }}>
             <Text
               style={{
                 fontSize: "10px",
-                color: "rgba(245,240,232,0.25)",
+                color: "rgba(245,240,232,0.2)",
                 letterSpacing: "0.1em",
+                margin: "0 0 6px",
+              }}
+            >
+              ClearedNo · Permit monitoring for Texas contractors
+            </Text>
+            <Text
+              style={{
+                fontSize: "10px",
+                color: "rgba(245,240,232,0.2)",
+                letterSpacing: "0.05em",
                 margin: 0,
               }}
             >
-              ClearedNo · $79/mo after trial · No long-term contract ·{" "}
+              <Link
+                href="mailto:support@clearedno.com"
+                style={{ color: "rgba(255,107,0,0.45)" }}
+              >
+                support@clearedno.com
+              </Link>
+              {" · "}
               <Link
                 href={dashboardUrl}
-                style={{ color: "rgba(255,107,0,0.5)" }}
+                style={{ color: "rgba(255,107,0,0.45)" }}
               >
                 Dashboard
+              </Link>
+              {" · "}
+              <Link
+                href={unsubscribeUrl}
+                style={{ color: "rgba(245,240,232,0.2)" }}
+              >
+                Unsubscribe
               </Link>
             </Text>
           </Section>

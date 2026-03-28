@@ -2,9 +2,12 @@
 // Import this ONLY from app/api routes, never from scrapers or ts-node scripts.
 //
 // sendWelcomeEmail — rendered React template, sent on Stripe checkout completion
+// sendDigestEmail  — rendered React template, sent on weekly digest schedule
 import { Resend } from "resend";
 import { render } from "@react-email/components";
 import { WelcomeEmail } from "../app/emails/welcome";
+import { DigestEmail } from "../app/emails/digest";
+import type { DigestPermit } from "../app/emails/digest";
 
 let _resend: Resend | null = null;
 function getResend(): Resend {
@@ -28,7 +31,34 @@ export async function sendWelcomeEmail({
   return getResend().emails.send({
     from: FROM,
     to,
-    subject: "Welcome to ClearedNo — Your permits are now being watched.",
+    subject: "Welcome to ClearedNo — add your first permit in 30 seconds",
+    html,
+  });
+}
+
+export async function sendDigestEmail({
+  to,
+  userName,
+  permits,
+  changedCount,
+  weekOf,
+  unsubscribeUrl,
+}: {
+  to: string;
+  userName: string;
+  permits: DigestPermit[];
+  changedCount: number;
+  weekOf: string;
+  unsubscribeUrl: string;
+}) {
+  const html = await render(
+    DigestEmail({ userName, permits, changedCount, weekOf, unsubscribeUrl }) as React.ReactElement
+  );
+
+  return getResend().emails.send({
+    from: FROM,
+    to,
+    subject: "Your permits this week — ClearedNo Weekly Update",
     html,
   });
 }

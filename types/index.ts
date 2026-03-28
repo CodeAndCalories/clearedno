@@ -26,6 +26,7 @@ export interface Profile {
   trial_ends_at: string | null;
   referral_code: string | null;
   referred_by_code: string | null;
+  digest_opted_out: boolean;
   created_at: string;
 }
 
