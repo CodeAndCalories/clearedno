@@ -10,14 +10,22 @@
 // Endpoint: https://data.austintexas.gov/resource/3syk-w9eu.json
 // Search field:  permit_number
 // Status field:  status_current
-// Example permit format: "2026-033822 PP"
+//
+// ── PERMIT NUMBER FORMATS ──────────────────────────────────────────────────────
+// Two formats are in use:
+//   API format:    "2026-033822 PP"   (Open Data / Socrata dataset)
+//   Portal format: "2024-BC-04812"   (ABC / Accela Citizen Access portal)
+//
+// If the API returns 0 results (e.g. for portal-format numbers), the scraper
+// falls through automatically to the Playwright portal fallback.
 //
 // ── HOW TO UPDATE SELECTORS (Playwright fallback) ─────────────────────────────
 // If the portal fallback needs updating:
 //   1. Open https://abc.austintexas.gov/web/permit/public-search-other in Chrome
-//   2. Search for a known permit number manually
-//   3. Right-click the status element → Inspect
-//   4. Copy the selector and update the SEL constant below
+//   2. Search for a known permit number manually (e.g. "2026-033822 PP")
+//   3. Right-click the search input → Inspect → copy its id/name/placeholder
+//   4. Right-click the status element → Inspect → copy its selector
+//   5. Update SEL.permitInput and SEL.statusCell below
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { chromium } from "playwright";
@@ -39,32 +47,55 @@ const API_URL  = "https://data.austintexas.gov/resource/3syk-w9eu.json";
 const PORTAL_URL = "https://abc.austintexas.gov/web/permit/public-search-other";
 
 // ── Selectors (Playwright fallback only) ──────────────────────────────────────
+//
+// The ABC portal (abc.austintexas.gov) is an Accela Citizen Access SPA.
+// Selectors are ordered most-specific-first; the last entry is a broad fallback.
+//
+// If selectors break after an Austin portal redesign:
+//   1. Open PORTAL_URL in Chrome DevTools
+//   2. Search a permit (e.g. "2026-033822 PP")
+//   3. Find the input via Elements → right-click → Copy selector
+//   4. Update SEL.permitInput below
 
 const SEL = {
+  // Accela Citizen Access permit number field.
+  // Common Accela IDs: txtSearchBy, txtRecordNum, ctl00_..._txtGSPermitNumber
+  // The broad input[type="text"] fallback handles future portal redesigns.
   permitInput: [
+    'input[id*="RecordNum"]',
+    'input[id*="recordNum"]',
+    'input[id*="txtSearch"]',
+    'input[id*="PermitNum"]',
+    'input[id*="permitNum"]',
     'input[placeholder*="Record Number"]',
+    'input[placeholder*="Permit Number"]',
     'input[placeholder*="Permit"]',
+    'input[placeholder*="record"]',
     'input[id*="permit"]',
     'input[id*="record"]',
     'input[name*="permit"]',
     'input[name*="record"]',
-    'input[type="text"]:not([type="hidden"])',
+    'input[type="text"]',   // broadest fallback — first visible text input
   ].join(", "),
 
   searchButton: [
     'button[type="submit"]',
     'input[type="submit"]',
+    'a:has-text("Search")',
     'button:has-text("Search")',
     'button:has-text("Find")',
     'button:has-text("Submit")',
+    'button:has-text("Look Up")',
   ].join(", "),
 
   statusCell: [
     'td[data-label="Status"]',
     'td[data-label="Record Status"]',
+    'td[data-label="Permit Status"]',
     '.record-status',
     '[class*="status-value"]',
     '[class*="permit-status"]',
+    '[class*="record-status"]',
     'td:nth-child(5)',
     'td:nth-child(4)',
   ].join(", "),
@@ -75,7 +106,9 @@ const SEL = {
     '[class*="records-table"]',
     '[class*="permit-list"]',
     '[id*="searchResults"]',
+    '[id*="searchResult"]',
     'tbody tr',
+    'table',
   ].join(", "),
 };
 
@@ -267,9 +300,32 @@ export class AustinTxScraper extends BaseScraper {
       await page.waitForTimeout(3000);
 
       // Step 2: Fill permit number
+      // Try the prioritized SEL.permitInput list first; fall back to the first
+      // visible text input on the page (handles future Accela portal redesigns).
       try {
-        const inputEl = await page.waitForSelector(SEL.permitInput, { timeout: 8_000 });
-        await inputEl.fill(permitNumber.trim());
+        let filled = false;
+
+        // Attempt 1: use the ordered selector list
+        try {
+          const inputEl = await page.waitForSelector(SEL.permitInput, { timeout: 8_000 });
+          await inputEl.fill(permitNumber.trim());
+          filled = true;
+        } catch {
+          // Attempt 2: try any visible text input via Playwright locator
+          const inputs = page.locator('input[type="text"]:visible, input:not([type]):visible');
+          const count  = await inputs.count();
+          if (count > 0) {
+            await inputs.first().fill(permitNumber.trim());
+            filled = true;
+          }
+        }
+
+        if (!filled) {
+          return this.pendingFallback(
+            permitNumber,
+            "Permit number input field not found. Check SEL.permitInput selector."
+          );
+        }
       } catch {
         return this.pendingFallback(
           permitNumber,

@@ -57,6 +57,105 @@ export const metadata: Metadata = {
   },
 };
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://www.clearedno.com/#app",
+      "name": "ClearedNo",
+      "url": "https://www.clearedno.com",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "description":
+        "Permit status monitoring for contractors. ClearedNo watches your building permits 24/7 and alerts you the moment your permit clears.",
+      "offers": {
+        "@type": "Offer",
+        "price": "49.00",
+        "priceCurrency": "USD",
+        "priceSpecification": {
+          "@type": "UnitPriceSpecification",
+          "price": "49.00",
+          "priceCurrency": "USD",
+          "unitText": "month",
+        },
+      },
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://www.clearedno.com/#org",
+      "name": "ClearedNo",
+      "url": "https://www.clearedno.com",
+      "logo": "https://www.clearedno.com/clearedno-icon.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "support@clearedno.com",
+        "contactType": "customer support",
+      },
+      "areaServed": [
+        { "@type": "City", "name": "Austin", "containedInPlace": { "@type": "State", "name": "Texas" } },
+        { "@type": "City", "name": "Dallas", "containedInPlace": { "@type": "State", "name": "Texas" } },
+        { "@type": "City", "name": "Houston", "containedInPlace": { "@type": "State", "name": "Texas" } },
+        { "@type": "City", "name": "San Antonio", "containedInPlace": { "@type": "State", "name": "Texas" } },
+      ],
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://www.clearedno.com/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What cities do you support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Currently Austin, TX and Dallas, TX — plus Houston, TX and San Antonio, TX in early access. We add new cities based on demand. Request yours at clearedno.com/suggest-city.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "How often do you check my permit?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Every 2 hours, 24/7. You'll know within hours of any status change — usually the same morning the city processes it.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "Is my data secure?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. We only store your permit numbers and email address. No payment info is stored on our servers — billing is handled entirely by Stripe.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "What if my city isn't supported?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Submit a request at clearedno.com/suggest-city and we'll prioritize based on demand. New cities are added weekly.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "Can I cancel anytime?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. No contracts, no annual lock-in, no commitments. Cancel from your dashboard in one click.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "How does the free trial work?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "14 days free, no credit card required. Monitor unlimited permits. If you love it, pick a plan. If not, walk away — no charge.",
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -65,6 +164,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${bebasNeue.variable} ${dmMono.variable}`}>
       <body className="bg-[#0A0A0A] text-[#F5F0E8] font-mono antialiased">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         {children}
       </body>
     </html>

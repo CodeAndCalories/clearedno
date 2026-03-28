@@ -3,6 +3,7 @@
 // Bebas Neue headings, DM Mono for data/body.
 import Link from "next/link";
 import Image from "next/image";
+import { FoundingSpotsCounter } from "./founding-spots-counter";
 
 // ── Shared CTA button ────────────────────────────────────────────────────────
 // Single source of truth for the primary CTA so every instance is identical.
@@ -452,7 +453,7 @@ export default function LandingPage() {
           <div className="inline-flex items-center gap-2 border border-[#FF6B00]/40 bg-[#FF6B00]/10 px-4 py-2 mb-10">
             <span className="text-[#FF6B00] text-sm">⚡</span>
             <span className="text-xs font-mono text-[#FF6B00] tracking-widest uppercase">
-              17 of 20 founding spots remaining
+              <FoundingSpotsCounter />
             </span>
           </div>
 
@@ -503,7 +504,7 @@ export default function LandingPage() {
                   className="text-xs px-4 py-3 w-full justify-center"
                 />
                 <p className="mt-3 text-[10px] text-[#F5F0E8]/30 text-center">
-                  Only 17 spots left
+                  <FoundingSpotsCounter compact />
                 </p>
               </div>
 
@@ -626,6 +627,70 @@ export default function LandingPage() {
 
       <Divider />
 
+      {/* ── FAQ ───────────────────────────────────────────────────────────── */}
+      <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-12">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-px bg-[#FF6B00]" />
+              <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">FAQ</span>
+            </div>
+            <h2 className="font-heading text-5xl tracking-widest text-[#F5F0E8]">
+              COMMON QUESTIONS.
+            </h2>
+          </div>
+
+          <div className="space-y-0">
+            {[
+              {
+                q: "What cities do you support?",
+                a: "Currently Austin, TX and Dallas, TX — plus Houston, TX and San Antonio, TX in early access. We add new cities based on demand. Request yours at /suggest-city.",
+              },
+              {
+                q: "How often do you check my permit?",
+                a: "Every 2 hours, 24/7. You'll know within hours of any status change — usually the same morning the city processes it.",
+              },
+              {
+                q: "Is my data secure?",
+                a: "Yes. We only store your permit numbers and email address. No payment info is stored on our servers — billing is handled entirely by Stripe.",
+              },
+              {
+                q: "What if my city isn't supported?",
+                a: "Submit a request at /suggest-city and we'll prioritize based on demand. New cities are added weekly — most requests go live within 1–2 weeks.",
+              },
+              {
+                q: "Can I cancel anytime?",
+                a: "Yes. No contracts, no annual lock-in, no commitments. Cancel from your dashboard in one click — no questions asked.",
+              },
+              {
+                q: "How does the free trial work?",
+                a: "14 days free, no credit card required. Monitor unlimited permits. If you love it, pick a plan. If not, walk away — no charge.",
+              },
+            ].map((item, i) => (
+              <details
+                key={i}
+                className="group border-b border-[#FF6B00]/20 first:border-t"
+              >
+                <summary className="flex items-center justify-between gap-4 py-5 cursor-pointer list-none">
+                  <span className="text-sm font-mono text-[#F5F0E8] leading-relaxed">
+                    {item.q}
+                  </span>
+                  <span className="flex-shrink-0 w-5 h-5 border border-[#FF6B00]/40 flex items-center justify-center text-[#FF6B00] font-mono text-sm group-open:bg-[#FF6B00]/10 transition-colors">
+                    <span className="group-open:hidden">+</span>
+                    <span className="hidden group-open:block">−</span>
+                  </span>
+                </summary>
+                <p className="pb-5 text-sm text-[#F5F0E8]/60 leading-relaxed max-w-2xl">
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <Divider />
+
       {/* ── FINAL CTA ─────────────────────────────────────────────────────── */}
       <section className="py-24 px-6 relative overflow-hidden">
         <div
@@ -685,7 +750,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] flex-shrink-0" />
               <span className="text-[10px] text-[#F5F0E8]/40 tracking-widest uppercase">
-                Currently monitoring Austin, TX and Dallas, TX permits
+                Currently monitoring Austin, TX · Dallas, TX · Houston, TX · San Antonio, TX
               </span>
             </div>
             <span className="text-[10px] text-[#FF6B00]/50 tracking-widest uppercase">
