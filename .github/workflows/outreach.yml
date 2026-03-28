@@ -5,14 +5,17 @@ name: Outreach Agent
 #   NEXT_PUBLIC_SUPABASE_URL       — Supabase Dashboard → Settings → API → Project URL
 #   NEXT_PUBLIC_SUPABASE_ANON_KEY  — Supabase Dashboard → Settings → API → anon public key
 #   SUPABASE_SERVICE_ROLE_KEY      — Supabase Dashboard → Settings → API → service_role key
-#   RESEND_API_KEY                 — resend.com → API Keys
-#   FROM_EMAIL                     — verified sender address (e.g. alex@clearedno.com)
+#   RESEND_API_KEY                 — resend.com → API Keys (for admin alerts via lib/email.ts)
+#   FROM_EMAIL                     — your Gmail address used for sending (e.g. alex@clearedno.com)
 #   FROM_NAME                      — sender display name (e.g. "Alex at ClearedNo")
-#   ADMIN_EMAIL                    — your ops inbox; receives alerts on interested replies
+#   ADMIN_EMAIL                    — your ops inbox; receives alerts on interested/question replies
 #   NEXT_PUBLIC_URL                — https://www.clearedno.com
-#   ANTHROPIC_API_KEY              — console.anthropic.com → API Keys (for email writing + reply classification)
+#   ANTHROPIC_API_KEY              — console.anthropic.com → API Keys (email writing + reply classification)
 #   GOOGLE_MAPS_API_KEY            — console.cloud.google.com → APIs & Services → Credentials
 #                                    Enable: "Places API" on the project
+#   GMAIL_APP_PASSWORD             — myaccount.google.com/apppasswords
+#                                    Create an App Password for "Mail" (requires 2-Step Verification)
+#                                    Used instead of OAuth — works in CI without token.json
 
 on:
   # Manual trigger with dry-run option
@@ -48,6 +51,7 @@ jobs:
       NEXT_PUBLIC_URL:               ${{ secrets.NEXT_PUBLIC_URL }}
       ANTHROPIC_API_KEY:             ${{ secrets.ANTHROPIC_API_KEY }}
       GOOGLE_MAPS_API_KEY:           ${{ secrets.GOOGLE_MAPS_API_KEY }}
+      GMAIL_APP_PASSWORD:            ${{ secrets.GMAIL_APP_PASSWORD }}
       DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
 
     steps:

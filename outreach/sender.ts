@@ -1,17 +1,19 @@
 // outreach/sender.ts
 //
-// Sends cold emails via Gmail API (OAuth2).
+// Sends cold emails — picks transport automatically:
+//   GMAIL_APP_PASSWORD set  → SMTP App Password (GitHub Actions / CI)
+//   GMAIL_APP_PASSWORD unset → OAuth2 via token.json (local dev)
 //
-// Tracking is Supabase-backed (outreach_leads table), NOT file-based:
+// Tracking is Supabase-backed (outreach_leads table):
 //   - "already sent" check: outreach_leads.last_contacted_at IS NOT NULL
 //   - Daily quota check:    count rows with last_contacted_at >= today's midnight
 //   - After sending:        update status = 'contacted', last_contacted_at = now()
 
-import { supabaseAdmin } from "../lib/supabase/admin";
-import { sendViaGmail }  from "./gmail-sender";
-import type { EmailDraft } from "./email-writer";
+import { supabaseAdmin }      from "../lib/supabase/admin";
+import { sendViaGmail }       from "./gmail-sender";
+import { sendViaAppPassword } from "./gmail-app-sender";
+import type { EmailDraft }    from "./email-writer";
 
-// Hard cap: never send more than this many emails per day
 const DAILY_LIMIT = 30;
 
 export interface SendResult {
@@ -23,7 +25,24 @@ export interface SendResult {
 export interface SendItem {
   draft:          EmailDraft;
   recipientEmail: string;
-  leadId:         string;   // Supabase outreach_leads.id
+  leadId:         string;
+}
+
+// ── Unified send helper ───────────────────────────────────────────────────────
+
+/**
+ * Sends a single email, choosing transport based on available env vars.
+ * Export this for reply-handler and any other direct-send callers.
+ */
+export async function sendSingleEmail(opts: {
+  to:      string;
+  subject: string;
+  text:    string;
+}): Promise<boolean> {
+  if (process.env.GMAIL_APP_PASSWORD) {
+    return sendViaAppPassword(opts);
+  }
+  return sendViaGmail(opts);
 }
 
 // ── Daily quota ───────────────────────────────────────────────────────────────
@@ -40,7 +59,7 @@ async function countTodaysSent(): Promise<number> {
   return count ?? 0;
 }
 
-// ── Main send function ────────────────────────────────────────────────────────
+// ── Batch send ────────────────────────────────────────────────────────────────
 
 /**
  * Sends emails for a batch of leads.
@@ -51,6 +70,9 @@ export async function sendBatch(
   items:  SendItem[],
   dryRun  = false
 ): Promise<SendResult> {
+  const transport  = process.env.GMAIL_APP_PASSWORD ? "App Password (SMTP)" : "OAuth2";
+  console.log(`[Sender] Transport: ${transport}`);
+
   const todaySent = await countTodaysSent();
   let remaining   = DAILY_LIMIT - todaySent;
 
@@ -63,7 +85,6 @@ export async function sendBatch(
       break;
     }
 
-    // Never send twice to the same lead
     const { data: lead } = await supabaseAdmin
       .from("outreach_leads")
       .select("last_contacted_at")
@@ -83,7 +104,7 @@ export async function sendBatch(
       continue;
     }
 
-    const ok = await sendViaGmail({
+    const ok = await sendSingleEmail({
       to:      recipientEmail,
       subject: draft.subject,
       text:    draft.body,
@@ -99,7 +120,6 @@ export async function sendBatch(
       result.sent++;
       remaining--;
 
-      // Gentle throttle — avoid Gmail rate limits (250 emails/day free, 1/sec safe)
       await new Promise((r) => setTimeout(r, 1_200));
     } else {
       result.errors++;
