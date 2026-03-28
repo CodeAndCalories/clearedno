@@ -80,7 +80,7 @@ async function main() {
     // Search for unread messages only
     const uids = await client.search({ seen: false }, { uid: true });
 
-    if (uids.length === 0) {
+    if (!uids || !Array.isArray(uids) || uids.length === 0) {
       console.log("[CheckReplies] No unread messages. Done.");
       return;
     }
