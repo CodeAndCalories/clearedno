@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { FoundingSpotsCounter } from "./founding-spots-counter";
+import { PermitChecker } from "./components/permit-checker";
 
 // ── Page-specific metadata (overrides layout defaults) ───────────────────────
 export const metadata: Metadata = {
@@ -345,6 +346,30 @@ export default function LandingPage() {
 
           <p className="mt-8 text-xs text-[#F5F0E8]/30 italic text-center">
             Most contractors don&apos;t realize how much time they&apos;re losing.
+          </p>
+        </div>
+      </section>
+
+      <Divider />
+
+      {/* ── FREE PERMIT CHECKER ───────────────────────────────────────────── */}
+      <section id="check-permit" className="py-20 px-6 bg-[#FF6B00]/3">
+        <div className="max-w-3xl mx-auto">
+          <div className="mb-10">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-px bg-[#FF6B00]" />
+              <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Free Tool</span>
+            </div>
+            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] mb-3">
+              CHECK YOUR PERMIT STATUS — FREE.
+            </h2>
+            <p className="text-sm text-[#F5F0E8]/50 leading-relaxed">
+              No signup. No credit card. Get your current permit status in seconds.
+            </p>
+          </div>
+          <PermitChecker />
+          <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest text-center">
+            Up to 5 free checks per hour. For 24/7 monitoring and instant alerts, sign up.
           </p>
         </div>
       </section>

@@ -2,6 +2,21 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendAdminAlert } from "@/lib/email";
 
+// GET /api/suggest-city — returns top 10 most-requested cities
+export async function GET(): Promise<NextResponse> {
+  const { data, error } = await supabaseAdmin
+    .from("city_suggestions")
+    .select("id, city, state, votes")
+    .order("votes", { ascending: false })
+    .limit(10);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ cities: data ?? [] });
+}
+
 export async function POST(req: NextRequest) {
   const body = await req.json().catch(() => null);
   if (!body) {

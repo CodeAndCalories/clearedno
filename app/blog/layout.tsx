@@ -1,0 +1,112 @@
+import Link from "next/link";
+import Image from "next/image";
+
+const RECENT_POSTS = [
+  { title: "How to Check Your Austin Building Permit Status in 2026", href: "/blog/how-to-check-austin-permit-status" },
+  { title: "Average Building Permit Approval Times in Texas (2026)", href: "/blog/average-permit-times-texas" },
+  { title: "What Does 'Permit Cleared' Actually Mean?", href: "/blog/what-does-permit-cleared-mean" },
+];
+
+export default function BlogLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-[#0A0A0A]">
+      {/* Nav */}
+      <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#FF6B00]/20 bg-[#0A0A0A]/95 backdrop-blur-sm">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2">
+            <Image src="/clearedno-icon.png" alt="ClearedNo" width={28} height={28} className="rounded-sm" />
+            <span className="font-heading text-2xl tracking-widest text-[#FF6B00]">
+              CLEARED<span className="text-[#F5F0E8]">NO</span>
+            </span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <Link href="/blog" className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase">Blog</Link>
+            <Link href="/login" className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase">Log In</Link>
+            <Link href="/signup" className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors">
+              Start Free Trial
+            </Link>
+          </div>
+        </div>
+      </nav>
+
+      {/* Content + Sidebar */}
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-20">
+        <div className="lg:grid lg:grid-cols-[1fr_280px] lg:gap-16">
+          {/* Main content */}
+          <main>{children}</main>
+
+          {/* Sidebar */}
+          <aside className="mt-16 lg:mt-0">
+            {/* Recent Posts */}
+            <div className="border border-[#FF6B00]/20 p-6 mb-6">
+              <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-4">Recent Posts</div>
+              <ul className="space-y-3">
+                {RECENT_POSTS.map((post) => (
+                  <li key={post.href}>
+                    <Link
+                      href={post.href}
+                      className="text-xs text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors leading-relaxed block"
+                    >
+                      {post.title}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* CTA */}
+            <div className="border border-[#FF6B00]/40 bg-[#FF6B00]/5 p-6 relative">
+              <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-[#FF6B00] -translate-x-px -translate-y-px" />
+              <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
+              <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-3">Stop Checking Manually</div>
+              <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
+                Get instant alerts when your Austin, Dallas, Houston, or San Antonio permit status changes.
+                No more daily portal checks.
+              </p>
+              <Link
+                href="/signup"
+                className="block w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-[10px] font-bold tracking-widest uppercase py-3 text-center hover:bg-[#F5F0E8] transition-colors"
+              >
+                START FREE TRIAL →
+              </Link>
+              <p className="mt-2 text-[9px] text-[#F5F0E8]/25 text-center">14-day free trial · No credit card</p>
+            </div>
+
+            {/* City links */}
+            <div className="mt-6 border border-[#FF6B00]/10 p-6">
+              <div className="text-[10px] tracking-[0.3em] text-[#FF6B00]/60 uppercase mb-4">Permit Tracking By City</div>
+              <ul className="space-y-2">
+                {[
+                  { label: "Austin, TX", href: "/austin" },
+                  { label: "Dallas, TX", href: "/dallas" },
+                  { label: "Houston, TX", href: "/houston" },
+                  { label: "San Antonio, TX", href: "/san-antonio" },
+                ].map((city) => (
+                  <li key={city.href}>
+                    <Link
+                      href={city.href}
+                      className="text-xs text-[#F5F0E8]/50 hover:text-[#FF6B00] transition-colors font-mono"
+                    >
+                      → {city.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </aside>
+        </div>
+      </div>
+
+      <footer className="border-t border-[#FF6B00]/10 px-6 py-8 text-center">
+        <p className="text-[10px] text-[#F5F0E8]/20 tracking-widest">
+          © 2026 ClearedNo ·{" "}
+          <Link href="/privacy" className="hover:text-[#FF6B00] transition-colors">Privacy</Link>
+          {" · "}
+          <Link href="/terms" className="hover:text-[#FF6B00] transition-colors">Terms</Link>
+          {" · "}
+          <Link href="/" className="hover:text-[#FF6B00] transition-colors">Home</Link>
+        </p>
+      </footer>
+    </div>
+  );
+}
