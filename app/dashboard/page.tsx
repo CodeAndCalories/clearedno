@@ -39,9 +39,12 @@ function EmptyState() {
       <p className="text-sm text-[#F5F0E8]/40 mb-8 max-w-sm mx-auto leading-relaxed">
         Add your first permit and we&apos;ll start watching it immediately.
       </p>
+      <p className="text-xs text-[#FF6B00]/60 font-mono mb-8 tracking-widest uppercase">
+        Currently monitoring: Austin TX · Dallas TX
+      </p>
       <Link
         href="/dashboard/add"
-        className="bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase px-8 py-3 hover:bg-[#F5F0E8] transition-colors inline-flex items-center gap-2"
+        className="bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase px-8 py-3 hover:bg-[#F5F0E8] transition-colors inline-flex items-center gap-2 w-full sm:w-auto justify-center"
       >
         + Add First Permit
       </Link>
@@ -109,8 +112,8 @@ export default async function DashboardPage() {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Fetch profile and permits in parallel
-  const [profileResult, permitsResult] = await Promise.all([
+  // Fetch profile, permits, and referral count in parallel
+  const [profileResult, permitsResult, referralCountResult] = await Promise.all([
     supabase.from("profiles").select("*").eq("user_id", user.id).single(),
     supabase
       .from("permits")
@@ -118,10 +121,15 @@ export default async function DashboardPage() {
       .eq("user_id", user.id)
       .eq("is_active", true)
       .order("created_at", { ascending: false }),
+    supabase
+      .from("referrals")
+      .select("id", { count: "exact", head: true })
+      .eq("referrer_user_id", user.id),
   ]);
 
   const profile = profileResult.data as Profile | null;
   const permits = (permitsResult.data ?? []) as Permit[];
+  const referralCount = referralCountResult.count ?? 0;
 
   const isPaid     = profile?.subscription_status === "active";
   const isTrialing = profile?.subscription_status === "trialing";
@@ -263,7 +271,7 @@ export default async function DashboardPage() {
         {permits.length === 0 ? (
           <EmptyState />
         ) : (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {permits.map((permit) => (
               <PermitCard key={permit.id} permit={permit} />
             ))}

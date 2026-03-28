@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [fullName, setFullName] = useState("");
   const [company, setCompany] = useState("");
@@ -14,6 +15,14 @@ export default function SignupPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  // Read ?ref= param and persist in localStorage
+  useEffect(() => {
+    const ref = searchParams.get("ref");
+    if (ref) {
+      localStorage.setItem("clearedno_ref", ref);
+    }
+  }, [searchParams]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -27,7 +36,7 @@ export default function SignupPage() {
     }
 
     const supabase = createClient();
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -44,7 +53,17 @@ export default function SignupPage() {
       return;
     }
 
-    // Supabase sends a confirmation email; redirect to a "check your email" message
+    // Track referral if a ref code was stored
+    const refCode = localStorage.getItem("clearedno_ref");
+    if (refCode && data.user?.id) {
+      await fetch("/api/referral/track", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: data.user.id, refCode }),
+      }).catch(() => {});
+      localStorage.removeItem("clearedno_ref");
+    }
+
     router.push("/dashboard");
     router.refresh();
   }
@@ -82,7 +101,7 @@ export default function SignupPage() {
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[10px] tracking-[0.2em] text-[#FF6B00]/80 uppercase mb-2">
                     Full Name

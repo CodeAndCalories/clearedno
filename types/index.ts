@@ -24,6 +24,8 @@ export interface Profile {
   stripe_customer_id: string | null;
   stripe_subscription_id: string | null;
   trial_ends_at: string | null;
+  referral_code: string | null;
+  referred_by_code: string | null;
   created_at: string;
 }
 
