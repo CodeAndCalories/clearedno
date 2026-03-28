@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
 const US_STATES = [
@@ -11,6 +11,10 @@ const US_STATES = [
   "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY",
 ];
 
+const SUPPORTED_CITIES = ["austin", "dallas", "houston", "san antonio"];
+
+type CityRequest = { id: string; city: string; state: string; votes: number };
+
 export default function SuggestCityPage() {
   const [city,    setCity]    = useState("");
   const [state,   setState]   = useState("TX");
@@ -18,6 +22,17 @@ export default function SuggestCityPage() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error,   setError]   = useState<string | null>(null);
+
+  const [topCities, setTopCities]     = useState<CityRequest[]>([]);
+  const [votingId,  setVotingId]      = useState<string | null>(null);
+  const [votedIds,  setVotedIds]      = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetch("/api/suggest-city")
+      .then((r) => r.json())
+      .then((d) => setTopCities(d.cities ?? []))
+      .catch(() => {});
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -39,7 +54,35 @@ export default function SuggestCityPage() {
     }
 
     setSuccess(true);
+    // Refresh top cities
+    fetch("/api/suggest-city")
+      .then((r) => r.json())
+      .then((d) => setTopCities(d.cities ?? []))
+      .catch(() => {});
   }
+
+  async function handleUpvote(id: string, cityName: string, cityState: string) {
+    if (votedIds.has(id) || votingId === id) return;
+    setVotingId(id);
+
+    await fetch("/api/suggest-city", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ city: cityName, state: cityState }),
+    });
+
+    setVotedIds((prev) => new Set(prev).add(id));
+    setVotingId(null);
+
+    // Refresh counts
+    fetch("/api/suggest-city")
+      .then((r) => r.json())
+      .then((d) => setTopCities(d.cities ?? []))
+      .catch(() => {});
+  }
+
+  const isSupported = (cityName: string) =>
+    SUPPORTED_CITIES.includes(cityName.toLowerCase().trim());
 
   if (success) {
     return (
@@ -71,7 +114,7 @@ export default function SuggestCityPage() {
         </Link>
       </header>
 
-      <main className="max-w-lg mx-auto px-4 sm:px-6 py-16 sm:py-24">
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
         {/* Heading */}
         <div className="mb-10">
           <div className="flex items-center gap-3 mb-4">
@@ -88,6 +131,59 @@ export default function SuggestCityPage() {
           </p>
         </div>
 
+        {/* Currently supported */}
+        <div className="mb-8 border border-[#16A34A]/30 bg-[#16A34A]/5 px-5 py-4">
+          <div className="text-[10px] tracking-[0.2em] text-[#16A34A] uppercase mb-3">✓ Already Monitoring</div>
+          <div className="flex flex-wrap gap-2">
+            {["Austin, TX", "Dallas, TX", "Houston, TX", "San Antonio, TX"].map((c) => (
+              <Link
+                key={c}
+                href={`/${c.split(",")[0].toLowerCase().replace(" ", "-")}`}
+                className="text-xs font-mono text-[#16A34A] border border-[#16A34A]/40 px-3 py-1 hover:bg-[#16A34A]/10 transition-colors"
+              >
+                {c}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Top requested cities */}
+        {topCities.length > 0 && (
+          <div className="mb-10">
+            <div className="text-[10px] tracking-[0.3em] text-[#FF6B00]/60 uppercase mb-4">Top Requested Cities</div>
+            <div className="border border-[#FF6B00]/20 divide-y divide-[#FF6B00]/10">
+              {topCities.map((c, i) => {
+                const supported = isSupported(c.city);
+                return (
+                  <div key={c.id} className="flex items-center justify-between px-5 py-3">
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] font-mono text-[#F5F0E8]/25 w-5">{i + 1}.</span>
+                      <div>
+                        <span className="text-sm text-[#F5F0E8]/80 font-mono">{c.city}, {c.state}</span>
+                        {supported && (
+                          <span className="ml-2 text-[9px] text-[#16A34A] font-mono">✓ Live</span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className="text-xs font-mono text-[#FF6B00]">{c.votes} {c.votes === 1 ? "request" : "requests"}</span>
+                      {!supported && (
+                        <button
+                          onClick={() => handleUpvote(c.id, c.city, c.state)}
+                          disabled={votedIds.has(c.id) || votingId === c.id}
+                          className="text-[10px] tracking-widest font-mono uppercase px-3 py-1 border transition-colors disabled:opacity-50 disabled:cursor-not-allowed border-[#FF6B00]/40 text-[#FF6B00] hover:bg-[#FF6B00]/10"
+                        >
+                          {votedIds.has(c.id) ? "✓ Voted" : votingId === c.id ? "..." : "↑ Vote"}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Form card */}
         <div className="relative border border-[#FF6B00]/30 p-8">
           {/* Corner accents */}
@@ -95,6 +191,8 @@ export default function SuggestCityPage() {
           <div className="absolute top-0 right-0 w-6 h-6 border-t-2 border-r-2 border-[#FF6B00] translate-x-px -translate-y-px" />
           <div className="absolute bottom-0 left-0 w-6 h-6 border-b-2 border-l-2 border-[#FF6B00] -translate-x-px translate-y-px" />
           <div className="absolute bottom-0 right-0 w-6 h-6 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
+
+          <div className="text-[10px] tracking-[0.3em] text-[#FF6B00]/60 uppercase mb-6">Request a New City</div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* City + State */}
@@ -108,9 +206,15 @@ export default function SuggestCityPage() {
                   required
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
-                  placeholder="Houston"
+                  placeholder="Phoenix"
                   className="w-full bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-sm font-mono px-4 py-3 focus:outline-none focus:border-[#FF6B00] transition-colors placeholder-[#F5F0E8]/20"
                 />
+                {isSupported(city) && city.trim() && (
+                  <p className="mt-1.5 text-[10px] text-[#16A34A] font-mono">
+                    ✓ Already monitoring {city}!{" "}
+                    <Link href="/signup" className="underline hover:no-underline">Sign up to get started →</Link>
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-[10px] tracking-[0.2em] text-[#FF6B00]/80 uppercase mb-2">
