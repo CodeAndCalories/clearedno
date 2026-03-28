@@ -38,7 +38,6 @@ export async function writeEmail(lead: Lead): Promise<EmailDraft> {
   const userMessage = `Write a cold email for this lead:
 Name: ${lead.name}
 City: ${lead.city}, ${lead.state}
-${lead.rating ? `Google Rating: ${lead.rating} (${lead.reviewCount ?? 0} reviews)` : ""}
 ${lead.website ? `Website: ${lead.website}` : ""}
 
 The email will be sent from the founder of ClearedNo. Keep it under 150 words.`;
