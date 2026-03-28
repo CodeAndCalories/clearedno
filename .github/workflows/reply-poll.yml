@@ -20,10 +20,10 @@ name: Gmail Reply Poller
 #                                    Re-encode whenever you refresh the token locally
 
 on:
-  # Hourly poll on weekdays during business hours
-  schedule:
-    - cron: '0 * * * 1-5'    # Every hour, Mon–Fri
-    - cron: '0 9,12,17 * * 0,6'  # 3x/day on weekends
+  # schedule disabled — manual only
+  # schedule:
+  #   - cron: '0 * * * 1-5'    # Every hour, Mon–Fri
+  #   - cron: '0 9,12,17 * * 0,6'  # 3x/day on weekends
 
   # Manual trigger with dry-run option
   workflow_dispatch:

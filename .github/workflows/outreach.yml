@@ -30,9 +30,9 @@ on:
           - 'false'
           - 'true'
 
-  # Scheduled: weekdays at 9:00 AM UTC (4 AM CT — before business hours start)
-  schedule:
-    - cron: '0 9 * * 1-5'
+  # schedule disabled — manual only
+  # schedule:
+  #   - cron: '0 9 * * 1-5'
 
 jobs:
   outreach:
