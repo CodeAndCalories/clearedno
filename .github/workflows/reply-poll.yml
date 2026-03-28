@@ -1,0 +1,96 @@
+name: Gmail Reply Poller
+
+# Required GitHub Secrets (Settings → Secrets and variables → Actions):
+#
+#   NEXT_PUBLIC_SUPABASE_URL       — Supabase Dashboard → Settings → API → Project URL
+#   NEXT_PUBLIC_SUPABASE_ANON_KEY  — Supabase Dashboard → Settings → API → anon public key
+#   SUPABASE_SERVICE_ROLE_KEY      — Supabase Dashboard → Settings → API → service_role key
+#   RESEND_API_KEY                 — resend.com → API Keys (for admin alerts)
+#   FROM_EMAIL                     — your Gmail address used for outreach
+#   FROM_NAME                      — sender display name
+#   ADMIN_EMAIL                    — your ops inbox; receives alerts on interested/question replies
+#   NEXT_PUBLIC_URL                — https://www.clearedno.com
+#   ANTHROPIC_API_KEY              — for reply classification and question drafting
+#   GMAIL_APP_PASSWORD             — myaccount.google.com/apppasswords
+#                                    Used for sending auto-replies via SMTP
+#   GMAIL_CREDENTIALS_PATH_B64     — base64-encoded contents of outreach/credentials.json
+#                                    Get with: base64 -w0 outreach/credentials.json
+#   GMAIL_TOKEN_PATH_B64           — base64-encoded contents of outreach/token.json
+#                                    Get with: base64 -w0 outreach/token.json
+#                                    Re-encode whenever you refresh the token locally
+
+on:
+  # Hourly poll on weekdays during business hours
+  schedule:
+    - cron: '0 * * * 1-5'    # Every hour, Mon–Fri
+    - cron: '0 9,12,17 * * 0,6'  # 3x/day on weekends
+
+  # Manual trigger with dry-run option
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (classify replies, skip sending and DB writes)'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+jobs:
+  poll:
+    name: Poll Gmail for replies
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    env:
+      NEXT_PUBLIC_SUPABASE_URL:      ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+      SUPABASE_SERVICE_ROLE_KEY:     ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY:                ${{ secrets.RESEND_API_KEY }}
+      FROM_EMAIL:                    ${{ secrets.FROM_EMAIL }}
+      FROM_NAME:                     ${{ secrets.FROM_NAME }}
+      ADMIN_EMAIL:                   ${{ secrets.ADMIN_EMAIL }}
+      NEXT_PUBLIC_URL:               ${{ secrets.NEXT_PUBLIC_URL }}
+      ANTHROPIC_API_KEY:             ${{ secrets.ANTHROPIC_API_KEY }}
+      GMAIL_APP_PASSWORD:            ${{ secrets.GMAIL_APP_PASSWORD }}
+      # OAuth creds written to disk by the "Restore OAuth credentials" step below
+      GMAIL_CREDENTIALS_PATH:        ./outreach/credentials.json
+      GMAIL_TOKEN_PATH:              ./outreach/token.json
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          clean: true
+
+      # Write OAuth credentials from base64-encoded secrets.
+      # The poller needs to READ Gmail (OAuth), even though it SENDS via App Password.
+      - name: Restore OAuth credentials
+        run: |
+          mkdir -p outreach
+          echo "${{ secrets.GMAIL_CREDENTIALS_PATH_B64 }}" | base64 --decode > outreach/credentials.json
+          echo "${{ secrets.GMAIL_TOKEN_PATH_B64 }}"       | base64 --decode > outreach/token.json
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build outreach agent
+        run: npm run build:scraper
+
+      - name: Poll Gmail for unread replies
+        run: npm run poll:replies
+
+      - name: Log failure notice
+        if: failure()
+        run: |
+          echo "::error::Reply poller failed. Check logs above."
+          echo "Note: If the OAuth token expired, refresh it locally and re-encode to GMAIL_TOKEN_PATH_B64."

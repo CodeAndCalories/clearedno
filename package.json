@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "build:scraper": "tsc --project tsconfig.scripts.json",
-    "outreach": "ts-node --project tsconfig.scripts.json outreach/index.ts"
+    "outreach": "ts-node --project tsconfig.scripts.json outreach/index.ts",
+    "poll:replies": "node dist/scraper/outreach/gmail-poll.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",
@@ -18,13 +19,16 @@
     "@react-email/components": "^0.0.22",
     "@supabase/ssr": "^0.5.1",
     "@supabase/supabase-js": "^2.45.4",
+    "@types/nodemailer": "^7.0.11",
     "@types/web-push": "^3.6.4",
     "autoprefixer": "^10.4.27",
     "axios": "^1.7.7",
     "cheerio": "^1.0.0",
     "clsx": "^2.1.1",
     "dotenv": "^17.3.1",
+    "googleapis": "^171.4.0",
     "next": "14.2.15",
+    "nodemailer": "^8.0.4",
     "playwright": "^1.47.2",
     "react": "^18",
     "react-dom": "^18",
