@@ -23,7 +23,7 @@ import { supabaseAdmin }     from "../lib/supabase/admin";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
-const DRY_RUN   = process.env.DRY_RUN === "true";
+const DRY_RUN = process.env.DRY_RUN === "true" || false;
 const DAILY_LIMIT  = 30;   // Max emails per run
 const MIN_LEADS    = 100;  // Re-run lead finder when uncontacted DB leads fall below this
 
