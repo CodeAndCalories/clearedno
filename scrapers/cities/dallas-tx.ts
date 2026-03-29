@@ -116,6 +116,7 @@ export class DallasTxScraper extends BaseScraper {
     permitNumber: string,
     _address: string
   ): Promise<ScrapeResult> {
+    // Scraper selectors unverified — using safe fallback until portal confirmed
     const browser = await chromium.launch({
       headless: true,
       args: ["--no-sandbox", "--disable-setuid-sandbox"],
@@ -129,49 +130,78 @@ export class DallasTxScraper extends BaseScraper {
       const page = await context.newPage();
 
       // ── Step 1: Load the portal ────────────────────────────────────────────
-      // TODO: If the homepage requires navigating to a sub-page for search,
-      //       add a second goto() and a click() to get to the search form.
-      await page.goto(SEARCH_URL, {
-        waitUntil: "domcontentloaded",
-        timeout: 60_000,
-      });
+      try {
+        await page.goto(SEARCH_URL, {
+          waitUntil: "domcontentloaded",
+          timeout: 60_000,
+        });
+      } catch (navErr) {
+        return this.pendingFallback(
+          permitNumber,
+          `Navigation failed: ${navErr instanceof Error ? navErr.message : String(navErr)}`
+        );
+      }
       // Give the portal JS time to initialise after DOM load
       await page.waitForTimeout(3000);
 
       // ── Step 2: Fill in the permit number ─────────────────────────────────
-      // TODO: Verify SEL.permitInput targets the correct input field
-      const inputEl = await page.waitForSelector(SEL.permitInput, { timeout: 10_000 });
-      await inputEl.fill(permitNumber.trim());
-      await page.waitForTimeout(300);
+      try {
+        const inputEl = await page.waitForSelector(SEL.permitInput, { timeout: 10_000 });
+        await inputEl.fill(permitNumber.trim());
+        await page.waitForTimeout(300);
+      } catch {
+        return this.pendingFallback(
+          permitNumber,
+          "Permit number input not found. Check SEL.permitInput selector for Dallas portal."
+        );
+      }
 
       // ── Step 3: Submit ────────────────────────────────────────────────────
-      // TODO: Verify SEL.searchButton targets the correct submit button
-      const searchBtn = await page.waitForSelector(SEL.searchButton, { timeout: 5_000 });
-      await searchBtn.click();
+      try {
+        const searchBtn = await page.waitForSelector(SEL.searchButton, { timeout: 5_000 });
+        await searchBtn.click();
+      } catch {
+        return this.pendingFallback(
+          permitNumber,
+          "Search button not found. Check SEL.searchButton selector for Dallas portal."
+        );
+      }
 
       // ── Step 4: Wait for results ──────────────────────────────────────────
-      // TODO: Verify SEL.resultsContainer wraps the results grid/table
-      await page.waitForSelector(
-        `${SEL.resultsContainer}, [class*="no-result"], [class*="error"], [class*="not-found"]`,
-        { timeout: 15_000 }
-      );
+      try {
+        await page.waitForSelector(
+          `${SEL.resultsContainer}, [class*="no-result"], [class*="error"], [class*="not-found"]`,
+          { timeout: 15_000 }
+        );
+      } catch {
+        return this.pendingFallback(
+          permitNumber,
+          "Results container did not appear. Portal may have changed or is blocking access."
+        );
+      }
 
       // ── Step 5: Extract status ─────────────────────────────────────────────
       let rawText = "";
 
       try {
-        // TODO: Verify SEL.statusCell points to the status value element
         rawText = await page.locator(SEL.statusCell).first().innerText({ timeout: 5_000 });
       } catch {
         // Fallback: scan body text for status keywords near the permit number
-        const bodyText = await page.locator("body").innerText();
-        rawText = extractStatusFromBody(bodyText, permitNumber);
+        try {
+          const bodyText = await page.locator("body").innerText({ timeout: 5_000 });
+          rawText = extractStatusFromBody(bodyText, permitNumber);
+        } catch {
+          return this.pendingFallback(
+            permitNumber,
+            "Could not extract page text. Portal may be blocking automated access."
+          );
+        }
       }
 
-      if (!rawText) {
-        throw new Error(
-          `Status not found for permit ${permitNumber} in Dallas portal. ` +
-          "Check SEL.statusCell — the portal DOM may have changed."
+      if (!rawText || rawText.trim() === "") {
+        return this.pendingFallback(
+          permitNumber,
+          "Status text not found. Permit may not exist or SEL.statusCell selector is wrong."
         );
       }
 
@@ -188,6 +218,28 @@ export class DallasTxScraper extends BaseScraper {
     } finally {
       await browser.close().catch(() => {});
     }
+  }
+
+  // ── Fallback result ────────────────────────────────────────────────────────
+  // Returns PENDING instead of throwing so the permit stays in queue for next run.
+  private pendingFallback(permitNumber: string, reason: string): ScrapeResult {
+    console.error(
+      JSON.stringify({
+        level: "warn",
+        scraper: "Dallas, TX",
+        permit_number: permitNumber,
+        message: "Using PENDING fallback — manual check may be required",
+        reason,
+        portal_url: PORTAL_URL,
+        timestamp: new Date().toISOString(),
+      })
+    );
+    return {
+      permit_number: permitNumber,
+      status:        "PENDING",
+      raw_text:      "manual check required",
+      scrape_url:    PORTAL_URL,
+    };
   }
 
   // ── Dallas-specific status mapping ────────────────────────────────────────

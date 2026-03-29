@@ -130,6 +130,18 @@ export default async function DashboardPage() {
   const isPaid     = profile?.subscription_status === "active";
   const isTrialing = profile?.subscription_status === "trialing";
 
+  // Enforce trial expiration — expired trialing users see a dedicated upgrade page
+  if (isTrialing && profile?.trial_ends_at) {
+    const trialExpired = new Date(profile.trial_ends_at) < new Date();
+    if (trialExpired) redirect("/trial-expired");
+  }
+
+  // Enforce subscription — canceled/past_due users see a reactivation page
+  const subStatus = profile?.subscription_status;
+  if (subStatus === "canceled" || subStatus === "past_due") {
+    redirect("/reactivate");
+  }
+
   // For active subscribers: fetch next billing date from Stripe's current_period_end.
   let nextBillingDate: string | null = null;
   if (isPaid && profile?.stripe_subscription_id) {

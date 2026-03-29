@@ -77,6 +77,11 @@ export async function POST(req: NextRequest) {
       const userId = subscription.metadata?.supabase_user_id;
       if (!userId) break;
 
+      // Detect founding checkout: session had FOUNDING49 coupon applied
+      const isFoundingCheckout = (session.total_details?.breakdown?.discounts ?? []).some(
+        (d) => (d.discount as { coupon?: { id?: string } })?.coupon?.id === "FOUNDING49"
+      );
+
       // Persist customer + subscription state (handles race with subscription.created)
       await supabaseAdmin
         .from("profiles")
@@ -84,6 +89,7 @@ export async function POST(req: NextRequest) {
           stripe_customer_id:     session.customer as string,
           stripe_subscription_id: subscription.id,
           subscription_status:    mapStatus(subscription.status),
+          ...(isFoundingCheckout ? { plan: "founding" } : {}),
         })
         .eq("user_id", userId);
 

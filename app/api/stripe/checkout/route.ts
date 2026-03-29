@@ -45,6 +45,18 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id);
   }
 
+  // Check founding member cap before applying FOUNDING49 coupon
+  // First 20 founding members get $49/mo forever — enforce the limit server-side
+  let applyFoundingCoupon = false;
+  if (plan === "founding") {
+    const { count } = await supabaseAdmin
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("plan", "founding");
+
+    applyFoundingCoupon = (count ?? 0) < 20;
+  }
+
   const baseUrl = process.env.NEXT_PUBLIC_URL!;
 
   const session = await stripe.checkout.sessions.create({
@@ -52,7 +64,7 @@ export async function POST(req: NextRequest) {
     mode: "subscription",
     payment_method_types: ["card"],
     line_items: [{ price: PRICE_ID, quantity: 1 }],
-    ...(plan === "founding" ? { discounts: [{ coupon: "FOUNDING49" }] } : {}),
+    ...(applyFoundingCoupon ? { discounts: [{ coupon: "FOUNDING49" }] } : {}),
     success_url: `${baseUrl}/dashboard?checkout=success`,
     cancel_url:  `${baseUrl}/dashboard`,
     subscription_data: {

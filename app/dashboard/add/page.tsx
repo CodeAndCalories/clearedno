@@ -24,9 +24,24 @@ export default function AddPermitPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
+  function validatePermitNumber(value: string): string | null {
+    const trimmed = value.trim();
+    if (!trimmed) return "Permit number is required.";
+    if (trimmed.length < 4) return "Permit number must be at least 4 characters.";
+    if (!/^[A-Za-z0-9\-\s]+$/.test(trimmed)) return "Permit number may only contain letters, numbers, hyphens, and spaces.";
+    return null;
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
+
+    const validationError = validatePermitNumber(permitNumber);
+    if (validationError) {
+      setError(validationError);
+      return;
+    }
+
     setLoading(true);
 
     const supabase = createClient();
@@ -111,6 +126,11 @@ export default function AddPermitPage() {
               <p className="mt-1.5 text-[10px] text-[#F5F0E8]/30">
                 Enter the permit number exactly as it appears on your permit documents.
               </p>
+              {city.trim().toLowerCase() === "austin" && (
+                <p className="mt-1 text-[10px] text-[#FF6B00]/60 font-mono">
+                  Austin permits look like: 2026-033822 PP
+                </p>
+              )}
             </div>
 
             {/* Address */}
