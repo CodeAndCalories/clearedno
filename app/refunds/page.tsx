@@ -56,7 +56,7 @@ export default function RefundsPage() {
         <div className="mt-8 border border-[#FF6B00]/30 bg-[#FF6B00]/5 p-6 space-y-3">
           <div className="font-heading text-lg tracking-widest text-[#FF6B00]">THE SHORT VERSION</div>
           {[
-            "14-day free trial — no charge if you cancel before it ends.",
+            "First month free — no charge if you cancel before it ends.",
             "Cancel anytime — you keep access until the end of the billing period.",
             "No partial-month refunds after a billing cycle has started.",
             "Billing disputes? Email support@clearedno.com — we'll make it right.",
@@ -70,11 +70,11 @@ export default function RefundsPage() {
 
         <Section title="FREE TRIAL">
           <P>
-            Every new ClearedNo account starts with a 14-day free trial. No credit card
+            Every new ClearedNo account starts with a 30-day free trial (first month free). No credit card
             is required to start.
           </P>
           <P>
-            If you cancel your account at any point during the 14-day trial, you will
+            If you cancel your account at any point during the free trial, you will
             not be charged anything. Ever. No questions asked.
           </P>
           <P>

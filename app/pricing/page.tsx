@@ -28,7 +28,7 @@ const FAQ = [
   },
   {
     q: "Do you offer a free trial?",
-    a: "Yes — 14 days free, no credit card required. Start monitoring your permits today.",
+    a: "Yes — your first month is completely free, no credit card required. You get 30 days to monitor permits before you're ever charged.",
   },
 ];
 
@@ -82,12 +82,14 @@ export default function PricingPage() {
               </span>
             </div>
 
-            <div className="flex items-baseline gap-2 mb-2">
-              <span className="font-heading text-8xl text-[#F5F0E8]">$79</span>
-              <span className="text-[#F5F0E8]/40 text-sm">/month</span>
+            <div className="flex items-baseline gap-2 mb-1">
+              <span className="font-heading text-8xl text-[#FF6B00]">FREE</span>
             </div>
-            <p className="text-xs text-[#F5F0E8]/60 tracking-widest uppercase mb-10">
-              Per company · Unlimited permits
+            <p className="text-sm text-[#FF6B00]/80 font-mono tracking-widest uppercase mb-1">
+              First month — no credit card required
+            </p>
+            <p className="text-xs text-[#F5F0E8]/40 mb-10">
+              Then $79/mo per company. Cancel any time.
             </p>
 
             <ul className="space-y-4 mb-10">
@@ -98,7 +100,6 @@ export default function PricingPage() {
                 "Full status history and audit trail",
                 "All supported cities, new cities added weekly",
                 "Priority email support",
-                "14-day free trial — no credit card required",
               ].map((f) => (
                 <li key={f} className="flex items-start gap-3 text-sm text-[#F5F0E8]/80">
                   <span className="text-[#FF6B00] mt-0.5 flex-shrink-0">■</span>
@@ -111,10 +112,10 @@ export default function PricingPage() {
               href="/signup"
               className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase px-10 py-4 hover:bg-[#F5F0E8] transition-colors"
             >
-              START FREE TRIAL →
+              START FREE — NO CARD NEEDED →
             </Link>
             <p className="mt-3 text-xs text-[#F5F0E8]/30">
-              No credit card required to start
+              30 days free · Then $79/mo · Cancel any time
             </p>
           </div>
 
@@ -177,10 +178,10 @@ export default function PricingPage() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
 
           <h3 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] mb-4">
-            START FREE TRIAL
+            FIRST MONTH FREE
           </h3>
           <p className="text-sm text-[#F5F0E8]/40 mb-8 max-w-sm mx-auto">
-            14 days free. No credit card. Cancel any time.
+            30 days free. No credit card. Then $79/mo. Cancel any time.
           </p>
           <Link
             href="/signup"

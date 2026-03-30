@@ -77,7 +77,7 @@ function SignupForm() {
         </Link>
         <div className="flex items-center gap-2 text-[10px] tracking-widest text-[#F5F0E8]/30 uppercase">
           <span className="w-1.5 h-1.5 bg-[#16A34A] rounded-full animate-pulse" />
-          14-Day Free Trial
+          First Month Free
         </div>
       </div>
 
@@ -96,7 +96,7 @@ function SignupForm() {
                 START WATCHING
               </h1>
               <p className="text-xs text-[#F5F0E8]/40 tracking-widest">
-                14 days free · No credit card required
+                First month free · No credit card required
               </p>
             </div>
 
@@ -173,7 +173,7 @@ function SignupForm() {
 
               <p className="text-[10px] text-[#F5F0E8]/30 text-center leading-relaxed">
                 By signing up you agree to our terms. Your trial starts immediately.
-                No card required for 14 days.
+                No card required. First month is on us.
               </p>
             </form>
 
