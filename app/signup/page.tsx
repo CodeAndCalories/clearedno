@@ -96,7 +96,7 @@ function SignupForm() {
                 START WATCHING
               </h1>
               <p className="text-xs text-[#F5F0E8]/40 tracking-widest">
-                First month free · No credit card required
+                30 days free · Then $79/mo
               </p>
             </div>
 
@@ -173,7 +173,7 @@ function SignupForm() {
 
               <p className="text-[10px] text-[#F5F0E8]/30 text-center leading-relaxed">
                 By signing up you agree to our terms. Your trial starts immediately.
-                No card required. First month is on us.
+                Card required after trial. Cancel anytime.
               </p>
             </form>
 
