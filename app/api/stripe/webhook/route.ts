@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
 
       const { data: profile } = await supabaseAdmin
         .from("profiles")
-        .select("full_name")
+        .select("id, full_name")
         .eq("user_id", userId)
         .single();
 
@@ -110,10 +110,12 @@ export async function POST(req: NextRequest) {
       });
 
       // Convert any pending referral for this user
+      // referrals.referred_user_id stores profiles.id (not auth user id)
+      if (!profile?.id) break;
       const { data: pendingReferral } = await supabaseAdmin
         .from("referrals")
         .select("*, referrer:referrer_user_id(stripe_subscription_id)")
-        .eq("referred_user_id", userId)
+        .eq("referred_user_id", profile.id)
         .eq("status", "pending")
         .single();
 
