@@ -318,7 +318,7 @@ export default function LandingPage() {
               <div className="mt-4 flex items-center gap-4 text-[10px] tracking-widest text-[#F5F0E8]/40 uppercase flex-wrap">
                 <span>No credit card</span>
                 <span className="text-[#FF6B00]">·</span>
-                <span>14-day free trial</span>
+                <span>First month free</span>
                 <span className="text-[#FF6B00]">·</span>
                 <span>Cancel anytime</span>
               </div>
@@ -545,107 +545,56 @@ export default function LandingPage() {
               <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Pricing</span>
             </div>
             <h2 className="font-heading text-5xl tracking-widest text-[#F5F0E8]">
-              LOCK IN YOUR RATE.
+              ONE PLAN. NO NONSENSE.
             </h2>
             <p className="mt-3 text-sm text-[#F5F0E8]/50 max-w-md leading-relaxed">
-              First 20 contractors lock in $49/mo forever. Price increases to $79 when spots fill.
+              First month free. Then $79/mo. Cancel any time.
             </p>
           </div>
 
-          {/* Spots counter */}
-          <div className="inline-flex items-center gap-2 border border-[#FF6B00]/40 bg-[#FF6B00]/10 px-4 py-2 mb-10">
-            <span className="text-[#FF6B00] text-sm">⚡</span>
-            <span className="text-xs font-mono text-[#FF6B00] tracking-widest uppercase">
-              <FoundingSpotsCounter />
-            </span>
-          </div>
-
           <div className="grid lg:grid-cols-3 gap-0">
-            {/* Plans side by side (span 2 cols) */}
-            <div className="lg:col-span-2 grid sm:grid-cols-2 gap-0">
-
-              {/* Founding Member */}
-              <div className="founding-card-border relative">
-              <div className="p-8 relative h-full backdrop-blur-sm" style={{ background: "rgba(10,10,10,0.94)" }}>
-                <div className="absolute top-0 right-0 bg-[#FF6B00] px-3 py-1">
-                  <span className="text-[10px] font-mono font-bold tracking-widest text-[#0A0A0A] uppercase">
-                    Best Value
-                  </span>
-                </div>
-
-                <div className="text-[10px] font-mono tracking-[0.3em] text-[#FF6B00] uppercase mb-3">
-                  Founding Member
-                </div>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="font-heading text-7xl text-[#FF6B00]">$49</span>
-                  <span className="text-[#F5F0E8]/40 text-sm">first mo</span>
-                </div>
-                <p className="text-[10px] text-[#FF6B00]/70 tracking-widest uppercase mb-1">
-                  Then $79/mo — locked forever
-                </p>
-                <p className="text-[10px] text-[#F5F0E8]/30 mb-6">
-                  New customers after founding period pay $149/mo
-                </p>
-
-                <ul className="space-y-3 mb-8">
-                  {[
-                    "Everything in Standard",
-                    "Price locked forever",
-                    "Founding member badge",
-                    "Direct founder access",
-                    "14-day free trial",
-                  ].map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-[#F5F0E8]/80">
-                      <span className="text-[#FF6B00] mt-0.5 flex-shrink-0">■</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <PrimaryCTA
-                  label="CLAIM FOUNDING PRICING →"
-                  href="/signup?plan=founding"
-                  className="text-xs px-4 py-3 w-full justify-center"
-                />
-                <p className="mt-3 text-[10px] text-[#F5F0E8]/30 text-center">
-                  <FoundingSpotsCounter compact />
-                </p>
-              </div>
+            {/* Main plan */}
+            <div className="lg:col-span-2 border border-[#FF6B00] p-10 relative">
+              <div className="absolute top-0 right-0 bg-[#FF6B00] px-4 py-1">
+                <span className="text-[10px] font-mono font-bold tracking-widest text-[#0A0A0A] uppercase">
+                  Only Plan
+                </span>
               </div>
 
-              {/* Standard */}
-              <div className="border border-[#FF6B00]/20 border-t-0 sm:border-t sm:border-l-0 p-8 relative backdrop-blur-sm" style={{ background: "rgba(245,240,232,0.02)" }}>
-                <div className="text-[10px] font-mono tracking-[0.3em] text-[#F5F0E8]/40 uppercase mb-3">
-                  Standard
-                </div>
-                <div className="flex items-baseline gap-1 mb-1">
-                  <span className="font-heading text-7xl text-[#F5F0E8]/60">$79</span>
-                  <span className="text-[#F5F0E8]/30 text-sm">/mo</span>
-                </div>
-                <p className="text-[10px] text-[#F5F0E8]/30 tracking-widest uppercase mb-6">
-                  After founding spots fill
-                </p>
-
-                <ul className="space-y-3 mb-8">
-                  {[
-                    "Unlimited permit tracking",
-                    "Checks every 2 hours, 24/7",
-                    "Instant email alerts",
-                    "Full status history",
-                    "14-day free trial",
-                  ].map((f) => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm text-[#F5F0E8]/40">
-                      <span className="text-[#F5F0E8]/20 mt-0.5 flex-shrink-0">■</span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <div className="w-full border border-[#FF6B00]/15 text-[#F5F0E8]/30 font-mono text-xs tracking-widest uppercase px-4 py-3 text-center">
-                  Available after founding spots fill
-                </div>
+              <div className="flex items-baseline gap-2 mb-1">
+                <span className="font-heading text-8xl text-[#FF6B00]">FREE</span>
               </div>
+              <p className="text-sm text-[#FF6B00]/80 font-mono tracking-widest uppercase mb-1">
+                First month — no credit card required
+              </p>
+              <p className="text-xs text-[#F5F0E8]/40 mb-10">
+                Then $79/mo per company. Cancel any time.
+              </p>
 
+              <ul className="space-y-4 mb-10">
+                {[
+                  "Unlimited permit tracking — no per-permit fees",
+                  "Checks every 2 hours, 24 hours a day, 7 days a week",
+                  "Instant email alert the moment any status changes",
+                  "Full status history and audit trail",
+                  "All supported cities, new cities added weekly",
+                  "Priority email support",
+                ].map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-sm text-[#F5F0E8]/80">
+                    <span className="text-[#FF6B00] mt-0.5 flex-shrink-0">■</span>
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <PrimaryCTA
+                label="START FREE — NO CARD NEEDED →"
+                href="/signup"
+                className="text-xs px-6 py-4"
+              />
+              <p className="mt-3 text-[10px] text-[#F5F0E8]/30">
+                30 days free · Then $79/mo · Cancel any time
+              </p>
             </div>
 
             {/* THE MATH */}
@@ -663,13 +612,13 @@ export default function LandingPage() {
                 <div className="w-full h-px bg-[#FF6B00]/20" />
                 <div>
                   <div className="text-[#F5F0E8]/40 text-xs uppercase tracking-widest mb-1">
-                    Founding member / mo
+                    ClearedNo / mo
                   </div>
                   <div className="font-heading text-3xl text-[#FF6B00]">$79</div>
                 </div>
                 <div className="w-full h-px bg-[#FF6B00]/20" />
                 <p className="text-xs text-[#F5F0E8]/60 leading-relaxed">
-                  One hour of saved crew time pays for a year of monitoring.
+                  Half a day of crew time pays for a year of monitoring.
                 </p>
               </div>
             </div>
@@ -787,7 +736,7 @@ export default function LandingPage() {
               },
               {
                 q: "How does the free trial work?",
-                a: "14 days free, no credit card required. Monitor unlimited permits. If you love it, pick a plan. If not, walk away — no charge.",
+                a: "Your first month is completely free — no credit card required. 30 days to monitor unlimited permits. If it's not working for you, walk away. No charge.",
               },
             ].map((item, i) => (
               <details

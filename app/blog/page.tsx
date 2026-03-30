@@ -16,6 +16,60 @@ export const metadata: Metadata = {
 
 const POSTS = [
   {
+    href: "/blog/austin-permit-tx-search-tool",
+    title: "Austin TX Permit Search Tool: How to Find Any Permit in 2026",
+    excerpt:
+      "Whether you're looking up your own permit or researching a property — here's every way to search Austin permits by number, address, or contractor.",
+    tag: "Austin, TX",
+    date: "March 2026",
+    readTime: "5 min read",
+  },
+  {
+    href: "/blog/contractor-permit-tracking-multiple-jobs",
+    title: "How Contractors Track Multiple Permit Applications Without Losing Their Minds",
+    excerpt:
+      "Running 8 jobs means 8 permits to watch across multiple city portals. Here's what actually works — spreadsheets, delegation, and automation.",
+    tag: "Operations",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/why-austin-permits-take-so-long",
+    title: "Why Austin Permits Take So Long (And What to Do About It)",
+    excerpt:
+      "What actually causes Austin permit delays, which project types are worst, and practical things that make a real difference.",
+    tag: "Austin, TX",
+    date: "March 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/round-rock-cedar-park-permit-requirements",
+    title: "Permit Requirements in Round Rock, Cedar Park & Georgetown TX",
+    excerpt:
+      "Each of Austin's northern suburbs runs its own permit department. Here's how Round Rock, Cedar Park, and Georgetown compare — portals, timelines, and what they require.",
+    tag: "Central Texas",
+    date: "March 2026",
+    readTime: "8 min read",
+  },
+  {
+    href: "/blog/travis-county-building-permits",
+    title: "Travis County Building Permits: A Contractor's Guide",
+    excerpt:
+      "Building in unincorporated Travis County is a different process than building inside Austin. Here's what changes, the ETJ situation, and what trips people up.",
+    tag: "Travis County",
+    date: "March 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/austin-contractor-permit-lookup",
+    title: "Austin Contractor Permit Lookup: What You Need to Know in 2026",
+    excerpt:
+      "Austin runs two permit systems that don't talk to each other well. Here's how to navigate both — and what each status actually means.",
+    tag: "Austin, TX",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
     href: "/blog/how-to-check-austin-permit-status",
     title: "How to Check Your Austin Building Permit Status in 2026",
     excerpt:

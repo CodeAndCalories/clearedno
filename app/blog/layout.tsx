@@ -2,8 +2,14 @@ import Link from "next/link";
 import Image from "next/image";
 
 const RECENT_POSTS = [
-  { title: "How to Check Your Austin Building Permit Status in 2026", href: "/blog/how-to-check-austin-permit-status" },
-  { title: "Average Building Permit Approval Times in Texas (2026)", href: "/blog/average-permit-times-texas" },
+  { title: "Austin TX Permit Search Tool: How to Find Any Permit", href: "/blog/austin-permit-tx-search-tool" },
+  { title: "Tracking Multiple Permits Without Losing Your Mind", href: "/blog/contractor-permit-tracking-multiple-jobs" },
+  { title: "Why Austin Permits Take So Long", href: "/blog/why-austin-permits-take-so-long" },
+  { title: "Round Rock, Cedar Park & Georgetown Permit Requirements", href: "/blog/round-rock-cedar-park-permit-requirements" },
+  { title: "Travis County Building Permits Guide", href: "/blog/travis-county-building-permits" },
+  { title: "Austin Contractor Permit Lookup: What You Need to Know", href: "/blog/austin-contractor-permit-lookup" },
+  { title: "How to Check Your Austin Building Permit Status", href: "/blog/how-to-check-austin-permit-status" },
+  { title: "Average Permit Approval Times in Texas (2026)", href: "/blog/average-permit-times-texas" },
   { title: "What Does 'Permit Cleared' Actually Mean?", href: "/blog/what-does-permit-cleared-mean" },
 ];
 
@@ -69,7 +75,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               >
                 START FREE TRIAL →
               </Link>
-              <p className="mt-2 text-[9px] text-[#F5F0E8]/25 text-center">14-day free trial · No credit card</p>
+              <p className="mt-2 text-[9px] text-[#F5F0E8]/25 text-center">First month free · No credit card</p>
             </div>
 
             {/* City links */}

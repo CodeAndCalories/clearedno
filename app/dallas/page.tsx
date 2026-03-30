@@ -160,7 +160,7 @@ export default function DallasPage() {
             STOP CHECKING.<br /><span className="text-[#FF6B00]">START BUILDING.</span>
           </h2>
           <p className="text-sm text-[#F5F0E8]/50 mb-8">
-            14-day free trial. No credit card required. Cancel anytime.
+            First month free. No credit card required. Cancel anytime.
           </p>
           <Link
             href="/signup"

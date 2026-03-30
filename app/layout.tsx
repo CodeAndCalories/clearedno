@@ -71,11 +71,11 @@ const jsonLd = {
         "Permit status monitoring for contractors. ClearedNo watches your building permits 24/7 and alerts you the moment your permit clears.",
       "offers": {
         "@type": "Offer",
-        "price": "49.00",
+        "price": "79.00",
         "priceCurrency": "USD",
         "priceSpecification": {
           "@type": "UnitPriceSpecification",
-          "price": "49.00",
+          "price": "79.00",
           "priceCurrency": "USD",
           "unitText": "month",
         },
@@ -148,7 +148,7 @@ const jsonLd = {
           "name": "How does the free trial work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "14 days free, no credit card required. Monitor unlimited permits. If you love it, pick a plan. If not, walk away — no charge.",
+            "text": "Your first month is completely free — no credit card required. You get 30 days to monitor unlimited permits before you're ever charged. Then $79/mo. Cancel any time.",
           },
         },
       ],

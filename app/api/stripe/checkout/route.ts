@@ -1,9 +1,6 @@
 // POST /api/stripe/checkout
 // Creates a Stripe Checkout session and redirects the user to it.
-//
-// Query params:
-//   ?plan=founding  → applies FOUNDING49 coupon (first month $49, then $79/mo)
-//   (default)       → standard $79/mo, no discount
+// First month free (30-day trial), then $79/mo.
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { stripe, PRICE_ID } from "@/lib/stripe";
@@ -19,8 +16,6 @@ export async function POST(req: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-
-  const plan = req.nextUrl.searchParams.get("plan");
 
   // Fetch or create a Stripe customer for this user
   const { data: profile } = await supabaseAdmin
@@ -45,18 +40,6 @@ export async function POST(req: NextRequest) {
       .eq("user_id", user.id);
   }
 
-  // Check founding member cap before applying FOUNDING49 coupon
-  // First 20 founding members get $49/mo forever — enforce the limit server-side
-  let applyFoundingCoupon = false;
-  if (plan === "founding") {
-    const { count } = await supabaseAdmin
-      .from("profiles")
-      .select("*", { count: "exact", head: true })
-      .eq("plan", "founding");
-
-    applyFoundingCoupon = (count ?? 0) < 20;
-  }
-
   const baseUrl = process.env.NEXT_PUBLIC_URL!;
 
   const session = await stripe.checkout.sessions.create({
@@ -64,11 +47,10 @@ export async function POST(req: NextRequest) {
     mode: "subscription",
     payment_method_types: ["card"],
     line_items: [{ price: PRICE_ID, quantity: 1 }],
-    ...(applyFoundingCoupon ? { discounts: [{ coupon: "FOUNDING49" }] } : {}),
     success_url: `${baseUrl}/dashboard?checkout=success`,
     cancel_url:  `${baseUrl}/dashboard`,
     subscription_data: {
-      trial_period_days: 14,
+      trial_period_days: 30,
       metadata: { supabase_user_id: user.id },
     },
   });

@@ -29,7 +29,7 @@ export default function TrialExpiredPage() {
             </div>
 
             <h1 className="font-heading text-3xl sm:text-4xl tracking-widest text-[#F5F0E8] mb-4">
-              YOUR 14-DAY TRIAL HAS ENDED
+              YOUR FREE TRIAL HAS ENDED
             </h1>
 
             <p className="text-sm text-[#F5F0E8]/50 leading-relaxed mb-8">
