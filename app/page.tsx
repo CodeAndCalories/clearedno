@@ -108,6 +108,12 @@ function NavBar() {
             Pricing
           </a>
           <Link
+            href="/blog"
+            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
+          >
+            Blog
+          </Link>
+          <Link
             href="/login"
             className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
           >
