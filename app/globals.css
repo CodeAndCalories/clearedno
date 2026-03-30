@@ -46,3 +46,38 @@
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: #0A0A0A; }
 ::-webkit-scrollbar-thumb { background: #FF6B00; border-radius: 0; }
+
+/* CTA glow pulse */
+@keyframes ctaGlow {
+  0%, 100% { box-shadow: 0 0 18px rgba(255,107,0,0.45), 0 0 36px rgba(255,107,0,0.18); }
+  50%       { box-shadow: 0 0 32px rgba(255,107,0,0.75), 0 0 64px rgba(255,107,0,0.32); }
+}
+
+/* Founding card animated gradient border */
+@keyframes gradientSpin {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.cta-glow {
+  animation: ctaGlow 2s ease-in-out infinite;
+}
+
+.founding-card-border {
+  background: linear-gradient(90deg, #FF6B00, #FFAA00, #FF4400, #FF8C00, #FF6B00);
+  background-size: 300% 300%;
+  animation: gradientSpin 3s ease infinite;
+  padding: 1px;
+}
+
+/* Scroll-reveal — sections fade up on scroll */
+.reveal {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
