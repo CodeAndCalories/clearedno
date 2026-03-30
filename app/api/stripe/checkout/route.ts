@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
     line_items: [{ price: PRICE_ID, quantity: 1 }],
     success_url: `${baseUrl}/dashboard?checkout=success`,
     cancel_url:  `${baseUrl}/dashboard`,
+    payment_method_collection: "always",
     subscription_data: {
       trial_period_days: 30,
       metadata: { supabase_user_id: user.id },

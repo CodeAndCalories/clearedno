@@ -571,7 +571,7 @@ export default function LandingPage() {
                 <span className="font-heading text-8xl text-[#FF6B00]">FREE</span>
               </div>
               <p className="text-sm text-[#FF6B00]/80 font-mono tracking-widest uppercase mb-1">
-                First month — no credit card required
+                First month — cancel anytime
               </p>
               <p className="text-xs text-[#F5F0E8]/40 mb-10">
                 Then $79/mo per company. Cancel any time.
@@ -594,12 +594,12 @@ export default function LandingPage() {
               </ul>
 
               <PrimaryCTA
-                label="START FREE — NO CARD NEEDED →"
+                label="START FREE TRIAL — CANCEL ANYTIME →"
                 href="/signup"
                 className="text-xs px-6 py-4"
               />
               <p className="mt-3 text-[10px] text-[#F5F0E8]/30">
-                30 days free · Then $79/mo · Cancel any time
+                30 days free · Card required · Cancel anytime
               </p>
             </div>
 

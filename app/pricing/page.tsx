@@ -86,7 +86,7 @@ export default function PricingPage() {
               <span className="font-heading text-8xl text-[#FF6B00]">FREE</span>
             </div>
             <p className="text-sm text-[#FF6B00]/80 font-mono tracking-widest uppercase mb-1">
-              First month — no credit card required
+              First month — cancel anytime
             </p>
             <p className="text-xs text-[#F5F0E8]/40 mb-10">
               Then $79/mo per company. Cancel any time.
@@ -112,10 +112,10 @@ export default function PricingPage() {
               href="/signup"
               className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase px-10 py-4 hover:bg-[#F5F0E8] transition-colors"
             >
-              START FREE — NO CARD NEEDED →
+              START FREE TRIAL — CANCEL ANYTIME →
             </Link>
             <p className="mt-3 text-xs text-[#F5F0E8]/30">
-              30 days free · Then $79/mo · Cancel any time
+              30 days free · Card required · Cancel anytime
             </p>
           </div>
 
