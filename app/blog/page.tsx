@@ -96,6 +96,87 @@ const POSTS = [
     date: "March 2026",
     readTime: "4 min read",
   },
+  {
+    href: "/blog/houston-building-permit-status-check-2026",
+    title: "Houston Building Permit Status Check: A Contractor's Guide (2026)",
+    excerpt:
+      "Houston's AMANDA portal, no-zoning quirks, ETJ complications, and how to track a residential or commercial permit from submission to final.",
+    tag: "Houston, TX",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/san-antonio-building-permit-guide-2026",
+    title: "San Antonio Building Permit Guide for Contractors (2026)",
+    excerpt:
+      "San Antonio's SAconnect portal, typical approval timelines, Historic Design Review, and what to do when your permit gets stuck.",
+    tag: "San Antonio, TX",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/columbus-ohio-building-permit-status-check",
+    title: "Columbus Ohio Building Permit Status Check: A Complete Guide (2026)",
+    excerpt:
+      "How to search the Columbus Accela portal, what Applied/Issued/Finaled statuses mean, typical 6–10 week timelines, and common delay causes.",
+    tag: "Columbus, OH",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/cleveland-ohio-building-permit-guide-contractors",
+    title: "Cleveland Building Permit Guide for Contractors (2026)",
+    excerpt:
+      "Cleveland Building & Housing portal walkthrough, what PENDING vs ISSUED vs FINAL means, inspection requirements, and how to get unstuck.",
+    tag: "Cleveland, OH",
+    date: "March 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/cincinnati-building-permit-approval-times-2026",
+    title: "Cincinnati Building Permit Approval Times in 2026",
+    excerpt:
+      "Hamilton County vs. City of Cincinnati split jurisdiction explained, two different portals, typical timeframes, and why contractors get confused.",
+    tag: "Cincinnati, OH",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/grand-rapids-michigan-building-permit-guide",
+    title: "Grand Rapids Michigan Building Permit Guide: How to Search and Track (2026)",
+    excerpt:
+      "BS&A Online portal explained, how to search by permit number, typical 4–8 week timelines, and what contractors commonly get wrong.",
+    tag: "Grand Rapids, MI",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/detroit-building-permit-status-check-2026",
+    title: "Detroit Building Permit Status Check: What Contractors Need to Know (2026)",
+    excerpt:
+      "BSEED portal walkthrough, why Detroit's dual system is complex, practical tracking steps, and what to do when your permit disappears.",
+    tag: "Detroit, MI",
+    date: "March 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/philadelphia-building-permit-guide-contractors-2026",
+    title: "Philadelphia Building Permit Guide for Contractors (2026)",
+    excerpt:
+      "eCLIPSE portal walkthrough, L&I department explained, 8–12 week residential wait, expedited review options, and common delay causes.",
+    tag: "Philadelphia, PA",
+    date: "March 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/pittsburgh-building-permit-status-2026",
+    title: "Pittsburgh Building Permit Status: How to Track Your Permit in 2026",
+    excerpt:
+      "PLI portal walkthrough, what each status means, common contractor mistakes, historic district complications, and how to escalate delays.",
+    tag: "Pittsburgh, PA",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
 ];
 
 export default function BlogIndexPage() {

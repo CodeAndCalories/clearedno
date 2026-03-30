@@ -722,7 +722,7 @@ export default function LandingPage() {
             {[
               {
                 q: "What cities do you support?",
-                a: "Currently Austin, TX and Dallas, TX — plus Houston, TX and San Antonio, TX in early access. We add new cities based on demand. Request yours at /suggest-city.",
+                a: "Currently Austin, TX, Dallas, TX, Houston, TX, and San Antonio, TX. Columbus OH, Philadelphia PA, and Grand Rapids MI are coming soon. We add new cities based on demand — request yours at /suggest-city.",
               },
               {
                 q: "How often do you check my permit?",
@@ -838,7 +838,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] flex-shrink-0" />
               <span className="text-[10px] text-[#F5F0E8]/40 tracking-widest uppercase">
-                Currently monitoring Austin, TX · Dallas, TX · Houston, TX · San Antonio, TX
+                Currently monitoring Austin, TX · Dallas, TX · Houston, TX · San Antonio, TX · Columbus OH soon · Philadelphia PA soon · Grand Rapids MI soon
               </span>
             </div>
             <span className="text-[10px] text-[#FF6B00]/50 tracking-widest uppercase">

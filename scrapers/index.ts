@@ -30,6 +30,9 @@ import { AustinTxScraper }      from "./cities/austin-tx";
 import { DallasTxScraper }      from "./cities/dallas-tx";
 import { HoustonTxScraper }     from "./cities/houston-tx";
 import { SanAntonioTxScraper }  from "./cities/san-antonio-tx";
+import { ColumbusOhScraper }      from "./cities/columbus-oh";
+import { PhiladelphiaPaScraper }  from "./cities/philadelphia-pa";
+import { GrandRapidsMiScraper }   from "./cities/grand-rapids-mi";
 import type { BaseScraper } from "./base-scraper";
 
 const SCRAPERS: BaseScraper[] = [
@@ -37,6 +40,9 @@ const SCRAPERS: BaseScraper[] = [
   new DallasTxScraper(),
   new HoustonTxScraper(),
   new SanAntonioTxScraper(),
+  new ColumbusOhScraper(),
+  new PhiladelphiaPaScraper(),
+  new GrandRapidsMiScraper(),
   // new PhoenixAzScraper(),
 ];
 

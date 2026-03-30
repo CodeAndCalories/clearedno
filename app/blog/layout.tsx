@@ -11,6 +11,15 @@ const RECENT_POSTS = [
   { title: "How to Check Your Austin Building Permit Status", href: "/blog/how-to-check-austin-permit-status" },
   { title: "Average Permit Approval Times in Texas (2026)", href: "/blog/average-permit-times-texas" },
   { title: "What Does 'Permit Cleared' Actually Mean?", href: "/blog/what-does-permit-cleared-mean" },
+  { title: "Columbus Ohio Building Permit Status Check (2026)", href: "/blog/columbus-ohio-building-permit-status-check" },
+  { title: "Cleveland Building Permit Guide for Contractors", href: "/blog/cleveland-ohio-building-permit-guide-contractors" },
+  { title: "Cincinnati Building Permit Approval Times 2026", href: "/blog/cincinnati-building-permit-approval-times-2026" },
+  { title: "Grand Rapids Michigan Building Permit Guide", href: "/blog/grand-rapids-michigan-building-permit-guide" },
+  { title: "Detroit Building Permit Status Check 2026", href: "/blog/detroit-building-permit-status-check-2026" },
+  { title: "Philadelphia Building Permit Guide for Contractors", href: "/blog/philadelphia-building-permit-guide-contractors-2026" },
+  { title: "Pittsburgh Building Permit Status 2026", href: "/blog/pittsburgh-building-permit-status-2026" },
+  { title: "San Antonio Building Permit Guide 2026", href: "/blog/san-antonio-building-permit-guide-2026" },
+  { title: "Houston Building Permit Status Check 2026", href: "/blog/houston-building-permit-status-check-2026" },
 ];
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {
@@ -67,7 +76,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-3">Stop Checking Manually</div>
               <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
                 Get instant alerts when your Austin, Dallas, Houston, or San Antonio permit status changes.
-                No more daily portal checks.
+                Columbus, Philadelphia, and Grand Rapids coming soon.
               </p>
               <Link
                 href="/signup"
@@ -92,6 +101,23 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
                     <Link
                       href={city.href}
                       className="text-xs text-[#F5F0E8]/50 hover:text-[#FF6B00] transition-colors font-mono"
+                    >
+                      → {city.label}
+                    </Link>
+                  </li>
+                ))}
+                <li className="pt-2 border-t border-[#FF6B00]/10">
+                  <span className="text-[9px] tracking-[0.2em] text-[#FF6B00]/40 uppercase font-mono">Coming Soon</span>
+                </li>
+                {[
+                  { label: "Columbus, OH", href: "/suggest-city" },
+                  { label: "Philadelphia, PA", href: "/suggest-city" },
+                  { label: "Grand Rapids, MI", href: "/suggest-city" },
+                ].map((city) => (
+                  <li key={city.label}>
+                    <Link
+                      href={city.href}
+                      className="text-xs text-[#F5F0E8]/30 hover:text-[#FF6B00] transition-colors font-mono"
                     >
                       → {city.label}
                     </Link>
