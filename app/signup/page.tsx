@@ -61,10 +61,12 @@ function SignupForm() {
       await fetch("/api/referral/track", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userId: data.user.id, refCode }),
+        body: JSON.stringify({ newUserId: data.user.id, referralCode: refCode }),
       }).catch(() => {});
       localStorage.removeItem("clearedno_ref");
     }
+
+    await new Promise(resolve => setTimeout(resolve, 1000))
 
     const checkoutRes = await fetch("/api/stripe/checkout", {
       method: "POST",

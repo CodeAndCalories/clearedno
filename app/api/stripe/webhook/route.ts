@@ -109,6 +109,30 @@ export async function POST(req: NextRequest) {
         userName: profile?.full_name ?? "there",
       });
 
+      // Convert any pending referral for this user
+      const { data: pendingReferral } = await supabaseAdmin
+        .from("referrals")
+        .select("*, referrer:referrer_user_id(stripe_subscription_id)")
+        .eq("referred_user_id", userId)
+        .eq("status", "pending")
+        .single();
+
+      if (pendingReferral?.referrer?.stripe_subscription_id) {
+        const coupon = await stripe.coupons.create({
+          percent_off: 100,
+          duration:    "once",
+          name:        "Referral Reward — 1 Free Month",
+        });
+        await stripe.subscriptions.update(
+          pendingReferral.referrer.stripe_subscription_id,
+          { coupon: coupon.id }
+        );
+        await supabaseAdmin
+          .from("referrals")
+          .update({ status: "completed", free_months_awarded: 1 })
+          .eq("id", pendingReferral.id);
+      }
+
       break;
     }
 
