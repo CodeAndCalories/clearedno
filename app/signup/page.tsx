@@ -2,11 +2,10 @@
 
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 function SignupForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [fullName, setFullName] = useState("");
@@ -35,11 +34,14 @@ function SignupForm() {
       return;
     }
 
+    // Supabase Site URL must be set to https://www.clearedno.com
+    // in Supabase Dashboard > Authentication > Settings
     const supabase = createClient();
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_URL}/auth/confirm`,
         data: {
           full_name: fullName,
           company_name: company,
@@ -64,8 +66,18 @@ function SignupForm() {
       localStorage.removeItem("clearedno_ref");
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    const checkoutRes = await fetch("/api/stripe/checkout", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    })
+    const checkoutData = await checkoutRes.json()
+    if (checkoutData.url) {
+      window.location.href = checkoutData.url
+    } else {
+      setError("Failed to start checkout. Please try again.")
+      setLoading(false)
+    }
   }
 
   return (
