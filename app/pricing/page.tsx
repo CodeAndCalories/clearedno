@@ -187,7 +187,7 @@ export default function PricingPage() {
             href="/signup"
             className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase px-12 py-5 hover:bg-[#F5F0E8] transition-colors"
           >
-            Get Started Free →
+            START FREE TRIAL →
           </Link>
         </div>
       </main>

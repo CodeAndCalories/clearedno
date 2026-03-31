@@ -4,8 +4,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { FoundingSpotsCounter } from "./founding-spots-counter";
-import { PermitChecker } from "./components/permit-checker";
 import { ScrollRevealInit, StickyMobileCTA } from "./components/landing-client";
 
 // ── Page-specific metadata (overrides layout defaults) ───────────────────────
@@ -42,7 +40,7 @@ export const metadata: Metadata = {
 
 // ── Shared CTA button ────────────────────────────────────────────────────────
 function PrimaryCTA({
-  label = "START WATCHING MY PERMITS",
+  label = "START FREE TRIAL — NO CARD SURPRISE",
   href = "/signup",
   className = "",
   glow = false,
@@ -95,24 +93,6 @@ function NavBar() {
         </div>
         <div className="flex items-center gap-3 sm:gap-6">
           {/* Hide text links on mobile — show only the CTA */}
-          <a
-            href="#how-it-works"
-            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
-          >
-            How It Works
-          </a>
-          <a
-            href="#pricing"
-            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
-          >
-            Pricing
-          </a>
-          <Link
-            href="/blog"
-            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
-          >
-            Blog
-          </Link>
           <Link
             href="/login"
             className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
@@ -307,30 +287,12 @@ export default function LandingPage() {
                 />
                 <div className="flex flex-col sm:flex-row gap-4">
                   <PrimaryCTA glow className="justify-center sm:justify-start" />
-                  <a
-                    href="#how-it-works"
-                    className="border border-[#FF6B00]/40 text-[#F5F0E8]/70 font-mono text-sm tracking-widest uppercase px-8 py-4 hover:border-[#FF6B00] hover:text-[#F5F0E8] transition-colors text-center"
-                  >
-                    SEE HOW IT WORKS
-                  </a>
                 </div>
               </div>
 
-              <p className="mt-4 text-xs text-[#F5F0E8]/30 font-mono">
-                No setup. No integrations. Works with your city portal.
+              <p className="mt-4 text-xs text-[#F5F0E8]/40 font-mono">
+                First month free. Then $79/mo. Cancel any time.
               </p>
-
-              {/* Trust strip */}
-              <div className="mt-4 flex items-center gap-4 text-[10px] tracking-widest text-[#F5F0E8]/40 uppercase flex-wrap">
-                <span>No credit card</span>
-                <span className="text-[#FF6B00]">·</span>
-                <span>First month free</span>
-                <span className="text-[#FF6B00]">·</span>
-                <span>Cancel anytime</span>
-              </div>
-              <div className="mt-2 text-[10px] tracking-widest text-[#FF6B00]/50 uppercase">
-                Monitoring Austin & Dallas permits 24/7
-              </div>
             </div>
 
             {/* ── Right col: permit card — hidden on small screens ── */}
@@ -414,24 +376,11 @@ export default function LandingPage() {
 
       <Divider />
 
-      {/* ── FREE PERMIT CHECKER ───────────────────────────────────────────── */}
-      <section id="check-permit" className="py-20 px-6 bg-[#FF6B00]/3">
-        <div className="max-w-3xl mx-auto reveal">
-          <div className="mb-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-px bg-[#FF6B00]" />
-              <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Free Tool</span>
-            </div>
-            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] mb-3">
-              CHECK YOUR PERMIT STATUS — FREE.
-            </h2>
-            <p className="text-sm text-[#F5F0E8]/50 leading-relaxed">
-              No signup. No credit card. Get your current permit status in seconds.
-            </p>
-          </div>
-          <PermitChecker />
-          <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest text-center">
-            Up to 5 free checks per hour. For 24/7 monitoring and instant alerts, sign up.
+      {/* ── CITY COVERAGE ─────────────────────────────────────────────────── */}
+      <section className="py-10 px-6">
+        <div className="max-w-3xl mx-auto text-center">
+          <p className="text-xs text-[#F5F0E8]/40 tracking-widest uppercase font-mono">
+            Currently monitoring: Austin TX · Dallas TX · Houston TX · San Antonio TX · More cities weekly
           </p>
         </div>
       </section>
@@ -594,7 +543,7 @@ export default function LandingPage() {
               </ul>
 
               <PrimaryCTA
-                label="START FREE TRIAL — CANCEL ANYTIME →"
+                label="START FREE TRIAL"
                 href="/signup"
                 className="text-xs px-6 py-4"
               />
@@ -639,67 +588,11 @@ export default function LandingPage() {
       <Divider />
 
       {/* ── SOCIAL PROOF ──────────────────────────────────────────────────── */}
-      <section className="py-20 px-6">
-        <div className="max-w-6xl mx-auto reveal">
-          <div className="mb-12">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-8 h-px bg-[#FF6B00]" />
-              <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Beta Tester Feedback</span>
-            </div>
-            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8]">
-              BUILT FOR THE GUYS<br />
-              <span className="text-[#FF6B00]">WHO BUILD THINGS</span>
-            </h2>
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-6">
-            {[
-              {
-                quote:    "Saved me 2 days waiting on a permit in Austin. I knew the morning it cleared.",
-                name:     "Mike R.",
-                title:    "General Contractor",
-                initials: "MR",
-                color:    "#5B21B6",
-              },
-              {
-                quote:    "I used to check the portal every morning. Now I just wait for the email.",
-                name:     "James T.",
-                title:    "Roofing",
-                initials: "JT",
-                color:    "#1D4ED8",
-              },
-              {
-                quote:    "Worth it for the first permit alone.",
-                name:     "Carlos M.",
-                title:    "Remodeling",
-                initials: "CM",
-                color:    "#065F46",
-              },
-            ].map((t) => (
-              <div
-                key={t.name}
-                className="border border-[#FF6B00]/20 p-8 relative backdrop-blur-sm"
-                style={{ background: "rgba(255,107,0,0.03)" }}
-              >
-                <div className="font-heading text-5xl text-[#FF6B00]/20 leading-none mb-4 select-none">"</div>
-                <blockquote className="text-sm text-[#F5F0E8]/80 leading-relaxed mb-6">
-                  {t.quote}
-                </blockquote>
-                <div className="border-t border-[#FF6B00]/10 pt-4 flex items-center gap-3">
-                  <div
-                    className="w-9 h-9 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold font-mono text-white"
-                    style={{ background: t.color }}
-                  >
-                    {t.initials}
-                  </div>
-                  <div>
-                    <div className="text-xs text-[#F5F0E8]/60 font-mono">{t.name}</div>
-                    <div className="text-[10px] text-[#FF6B00]/60 tracking-widest uppercase">{t.title}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+      <section className="py-16 px-6">
+        <div className="max-w-6xl mx-auto text-center">
+          <p className="font-heading text-3xl sm:text-4xl tracking-widest text-[#F5F0E8]">
+            Built for contractors. <span className="text-[#FF6B00]">Trusted in Texas.</span>
+          </p>
         </div>
       </section>
 
@@ -797,7 +690,7 @@ export default function LandingPage() {
             Are you still checking manually?
           </p>
           <PrimaryCTA
-            label="START FREE TRIAL — NO CREDIT CARD"
+            label="START FREE TRIAL"
             className="text-base px-12 py-5"
             glow
           />
