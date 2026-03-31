@@ -20,6 +20,16 @@ const RECENT_POSTS = [
   { title: "Pittsburgh Building Permit Status 2026", href: "/blog/pittsburgh-building-permit-status-2026" },
   { title: "San Antonio Building Permit Guide 2026", href: "/blog/san-antonio-building-permit-guide-2026" },
   { title: "Houston Building Permit Status Check 2026", href: "/blog/houston-building-permit-status-check-2026" },
+  { title: "Building Permit Tracking Software: What Contractors Actually Need", href: "/blog/building-permit-tracking-software-contractors" },
+  { title: "Automatic Permit Status Alerts: Stop Checking Portals Every Morning", href: "/blog/automatic-permit-status-alerts-contractors" },
+  { title: "Best Permit Monitoring Service for Contractors 2026", href: "/blog/best-permit-monitoring-service-2026" },
+  { title: "The Contractor Permit Management Tool That Runs While You Sleep", href: "/blog/contractor-permit-management-tool" },
+  { title: "Austin TX Permit Monitoring: Get Alerted the Second It Clears", href: "/blog/austin-tx-permit-monitoring-service" },
+  { title: "Dallas TX Permit Status Alerts for Contractors", href: "/blog/dallas-tx-permit-status-alerts" },
+  { title: "Houston TX Permit Tracking: Never Miss a Status Change", href: "/blog/houston-tx-permit-tracking-contractors" },
+  { title: "How Much Does a Permit Delay Actually Cost? (2026)", href: "/blog/how-much-does-permit-delay-cost-contractors" },
+  { title: "Permit Cleared: What Happens the Moment You Get the Alert", href: "/blog/permit-cleared-what-happens-next" },
+  { title: "Permit Monitoring Coming to Ohio, Michigan & Pennsylvania", href: "/blog/ohio-michigan-pennsylvania-permit-monitoring" },
 ];
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {

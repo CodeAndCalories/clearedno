@@ -177,6 +177,96 @@ const POSTS = [
     date: "March 2026",
     readTime: "6 min read",
   },
+  {
+    href: "/blog/building-permit-tracking-software-contractors",
+    title: "Building Permit Tracking Software: What Contractors Actually Need in 2026",
+    excerpt:
+      "Manual permit checking wastes hours every week. What to look for in a permit tracking tool, why automation matters, and what actually works for contractors.",
+    tag: "Operations",
+    date: "March 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/automatic-permit-status-alerts-contractors",
+    title: "Automatic Permit Status Alerts: Stop Checking City Portals Every Morning",
+    excerpt:
+      "The daily pain of checking portals manually, what instant permit alerts look like, and how much time and money automatic notifications save contractors.",
+    tag: "Operations",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/best-permit-monitoring-service-2026",
+    title: "Best Building Permit Monitoring Service for Contractors in 2026",
+    excerpt:
+      "What permit monitoring options exist, what to compare, and why simplicity wins. A no-nonsense breakdown for contractors who want to stop checking portals manually.",
+    tag: "Operations",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/contractor-permit-management-tool",
+    title: "The Contractor Permit Management Tool That Runs While You Sleep",
+    excerpt:
+      "Managing 5–10 active permits at once. Why spreadsheets break down at scale. The real cost of a missed permit alert and what automated management looks like.",
+    tag: "Operations",
+    date: "March 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/austin-tx-permit-monitoring-service",
+    title: "Austin TX Permit Monitoring: Get Alerted the Second Your Permit Clears",
+    excerpt:
+      "Austin's ABC portal pain points, why manual checking fails, and how ClearedNo monitors Austin permits 24/7 so contractors never miss a status change.",
+    tag: "Austin, TX",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/dallas-tx-permit-status-alerts",
+    title: "Dallas TX Permit Status Alerts for Contractors",
+    excerpt:
+      "Dallas portal issues, why contractors miss status changes in eDevelopment, and how instant permit alerts close the notification gap.",
+    tag: "Dallas, TX",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/houston-tx-permit-tracking-contractors",
+    title: "Houston TX Permit Tracking: Never Miss a Status Change Again",
+    excerpt:
+      "Houston's permit volume is massive. Missing a clearance means days of delay and cascading schedule problems. Automation is the only answer that scales.",
+    tag: "Houston, TX",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/how-much-does-permit-delay-cost-contractors",
+    title: "How Much Does a Permit Delay Actually Cost Contractors? (2026 Numbers)",
+    excerpt:
+      "Real numbers on permit delays: crew idle time, equipment rental, client penalties, and schedule compression. The $2,400/day math explained.",
+    tag: "Business",
+    date: "March 2026",
+    readTime: "8 min read",
+  },
+  {
+    href: "/blog/permit-cleared-what-happens-next",
+    title: "Permit Cleared: What Happens the Moment You Get the Alert",
+    excerpt:
+      "A permit clearance is a starting gun. The first contractor to mobilize wins schedule. Here's what the first 30 minutes after a clearance should look like.",
+    tag: "Permits 101",
+    date: "March 2026",
+    readTime: "5 min read",
+  },
+  {
+    href: "/blog/ohio-michigan-pennsylvania-permit-monitoring",
+    title: "Permit Monitoring Coming to Ohio, Michigan & Pennsylvania — Join the Waitlist",
+    excerpt:
+      "ClearedNo is expanding to Columbus, Cleveland, Cincinnati, Grand Rapids, Detroit, Philadelphia, and Pittsburgh. Request your city to move it up the queue.",
+    tag: "Expansion",
+    date: "March 2026",
+    readTime: "5 min read",
+  },
 ];
 
 export default function BlogIndexPage() {
