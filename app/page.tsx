@@ -591,7 +591,7 @@ export default function LandingPage() {
       <section className="py-16 px-6">
         <div className="max-w-6xl mx-auto text-center">
           <p className="font-heading text-3xl sm:text-4xl tracking-widest text-[#F5F0E8]">
-            Built for contractors. <span className="text-[#FF6B00]">Trusted in Texas.</span>
+            Built for contractors. <span className="text-[#FF6B00]">Trusted across the country.</span>
           </p>
         </div>
       </section>
