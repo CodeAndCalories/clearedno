@@ -30,6 +30,10 @@ const RECENT_POSTS = [
   { title: "How Much Does a Permit Delay Actually Cost? (2026)", href: "/blog/how-much-does-permit-delay-cost-contractors" },
   { title: "Permit Cleared: What Happens the Moment You Get the Alert", href: "/blog/permit-cleared-what-happens-next" },
   { title: "Permit Monitoring Coming to Ohio, Michigan & Pennsylvania", href: "/blog/ohio-michigan-pennsylvania-permit-monitoring" },
+  { title: "San Antonio TX Permit Tracking for Contractors: 2026 Guide", href: "/blog/san-antonio-tx-permit-tracking-contractors" },
+  { title: "How Contractors Never Miss a Permit Approval", href: "/blog/how-to-never-miss-permit-approval" },
+  { title: "Permit Status Pending: What It Means and What to Do", href: "/blog/permit-status-pending-what-it-means" },
+  { title: "How Contractors Reduce the Real Cost of Permit Wait Time", href: "/blog/reduce-permit-wait-time-contractors" },
 ];
 
 export default function BlogLayout({ children }: { children: React.ReactNode }) {

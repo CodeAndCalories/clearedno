@@ -267,6 +267,42 @@ const POSTS = [
     date: "March 2026",
     readTime: "5 min read",
   },
+  {
+    href: "/blog/san-antonio-tx-permit-tracking-contractors",
+    title: "San Antonio TX Permit Tracking for Contractors: 2026 Guide",
+    excerpt:
+      "San Antonio is one of the fastest-growing cities in Texas. High permit volume, a slow portal, and no notifications mean contractors lose days. ClearedNo monitors SA permits 24/7.",
+    tag: "San Antonio, TX",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/how-to-never-miss-permit-approval",
+    title: "How Contractors Never Miss a Permit Approval (Without Checking Every Day)",
+    excerpt:
+      "The problem with manual checking. What missing an approval actually costs. The automation solution and the real workflow of a contractor using instant permit alerts.",
+    tag: "Operations",
+    date: "March 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/permit-status-pending-what-it-means",
+    title: "Permit Status Pending: What It Means and What to Do While You Wait",
+    excerpt:
+      "Every permit status explained — pending, under review, approved, cleared, rejected. What contractors should do at each stage and how monitoring catches the moment it changes.",
+    tag: "Permits 101",
+    date: "March 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/reduce-permit-wait-time-contractors",
+    title: "How Contractors Reduce the Real Cost of Permit Wait Time in 2026",
+    excerpt:
+      "You can't speed up the city — but you can react instantly when it's done. The difference between finding out in seconds vs next morning. Real dollars. Monitoring as competitive advantage.",
+    tag: "Business",
+    date: "March 2026",
+    readTime: "7 min read",
+  },
 ];
 
 export default function BlogIndexPage() {
