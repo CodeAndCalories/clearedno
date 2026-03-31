@@ -148,7 +148,7 @@ const jsonLd = {
           "name": "How does the free trial work?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Your first month is completely free — no credit card required. You get 30 days to monitor unlimited permits before you're ever charged. Then $79/mo. Cancel any time.",
+            "text": "Your first month is completely free. We collect your card upfront but charge nothing for 30 days. Cancel before day 31 and you pay nothing. Ever. Then $79/mo.",
           },
         },
       ],

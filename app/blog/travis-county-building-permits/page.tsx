@@ -176,7 +176,7 @@ export default function TravisCountyPermitsPost() {
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">STOP MANUALLY CHECKING YOUR AUSTIN PERMITS</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo monitors your City of Austin permits every 2 hours and sends an instant alert the moment anything changes.
-            First month free — no credit card needed.
+            First month free. Card required, not charged for 30 days.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

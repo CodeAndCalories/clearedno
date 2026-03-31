@@ -70,8 +70,7 @@ export default function RefundsPage() {
 
         <Section title="FREE TRIAL">
           <P>
-            Every new ClearedNo account starts with a 30-day free trial (first month free). No credit card
-            is required to start.
+            Every new ClearedNo account starts with a 30-day free trial (first month free). We collect your card upfront but won&apos;t charge it for 30 days.
           </P>
           <P>
             If you cancel your account at any point during the free trial, you will

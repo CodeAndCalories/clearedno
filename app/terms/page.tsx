@@ -97,7 +97,7 @@ export default function TermsPage() {
         <Section title="3. FREE TRIAL">
           <UL items={[
             "New accounts receive a 30-day free trial (first month free) with full access to the Service.",
-            "No credit card is required to start the trial.",
+            "A card is required to start the trial but will not be charged for 30 days.",
             "If you do not add a payment method before the trial ends, your permit monitoring will pause.",
             "You will not be charged anything if you cancel before the trial period ends.",
             "Each person or company is entitled to one free trial. Creating multiple accounts to obtain additional trials is not permitted.",

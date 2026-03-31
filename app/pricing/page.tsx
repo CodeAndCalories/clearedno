@@ -28,7 +28,7 @@ const FAQ = [
   },
   {
     q: "Do you offer a free trial?",
-    a: "Yes — your first month is completely free, no credit card required. You get 30 days to monitor permits before you're ever charged.",
+    a: "Yes — your first month is completely free. We collect your card upfront but charge nothing for 30 days. Cancel before day 31 and you pay nothing. Ever.",
   },
 ];
 
@@ -181,7 +181,7 @@ export default function PricingPage() {
             FIRST MONTH FREE
           </h3>
           <p className="text-sm text-[#F5F0E8]/40 mb-8 max-w-sm mx-auto">
-            30 days free. No credit card. Then $79/mo. Cancel any time.
+            30 days free. Card required, not charged. Then $79/mo. Cancel any time.
           </p>
           <Link
             href="/signup"

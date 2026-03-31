@@ -98,7 +98,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               >
                 START FREE TRIAL →
               </Link>
-              <p className="mt-2 text-[9px] text-[#F5F0E8]/25 text-center">First month free · No credit card</p>
+              <p className="mt-2 text-[9px] text-[#F5F0E8]/25 text-center">First month free · Card not charged for 30 days</p>
             </div>
 
             {/* City links */}

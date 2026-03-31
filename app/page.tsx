@@ -635,7 +635,7 @@ export default function LandingPage() {
               },
               {
                 q: "How does the free trial work?",
-                a: "Your first month is completely free — no credit card required. 30 days to monitor unlimited permits. If it's not working for you, walk away. No charge.",
+                a: "Your first month is completely free. We collect your card upfront but charge nothing for 30 days. Cancel before day 31 and you pay nothing. Ever.",
               },
             ].map((item, i) => (
               <details

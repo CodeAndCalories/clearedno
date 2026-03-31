@@ -189,7 +189,7 @@ export default function AustinPermitSearchToolPost() {
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">CHECK A PERMIT — OR LET US WATCH IT FOR YOU</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             Free one-off permit lookup — no account needed. Or sign up to monitor all your permits automatically.
-            First month free, no credit card required.
+            First month free. Card required, not charged for 30 days.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
