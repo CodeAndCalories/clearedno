@@ -615,7 +615,7 @@ export default function LandingPage() {
             {[
               {
                 q: "What cities do you support?",
-                a: "Currently Austin, TX, Dallas, TX, Houston, TX, and San Antonio, TX. Columbus OH, Philadelphia PA, and Grand Rapids MI are coming soon. We add new cities based on demand — request yours at /suggest-city.",
+                a: "Currently Austin, TX, Dallas, TX, Houston, TX, and San Antonio, TX. Columbus OH, Philadelphia PA, and Grand Rapids MI are also supported. More cities added weekly — request yours at /suggest-city.",
               },
               {
                 q: "How often do you check my permit?",

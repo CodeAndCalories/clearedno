@@ -147,9 +147,9 @@ const GRAND_RAPIDS_STATUS_MAP: Record<string, PermitStatus> = {
   "REJECTED":                  "REJECTED",
   "WITHDRAWN":                 "REJECTED",
   "REVOKED":                   "REJECTED",
-  "CANCELLED":                 "CANCELLED",
-  "VOID":                      "CANCELLED",
-  "VOIDED":                    "CANCELLED",
+  "CANCELLED":                 "REJECTED",
+  "VOID":                      "REJECTED",
+  "VOIDED":                    "REJECTED",
 };
 
 // ── Scraper class ─────────────────────────────────────────────────────────────

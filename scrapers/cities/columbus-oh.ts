@@ -123,9 +123,9 @@ const COLUMBUS_STATUS_MAP: Record<string, PermitStatus> = {
   "INTAKE":                    "PENDING",
 
   // Permit voided / withdrawn
-  "VOIDED":                    "CANCELLED",
-  "VOID":                      "CANCELLED",
-  "CANCELLED":                 "CANCELLED",
+  "VOIDED":                    "REJECTED",
+  "VOID":                      "REJECTED",
+  "CANCELLED":                 "REJECTED",
 
   // Under review / on hold
   "UNDER REVIEW":              "UNDER_REVIEW",
