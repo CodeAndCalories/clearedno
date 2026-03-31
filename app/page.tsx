@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 
 // ── Shared CTA button ────────────────────────────────────────────────────────
 function PrimaryCTA({
-  label = "START FREE TRIAL — NO CARD SURPRISE",
+  label = "START YOUR 30-DAY FREE TRIAL",
   href = "/signup",
   className = "",
   glow = false,

@@ -187,7 +187,7 @@ function SignupForm() {
 
               <p className="text-[10px] text-[#F5F0E8]/30 text-center leading-relaxed">
                 By signing up you agree to our terms. Your trial starts immediately.
-                Card required after trial. Cancel anytime.
+                Your card won't be charged for 30 days. Cancel anytime.
               </p>
             </form>
 
