@@ -1,9 +1,9 @@
 // Dallas, TX — Development Services permit scraper
 //
-// Portal: Dallas Development Services
-// Search URL: https://developmentservices.dallascityhall.com/
+// Portal: Dallas Accela Citizen Access
+// Search URL: https://aca-prod.accela.com/DALLAS/
 //
-// Dallas uses a custom web portal (not Accela). The permit search is
+// Dallas uses Accela Citizen Access. The permit search is
 // available without login. We use Playwright to handle the JS-rendered page.
 //
 // ── HOW TO UPDATE SELECTORS ──────────────────────────────────────────────────
@@ -29,11 +29,11 @@ const CONFIG: ScraperConfig = {
 
 // TODO: Confirm the exact search/lookup URL after visiting the portal
 // Dallas may require navigating to a specific sub-page for permit lookup
-const PORTAL_URL = "https://developmentservices.dallascityhall.com/";
+const PORTAL_URL = "https://aca-prod.accela.com/DALLAS/";
 
 // The direct permit search endpoint (often different from the homepage)
 // TODO: Update after inspecting the network tab on a manual search
-const SEARCH_URL = "https://developmentservices.dallascityhall.com/";
+const SEARCH_URL = "https://aca-prod.accela.com/DALLAS/";
 
 // ── Selectors ─────────────────────────────────────────────────────────────────
 // TODO: All selectors below are best-guess — visit the portal and verify each one.
@@ -60,7 +60,7 @@ const SEL = {
 // ── Status mapping ────────────────────────────────────────────────────────────
 // Maps Dallas portal status strings → our canonical PermitStatus.
 // TODO: Confirm each status string by creating test permits or asking DDS support.
-// Reference: https://developmentservices.dallascityhall.com/
+// Reference: https://aca-prod.accela.com/DALLAS/
 
 const DALLAS_STATUS_MAP: Record<string, PermitStatus> = {
   // Work finished, inspections passed

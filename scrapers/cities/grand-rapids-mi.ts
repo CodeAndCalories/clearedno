@@ -39,24 +39,11 @@ const PORTAL_URL =
 // redesigns. The BS&A search input is typically #txtSearchValue.
 
 const SEL = {
-  // BS&A Online permit search input — #txtSearchValue is the confirmed selector
+  // BS&A Online permit search input — try each in order as fallback
   permitInput: [
+    'input[name="txtSearchValue"]',
     "#txtSearchValue",
-    'input[id*="SearchValue"]',
-    'input[id*="searchValue"]',
-    'input[id*="RecordNum"]',
-    'input[id*="recordNum"]',
-    'input[id*="txtSearch"]',
-    'input[id*="PermitNum"]',
-    'input[id*="permitNum"]',
-    'input[placeholder*="Search"]',
-    'input[placeholder*="Permit Number"]',
-    'input[placeholder*="Permit"]',
-    'input[id*="permit"]',
-    'input[id*="record"]',
-    'input[name*="permit"]',
-    'input[name*="record"]',
-    'input[type="text"]',   // broadest fallback
+    'input[type="text"]',
   ].join(", "),
 
   searchButton: [

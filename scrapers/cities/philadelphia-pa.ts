@@ -5,8 +5,8 @@
 //
 // The eCLIPSE API is a public endpoint — no auth required.
 //
-// Endpoint: GET https://li.phila.gov/api/permits?permit_number={permitNumber}
-// Response: JSON array; check data[0] for permit details
+// Endpoint: GET https://phl.carto.com/api/v2/sql?q=SELECT+*+FROM+permits+WHERE+permitnumber={permitNumber}
+// Response: JSON { rows: [...] }; check rows[0] for permit details
 // Status fields: permit_status or status (try both)
 //
 // ── PERMIT NUMBER FORMATS ──────────────────────────────────────────────────────
@@ -28,8 +28,8 @@ const CONFIG: ScraperConfig = {
   handles:  ["philadelphia", "philly"],
 };
 
-// eCLIPSE public API — primary (and only) method
-const API_URL = "https://li.phila.gov/api/permits";
+// Carto SQL API — primary (and only) method
+const API_URL = "https://phl.carto.com/api/v2/sql?q=SELECT+*+FROM+permits+WHERE+permitnumber=";
 
 // Reference URL for fallback logs (no Playwright fallback; used in pendingFallback only)
 const PORTAL_URL = "https://li.phila.gov/license-inspections/verify";
@@ -134,7 +134,7 @@ export class PhiladelphiaPaScraper extends BaseScraper {
   //   status        — fallback status field
 
   private async scrapeViaApi(permitNumber: string): Promise<ScrapeResult | null> {
-    const url = `${API_URL}?permit_number=${encodeURIComponent(permitNumber)}`;
+    const url = `${API_URL}${encodeURIComponent(permitNumber)}`;
 
     const res = await fetch(url, {
       headers: {
@@ -150,20 +150,17 @@ export class PhiladelphiaPaScraper extends BaseScraper {
 
     const data = await res.json() as unknown;
 
-    // Response may be a root array or an object with a data array
+    // Carto SQL API returns { rows: [...], ... }
     let record: Record<string, unknown> | null = null;
 
-    if (Array.isArray(data) && data.length > 0) {
-      record = data[0] as Record<string, unknown>;
-    } else if (
+    if (
       data !== null &&
       typeof data === "object" &&
       !Array.isArray(data)
     ) {
       const obj = data as Record<string, unknown>;
-      // Handle { data: [...] } wrapper
-      if (Array.isArray(obj.data) && (obj.data as unknown[]).length > 0) {
-        record = (obj.data as Record<string, unknown>[])[0];
+      if (Array.isArray(obj.rows) && (obj.rows as unknown[]).length > 0) {
+        record = (obj.rows as Record<string, unknown>[])[0];
       }
     }
 

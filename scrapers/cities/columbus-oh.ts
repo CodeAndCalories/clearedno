@@ -6,12 +6,12 @@
 // The Accela REST API is the preferred method — no browser required, fast
 // response times, and no bot-detection issues.
 //
-// API endpoint: GET https://permits.columbus.gov/apis/v1/search/permits/{permitNumber}
+// API endpoint: GET https://aca.columbus.gov/apis/v1/search/permits/{permitNumber}
 // Status fields: result.status or result.record_status (try both)
 //
 // ── HOW TO UPDATE SELECTORS (Playwright fallback) ─────────────────────────────
 // If the portal fallback needs updating:
-//   1. Open https://permits.columbus.gov in Chrome
+//   1. Open https://aca.columbus.gov in Chrome
 //   2. Search for a known permit number manually
 //   3. Right-click the search input → Inspect → copy its id/name/placeholder
 //   4. Right-click the status element → Inspect → copy its selector
@@ -31,10 +31,10 @@ const CONFIG: ScraperConfig = {
 };
 
 // Accela REST API — primary method
-const API_URL = "https://permits.columbus.gov/apis/v1/search/permits";
+const API_URL = "https://aca.columbus.gov/apis/v1/search/permits";
 
 // Portal fallback
-const PORTAL_URL = "https://permits.columbus.gov";
+const PORTAL_URL = "https://aca.columbus.gov";
 
 // ── Selectors (Playwright fallback only) ──────────────────────────────────────
 //
