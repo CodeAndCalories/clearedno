@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 // POST /api/stripe/checkout
 // Creates a Stripe Checkout session and redirects the user to it.
 // First month free (30-day trial), then $79/mo.
