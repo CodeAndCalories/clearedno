@@ -5,6 +5,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { ScrollRevealInit, StickyMobileCTA } from "./components/landing-client";
+import { PermitDelayCalculator } from "./components/permit-delay-calculator";
 
 // ── Page-specific metadata (overrides layout defaults) ───────────────────────
 export const metadata: Metadata = {
@@ -593,6 +594,27 @@ export default function LandingPage() {
           <p className="font-heading text-3xl sm:text-4xl tracking-widest text-[#F5F0E8]">
             Built for contractors. <span className="text-[#FF6B00]">Trusted across the country.</span>
           </p>
+        </div>
+      </section>
+
+      <Divider />
+
+      {/* ── PERMIT DELAY CALCULATOR ───────────────────────────────────────── */}
+      <section className="py-20 px-6">
+        <div className="max-w-4xl mx-auto reveal">
+          <div className="mb-8">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-8 h-px bg-[#FF6B00]" />
+              <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Cost Analysis</span>
+            </div>
+            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8]">
+              HOW MUCH ARE PERMIT DELAYS COSTING YOU?
+            </h2>
+            <p className="mt-3 text-sm text-[#F5F0E8]/50 max-w-xl leading-relaxed">
+              Enter your project value and days delayed to see what waiting really costs.
+            </p>
+          </div>
+          <PermitDelayCalculator />
         </div>
       </section>
 
