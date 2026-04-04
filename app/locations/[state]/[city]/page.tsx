@@ -230,7 +230,7 @@ export default function LocationCityPage({ params }: Props) {
                   ))}
                 </div>
                 <p className="mt-3 text-[10px] text-[#F5F0E8]/25">
-                  * Estimates based on city averages. Actual times vary by project type and workload.
+                  Estimates based on typical processing times. Actual timelines vary by project scope and department workload.
                 </p>
               </div>
             </div>
