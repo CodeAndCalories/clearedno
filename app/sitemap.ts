@@ -13,6 +13,10 @@ const PERMIT_CITIES = [
   "columbus-oh",
   "philadelphia-pa",
   "grand-rapids-mi",
+  "cleveland-oh",
+  "pittsburgh-pa",
+  "detroit-mi",
+  "cincinnati-oh",
 ];
 
 const PERMIT_PROJECT_TYPES = [

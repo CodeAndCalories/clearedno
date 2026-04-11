@@ -14,6 +14,10 @@ const CITY_META: Record<string, { name: string; state: string; stateFull: string
   "columbus-oh":     { name: "Columbus",     state: "OH", stateFull: "Ohio" },
   "philadelphia-pa": { name: "Philadelphia", state: "PA", stateFull: "Pennsylvania" },
   "grand-rapids-mi": { name: "Grand Rapids", state: "MI", stateFull: "Michigan" },
+  "cleveland-oh":    { name: "Cleveland",    state: "OH", stateFull: "Ohio" },
+  "pittsburgh-pa":   { name: "Pittsburgh",   state: "PA", stateFull: "Pennsylvania" },
+  "detroit-mi":      { name: "Detroit",      state: "MI", stateFull: "Michigan" },
+  "cincinnati-oh":   { name: "Cincinnati",   state: "OH", stateFull: "Ohio" },
 };
 
 // ─── Pre-render all 7 city hubs at build time ─────────────────────────────────

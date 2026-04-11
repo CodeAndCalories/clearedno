@@ -25,6 +25,10 @@ const CITIES = [
   { slug: "columbus-oh",      name: "Columbus",      state: "OH", types: 7 },
   { slug: "philadelphia-pa",  name: "Philadelphia",  state: "PA", types: 7 },
   { slug: "grand-rapids-mi",  name: "Grand Rapids",  state: "MI", types: 7 },
+  { slug: "cleveland-oh",     name: "Cleveland",     state: "OH", types: 7 },
+  { slug: "pittsburgh-pa",    name: "Pittsburgh",    state: "PA", types: 7 },
+  { slug: "detroit-mi",       name: "Detroit",       state: "MI", types: 7 },
+  { slug: "cincinnati-oh",    name: "Cincinnati",    state: "OH", types: 7 },
 ];
 
 const PROJECT_TYPES = [

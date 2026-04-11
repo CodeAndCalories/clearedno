@@ -16,6 +16,10 @@ const CITIES = [
   "columbus-oh",
   "philadelphia-pa",
   "grand-rapids-mi",
+  "cleveland-oh",
+  "pittsburgh-pa",
+  "detroit-mi",
+  "cincinnati-oh",
 ];
 
 const TOP_PROJECT_TYPES = [
@@ -46,6 +50,10 @@ const CITY_META: Record<string, { name: string; state: string }> = {
   "columbus-oh":     { name: "Columbus",     state: "OH" },
   "philadelphia-pa": { name: "Philadelphia", state: "PA" },
   "grand-rapids-mi": { name: "Grand Rapids", state: "MI" },
+  "cleveland-oh":    { name: "Cleveland",    state: "OH" },
+  "pittsburgh-pa":   { name: "Pittsburgh",   state: "PA" },
+  "detroit-mi":      { name: "Detroit",      state: "MI" },
+  "cincinnati-oh":   { name: "Cincinnati",   state: "OH" },
 };
 
 // ─── Types ────────────────────────────────────────────────────────────────────
