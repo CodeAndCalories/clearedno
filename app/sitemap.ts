@@ -19,6 +19,15 @@ const PERMIT_CITIES = [
   "cincinnati-oh",
 ];
 
+const CONTRACTOR_TRADES = [
+  "roofing",
+  "electrical",
+  "plumbing",
+  "hvac",
+  "general-contractor",
+  "remodeling",
+];
+
 const PERMIT_PROJECT_TYPES = [
   "deck-permit",
   "roof-permit",
@@ -100,6 +109,26 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     }))
   );
+
+  // Contractors: 1 index + 6 trades × 11 cities = 67 entries
+  const contractorIndexEntry: MetadataRoute.Sitemap = [
+    {
+      url: `${BASE}/contractors`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+  ];
+
+  const contractorPageEntries: MetadataRoute.Sitemap = CONTRACTOR_TRADES.flatMap((trade) =>
+    PERMIT_CITIES.map((city) => ({
+      url: `${BASE}/contractors/${trade}/${city}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    }))
+  );
+
   return [
     {
       url: BASE,
@@ -160,5 +189,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...permitIndexEntry,
     ...permitCityEntries,
     ...permitProjectEntries,
+    ...contractorIndexEntry,
+    ...contractorPageEntries,
   ];
 }

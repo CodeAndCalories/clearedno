@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import StickyPermitCTA from "./sticky-cta";
 
 // ─── Static param sets ────────────────────────────────────────────────────────
 // Top 5 project types × 7 cities = 35 pre-rendered pages.
@@ -139,8 +140,44 @@ export default async function ProjectTypePermitPage({
   const row = permit as PermitRow;
   const cityMeta = CITY_META[params.city] ?? { name: row.city_name, state: row.state };
 
+  // ── FAQ JSON-LD (uses live DB data — unique per page) ──────────────────────
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: `How much does a ${row.project_type_label} cost in ${row.city_name}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `The base fee for a ${row.project_type_label} in ${row.city_name}, ${row.state} is $${row.base_fee}. Fees may vary based on project size and scope.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `How long does a ${row.project_type_label} take to get approved in ${row.city_name}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `The average approval time for a ${row.project_type_label} in ${row.city_name} is ${row.avg_approval_days} days, though this can vary based on application completeness and current volume.`,
+        },
+      },
+      {
+        "@type": "Question",
+        name: `Where do I apply for a ${row.project_type_label} in ${row.city_name}?`,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: `You can apply for a ${row.project_type_label} at the official ${row.city_name} permit portal. ClearedNo can monitor your permit status 24/7 and alert you the moment it's approved.`,
+        },
+      },
+    ],
+  };
+
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {/* Nav */}
       <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#FF6B00]/20 bg-[#0A0A0A]/95 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -344,6 +381,9 @@ export default async function ProjectTypePermitPage({
           <Link href="/terms" className="hover:text-[#FF6B00] transition-colors">Terms</Link>
         </p>
       </footer>
+
+      {/* Sticky conversion bar — appears after 30% scroll, dismissable */}
+      <StickyPermitCTA />
     </div>
   );
 }
