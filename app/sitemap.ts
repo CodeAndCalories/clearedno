@@ -3,6 +3,28 @@ import { cities } from "@/lib/cities";
 
 const BASE = "https://www.clearedno.com";
 
+// ─── Permit Encyclopedia ──────────────────────────────────────────────────────
+
+const PERMIT_CITIES = [
+  "austin-tx",
+  "dallas-tx",
+  "houston-tx",
+  "san-antonio-tx",
+  "columbus-oh",
+  "philadelphia-pa",
+  "grand-rapids-mi",
+];
+
+const PERMIT_PROJECT_TYPES = [
+  "deck-permit",
+  "roof-permit",
+  "fence-permit",
+  "addition-permit",
+  "new-construction",
+  "electrical-permit",
+  "plumbing-permit",
+];
+
 const BLOG_SLUGS = [
   "austin-permit-tx-search-tool",
   "contractor-permit-tracking-multiple-jobs",
@@ -49,6 +71,31 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: 0.8,
   }));
 
+  // Permit Encyclopedia: 1 index + 7 city hubs + 49 project-type pages = 57 entries
+  const permitIndexEntry: MetadataRoute.Sitemap = [
+    {
+      url: `${BASE}/permits`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+  ];
+
+  const permitCityEntries: MetadataRoute.Sitemap = PERMIT_CITIES.map((city) => ({
+    url: `${BASE}/permits/${city}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.7,
+  }));
+
+  const permitProjectEntries: MetadataRoute.Sitemap = PERMIT_CITIES.flatMap((city) =>
+    PERMIT_PROJECT_TYPES.map((pt) => ({
+      url: `${BASE}/permits/${city}/${pt}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.6,
+    }))
+  );
   return [
     {
       url: BASE,
@@ -106,5 +153,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     ...locationEntries,
     ...blogEntries,
+    ...permitIndexEntry,
+    ...permitCityEntries,
+    ...permitProjectEntries,
   ];
 }
