@@ -22,6 +22,7 @@ interface RoofingLead {
 
 interface Props {
   leads: RoofingLead[];
+  subscriptionStatus: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -117,9 +118,23 @@ function StatCard({
 // Main component
 // ---------------------------------------------------------------------------
 
-export default function LeadsTable({ leads }: Props) {
+export default function LeadsTable({ leads, subscriptionStatus }: Props) {
   const [countyFilter, setCountyFilter] = useState<string>("all");
   const [scoreFilter, setScoreFilter] = useState<string>("all");
+  const [portalLoading, setPortalLoading] = useState(false);
+
+  async function openPortal() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/leads-portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   // Unique sorted county list
   const counties = useMemo(() => {
@@ -192,7 +207,7 @@ export default function LeadsTable({ leads }: Props) {
           </div>
         </div>
 
-        {/* Export */}
+        {/* Export + Portal */}
         <div className="flex items-end gap-3">
           <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase self-end pb-2">
             {filtered.length} result{filtered.length !== 1 ? "s" : ""}
@@ -202,6 +217,13 @@ export default function LeadsTable({ leads }: Props) {
             className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors"
           >
             Download CSV
+          </button>
+          <button
+            onClick={openPortal}
+            disabled={portalLoading}
+            className="border border-[#F5F0E8]/30 text-[#F5F0E8]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#F5F0E8]/60 hover:text-[#F5F0E8] transition-colors disabled:opacity-40"
+          >
+            {portalLoading ? "Loading…" : "Manage Subscription"}
           </button>
         </div>
       </div>

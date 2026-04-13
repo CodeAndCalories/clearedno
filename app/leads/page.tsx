@@ -9,6 +9,18 @@ export const metadata = {
 export default async function LeadsPage() {
   const supabase = await createClient();
 
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  const { data: profile } = user
+    ? await supabase
+        .from("profiles")
+        .select("subscription_status")
+        .eq("id", user.id)
+        .single()
+    : { data: null };
+
   const { data: leads, error } = await supabase
     .from("roofing_leads")
     .select("id, address, county, event_type, event_date, source, magnitude, lead_score, lat, lng, created_at")
@@ -46,7 +58,7 @@ export default async function LeadsPage() {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <LeadsTable leads={leads ?? []} />
+        <LeadsTable leads={leads ?? []} subscriptionStatus={profile?.subscription_status ?? null} />
       </div>
     </main>
   );
