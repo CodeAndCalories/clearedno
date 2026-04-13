@@ -8,7 +8,7 @@ const PROTECTED_PREFIXES = ["/dashboard"];
 // Routes that require a valid session → redirect to /leads/landing
 const LEADS_PREFIX = "/leads";
 // Public paths that must NOT be protected (avoids infinite redirect loop)
-const LEADS_PUBLIC_PREFIX = "/leads/landing";
+const LEADS_PUBLIC_PREFIXES = ["/leads/landing", "/leads/roofing"];
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -53,7 +53,7 @@ export async function middleware(request: NextRequest) {
   // Leads routes → /leads/landing (public landing stays accessible)
   const isLeadsProtected =
     pathname.startsWith(LEADS_PREFIX) &&
-    !pathname.startsWith(LEADS_PUBLIC_PREFIX);
+    !LEADS_PUBLIC_PREFIXES.some((p) => pathname.startsWith(p));
 
   if (isLeadsProtected) {
     // Step 1: must be logged in

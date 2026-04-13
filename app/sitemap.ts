@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { cities } from "@/lib/cities";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 const BASE = "https://www.clearedno.com";
 
@@ -69,7 +70,52 @@ const BLOG_SLUGS = [
   "ohio-michigan-pennsylvania-permit-monitoring",
 ];
 
-export default function sitemap(): MetadataRoute.Sitemap {
+const LEADS_STATES = ["oh", "in", "mi", "ky", "il", "pa"];
+
+function countyToSlug(county: string): string {
+  return county
+    .replace(/ County$/i, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // ── Roofing leads: state pages ─────────────────────────────────────────────
+  const leadsStateEntries: MetadataRoute.Sitemap = LEADS_STATES.map((state) => ({
+    url: `${BASE}/leads/roofing/${state}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.8,
+  }));
+
+  // ── Roofing leads: county pages (capped at 500) ────────────────────────────
+  const { data: countyRows } = await supabaseAdmin
+    .from("roofing_leads")
+    .select("county, state")
+    .order("state")
+    .order("county")
+    .limit(2000); // over-fetch; deduplicate below then cap
+
+  const seen = new Set<string>();
+  const leadsCountyEntries: MetadataRoute.Sitemap = [];
+
+  for (const row of countyRows ?? []) {
+    if (leadsCountyEntries.length >= 500) break;
+    const stateSlug  = (row.state as string).toLowerCase();
+    const countySlug = countyToSlug(row.county as string);
+    const key        = `${stateSlug}/${countySlug}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    leadsCountyEntries.push({
+      url: `${BASE}/leads/roofing/${stateSlug}/${countySlug}`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.7,
+    });
+  }
+
   const blogEntries: MetadataRoute.Sitemap = BLOG_SLUGS.map((slug) => ({
     url: `${BASE}/blog/${slug}`,
     lastModified: new Date(),
@@ -191,5 +237,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     ...permitProjectEntries,
     ...contractorIndexEntry,
     ...contractorPageEntries,
+    ...leadsStateEntries,
+    ...leadsCountyEntries,
   ];
 }
