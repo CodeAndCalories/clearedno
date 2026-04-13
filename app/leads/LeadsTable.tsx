@@ -37,6 +37,21 @@ type SortKey =
   | "county-asc"
   | "county-desc";
 
+const EVENT_TYPE_CONFIG = {
+  hail: {
+    label: "HAIL",
+    color: "#FF6B00",
+    bg:    "rgba(255,107,0,0.10)",
+    border:"rgba(255,107,0,0.35)",
+  },
+  wind: {
+    label: "WIND",
+    color: "#60A5FA",
+    bg:    "rgba(96,165,250,0.10)",
+    border:"rgba(96,165,250,0.35)",
+  },
+} as const;
+
 const SCORE_CONFIG = {
   hot: {
     label: "HOT",
@@ -167,9 +182,10 @@ function SortArrow({ active, direction }: { active: boolean; direction: "asc" | 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function LeadsTable({ leads, subscriptionStatus }: Props) {
-  const [stateFilter,    setStateFilter]    = useState<string>("all");
-  const [scoreFilter,    setScoreFilter]    = useState<string>("all");
-  const [search,         setSearch]         = useState<string>("");
+  const [stateFilter,     setStateFilter]     = useState<string>("all");
+  const [scoreFilter,     setScoreFilter]     = useState<string>("all");
+  const [eventTypeFilter, setEventTypeFilter] = useState<string>("all");
+  const [search,          setSearch]          = useState<string>("");
   const [sortKey,        setSortKey]        = useState<SortKey>("date-desc");
   const [page,           setPage]           = useState(1);
   const [portalLoading,  setPortalLoading]  = useState(false);
@@ -195,7 +211,8 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return stateFiltered.filter((l) => {
-      if (scoreFilter !== "all" && l.lead_score !== scoreFilter) return false;
+      if (scoreFilter     !== "all" && l.lead_score  !== scoreFilter)     return false;
+      if (eventTypeFilter !== "all" && l.event_type  !== eventTypeFilter) return false;
       if (q) {
         const countyMatch = l.county.toLowerCase().includes(q);
         const stateMatch  = (l.state ?? "").toLowerCase().includes(q);
@@ -239,10 +256,11 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
     setPage(1);
   }
 
-  function handleStateChange(val: string)  { setStateFilter(val);              setPage(1); }
-  function handleScoreChange(val: string)  { setScoreFilter(val);              setPage(1); }
-  function handleSortChange(val: SortKey)  { setSortKey(val);                  setPage(1); }
-  function handleSearch(val: string)       { setSearch(val);                   setPage(1); }
+  function handleStateChange(val: string)      { setStateFilter(val);              setPage(1); }
+  function handleScoreChange(val: string)      { setScoreFilter(val);              setPage(1); }
+  function handleEventTypeChange(val: string)  { setEventTypeFilter(val);          setPage(1); }
+  function handleSortChange(val: SortKey)      { setSortKey(val);                  setPage(1); }
+  function handleSearch(val: string)           { setSearch(val);                   setPage(1); }
 
   // ── Showing text ──────────────────────────────────────────────────────────
 
@@ -307,6 +325,21 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
               <option value="all"  className="bg-[#0A0A0A]">All Scores</option>
               <option value="hot"  className="bg-[#0A0A0A]">Hot</option>
               <option value="warm" className="bg-[#0A0A0A]">Warm</option>
+            </select>
+          </div>
+
+          {/* Type */}
+          <div>
+            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">Type</label>
+            <select
+              value={eventTypeFilter}
+              onChange={(e) => handleEventTypeChange(e.target.value)}
+              className={SELECT_CLASS}
+              style={SELECT_STYLE}
+            >
+              <option value="all"  className="bg-[#0A0A0A]">All Types</option>
+              <option value="hail" className="bg-[#0A0A0A]">Hail</option>
+              <option value="wind" className="bg-[#0A0A0A]">Wind</option>
             </select>
           </div>
 
@@ -452,8 +485,23 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
                         {cfg.label}
                       </span>
                     </td>
-                    <td className="px-5 py-3 text-[#F5F0E8]/40 whitespace-nowrap uppercase tracking-widest text-[9px]">
-                      {lead.event_type}
+                    <td className="px-5 py-3 whitespace-nowrap">
+                      {(() => {
+                        const tc = EVENT_TYPE_CONFIG[lead.event_type as keyof typeof EVENT_TYPE_CONFIG]
+                          ?? EVENT_TYPE_CONFIG.hail;
+                        return (
+                          <span
+                            className="inline-flex items-center px-2.5 py-1 text-[9px] tracking-widest uppercase font-medium"
+                            style={{
+                              color:           tc.color,
+                              backgroundColor: tc.bg,
+                              border:          `1px solid ${tc.border}`,
+                            }}
+                          >
+                            {tc.label}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-5 py-3 whitespace-nowrap">
                       <a

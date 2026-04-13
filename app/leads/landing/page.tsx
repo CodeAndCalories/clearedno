@@ -102,9 +102,9 @@ export default function LeadsLandingPage() {
         {/* ── Stats bar ──────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-0 mb-10 border border-[#FF6B00]/20 divide-y sm:divide-y-0 sm:divide-x divide-[#FF6B00]/20 w-full max-w-2xl">
           {[
-            { stat: "341+", label: "Leads across 6 states" },
+            { stat: "1,700+", label: "Leads across 6 states" },
             { stat: "Every Monday", label: "New leads added" },
-            { stat: "NOAA", label: "Storm Events source" },
+            { stat: "NOAA", label: "hail + wind damage events" },
           ].map(({ stat, label }) => (
             <div key={label} className="flex-1 px-6 py-4 text-center">
               <p className="font-heading text-2xl tracking-widest text-[#FF6B00] mb-0.5">{stat}</p>
@@ -130,7 +130,7 @@ export default function LeadsLandingPage() {
         {/* Bullets */}
         <div className="flex flex-col gap-3 mb-16 text-left max-w-sm w-full">
           {[
-            "341 leads across OH, IN, MI, KY, IL, PA",
+            "1,700+ leads across 6 Midwest states",
             "County-level hail data from NOAA Storm Events",
             "Weekly updated list — new leads every Monday",
           ].map((b) => (
