@@ -6,6 +6,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ScrollRevealInit, StickyMobileCTA } from "../../components/landing-client";
 import { PermitDelayCalculator } from "../../components/permit-delay-calculator";
+import MarketingNav from "../../components/MarketingNav";
 
 // ── Page-specific metadata (overrides layout defaults) ───────────────────────
 export const metadata: Metadata = {
@@ -65,51 +66,6 @@ function PrimaryCTA({
 // ── Section divider ──────────────────────────────────────────────────────────
 function Divider() {
   return <div className="w-full h-px bg-[#FF6B00]/30" />;
-}
-
-// ── Nav ──────────────────────────────────────────────────────────────────────
-function NavBar() {
-  return (
-    <nav className="fixed top-0 left-0 right-0 z-50 border-b border-[#FF6B00]/20 bg-[#0A0A0A]/95 backdrop-blur-sm">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-        <div className="flex items-center gap-4 min-w-0">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 whitespace-nowrap flex-shrink-0">
-            <Image
-              src="/clearedno-icon.png"
-              alt="ClearedNo"
-              width={28}
-              height={28}
-              className="rounded-sm"
-              priority
-            />
-            <span className="font-heading text-2xl tracking-widest text-[#FF6B00]">
-              CLEARED<span className="text-[#F5F0E8]">NO</span>
-            </span>
-          </Link>
-          {/* Nav tagline — only visible on wider screens */}
-          <span className="hidden lg:block text-[10px] tracking-[0.15em] text-[#F5F0E8]/30 uppercase border-l border-[#FF6B00]/20 pl-4 whitespace-nowrap">
-            Built for Contractors. Not Bureaucrats.
-          </span>
-        </div>
-        <div className="flex items-center gap-3 sm:gap-6">
-          {/* Hide text links on mobile — show only the CTA */}
-          <Link
-            href="/login"
-            className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase"
-          >
-            Log In
-          </Link>
-          <Link
-            href="/signup"
-            className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors whitespace-nowrap"
-          >
-            Start Free Trial
-          </Link>
-        </div>
-      </div>
-    </nav>
-  );
 }
 
 // ── Hero permit card (right side) ────────────────────────────────────────────
@@ -220,7 +176,7 @@ function Step({ num, title, desc }: { num: string; title: string; desc: string }
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#0A0A0A]">
-      <NavBar />
+      <MarketingNav />
 
       {/* ── HERO ──────────────────────────────────────────────────────────── */}
       <section id="hero-section" className="relative pt-32 pb-24 px-6 overflow-hidden">
