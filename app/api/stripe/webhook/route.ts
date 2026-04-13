@@ -15,17 +15,27 @@ export const runtime = "nodejs";
 // Map Stripe subscription statuses to our internal status enum
 function mapStatus(stripeStatus: Stripe.Subscription.Status): string {
   const map: Record<string, string> = {
-    trialing:         "trialing",
-    active:           "active",
-    past_due:         "past_due",
-    canceled:         "canceled",
-    unpaid:           "past_due",
-    incomplete:       "past_due",
+    trialing:           "trialing",
+    active:             "active",
+    past_due:           "past_due",
+    canceled:           "canceled",
+    unpaid:             "past_due",
+    incomplete:         "past_due",
     incomplete_expired: "canceled",
-    paused:           "past_due",
+    paused:             "past_due",
   };
   return map[stripeStatus] ?? "canceled";
 }
+
+/** Returns true when a subscription's price is the roofing leads product. */
+function isLeadsSubscription(subscription: Stripe.Subscription): boolean {
+  const priceId = subscription.items.data[0]?.price.id;
+  return !!priceId && priceId === process.env.STRIPE_LEADS_PRICE_ID;
+}
+
+// ---------------------------------------------------------------------------
+// ClearedNo permit-checker subscription handler (unchanged)
+// ---------------------------------------------------------------------------
 
 async function updateSubscription(subscription: Stripe.Subscription) {
   const userId = subscription.metadata?.supabase_user_id;
@@ -39,6 +49,10 @@ async function updateSubscription(subscription: Stripe.Subscription) {
     })
     .eq("user_id", userId);
 }
+
+// ---------------------------------------------------------------------------
+// Webhook handler
+// ---------------------------------------------------------------------------
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -60,22 +74,32 @@ export async function POST(req: NextRequest) {
   switch (event.type) {
 
     // ── Checkout completed: first-time subscription created ──────────────────
-    // This is the authoritative event for initial signup. We:
-    //   1. Confirm stripe_customer_id is persisted (belt-and-suspenders)
-    //   2. Sync subscription status from the freshly-created subscription
-    //   3. Send the welcome email exactly once
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
 
       // Only handle subscription-mode checkouts
       if (!session.subscription || !session.customer) break;
 
-      // Retrieve the subscription so we can read supabase_user_id from its metadata
       const subscription = await stripe.subscriptions.retrieve(
         session.subscription as string
       );
       const userId = subscription.metadata?.supabase_user_id;
       if (!userId) break;
+
+      // ── Roofing leads checkout ────────────────────────────────────────────
+      if (isLeadsSubscription(subscription)) {
+        await supabaseAdmin
+          .from("profiles")
+          .update({
+            stripe_customer_id:       session.customer as string,
+            leads_subscription_id:    subscription.id,
+            leads_subscription_status: "active",
+          })
+          .eq("user_id", userId);
+        break;
+      }
+
+      // ── ClearedNo permit-checker checkout (existing logic) ────────────────
 
       // Detect founding checkout: session had FOUNDING49 coupon applied
       const isFoundingCheckout = (session.total_details?.breakdown?.discounts ?? []).some(
@@ -110,7 +134,6 @@ export async function POST(req: NextRequest) {
       });
 
       // Convert any pending referral for this user
-      // referrals.referred_user_id stores profiles.id (not auth user id)
       if (!profile?.id) break;
       const { data: pendingReferral } = await supabaseAdmin
         .from("referrals")
@@ -142,19 +165,40 @@ export async function POST(req: NextRequest) {
     case "customer.subscription.created":
     case "customer.subscription.updated":
     case "customer.subscription.resumed":
-      await updateSubscription(event.data.object as Stripe.Subscription);
+      // Only sync permit-checker subscriptions here; leads are handled at checkout
+      if (!isLeadsSubscription(event.data.object as Stripe.Subscription)) {
+        await updateSubscription(event.data.object as Stripe.Subscription);
+      }
       break;
 
-    case "customer.subscription.deleted":
-      await updateSubscription(event.data.object as Stripe.Subscription);
+    // ── Subscription canceled ─────────────────────────────────────────────────
+    case "customer.subscription.deleted": {
+      const sub = event.data.object as Stripe.Subscription;
+      const userId = sub.metadata?.supabase_user_id;
+
+      if (isLeadsSubscription(sub)) {
+        // Cancel the leads subscription
+        if (userId) {
+          await supabaseAdmin
+            .from("profiles")
+            .update({ leads_subscription_status: "canceled" })
+            .eq("user_id", userId);
+        }
+      } else {
+        // Cancel the permit-checker subscription (existing logic)
+        await updateSubscription(sub);
+      }
       break;
+    }
 
     case "invoice.payment_failed": {
       // Mark as past_due to surface a warning in the dashboard
       const invoice = event.data.object as Stripe.Invoice;
       if (invoice.subscription) {
         const sub = await stripe.subscriptions.retrieve(invoice.subscription as string);
-        await updateSubscription(sub);
+        if (!isLeadsSubscription(sub)) {
+          await updateSubscription(sub);
+        }
       }
       break;
     }

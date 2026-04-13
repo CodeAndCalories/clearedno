@@ -54,11 +54,29 @@ export async function middleware(request: NextRequest) {
   const isLeadsProtected =
     pathname.startsWith(LEADS_PREFIX) &&
     !pathname.startsWith(LEADS_PUBLIC_PREFIX);
-  if (isLeadsProtected && !user) {
-    const landingUrl = request.nextUrl.clone();
-    landingUrl.pathname = "/leads/landing";
-    landingUrl.searchParams.delete("next");
-    return NextResponse.redirect(landingUrl);
+
+  if (isLeadsProtected) {
+    // Step 1: must be logged in
+    if (!user) {
+      const landingUrl = request.nextUrl.clone();
+      landingUrl.pathname = "/leads/landing";
+      landingUrl.searchParams.delete("next");
+      return NextResponse.redirect(landingUrl);
+    }
+
+    // Step 2: must have an active leads subscription
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("leads_subscription_status")
+      .eq("user_id", user.id)
+      .single();
+
+    if (profile?.leads_subscription_status !== "active") {
+      const landingUrl = request.nextUrl.clone();
+      landingUrl.pathname = "/leads/landing";
+      landingUrl.searchParams.delete("next");
+      return NextResponse.redirect(landingUrl);
+    }
   }
 
   return supabaseResponse;
