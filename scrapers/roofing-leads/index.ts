@@ -2,60 +2,73 @@
  * index.ts — Roofing Leads Scraper Entry Point
  *
  * Runs the full pipeline for all configured states:
- *   1. Fetch hail events from NOAA CDO (last 12 months) per state
- *   2. Upsert them into the Supabase `roofing_leads` table
+ *   1. Fetch hail events from NOAA Storm Events (last 12 months) per state
+ *   2. Fetch thunderstorm wind events from NOAA Storm Events per state
+ *   3. Upsert all events into the Supabase `roofing_leads` table
  *
  * Usage:
  *   ts-node --project tsconfig.scripts.json scrapers/roofing-leads/index.ts
  *   ts-node --project tsconfig.scripts.json scrapers/roofing-leads/index.ts --dry-run
  *
  * Required env vars — add to .env:
- *   NOAA_CDO_TOKEN
  *   NEXT_PUBLIC_SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY  (or NEXT_PUBLIC_SUPABASE_ANON_KEY)
  */
 
 import { STATES } from "./config";
-import { fetchHailEvents } from "./noaa-hail";
-import { saveHailLeads } from "./save-leads";
+import { fetchStormEvents } from "./noaa-hail";
+import { saveStormLeads } from "./save-leads";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 
 async function main() {
   console.log(
-    `[roofing-leads] Starting roofing leads scraper (${STATES.length} states)${DRY_RUN ? " — DRY RUN, no saves" : ""}...`
+    `[roofing-leads] Starting roofing leads scraper (${STATES.length} states, hail + wind)${
+      DRY_RUN ? " — DRY RUN, no saves" : ""
+    }...`
   );
   const startedAt = Date.now();
 
-  let grandTotal = 0;
-  let grandSaved = 0;
+  let grandTotalHail = 0;
+  let grandTotalWind = 0;
+  let grandSaved     = 0;
 
   for (const state of STATES) {
     console.log(`\n[roofing-leads] ── ${state.name} (${state.abbreviation}) ──`);
 
     try {
-      const hailEvents = await fetchHailEvents(state);
+      // ── Hail ────────────────────────────────────────────────────────────
+      const hailEvents = await fetchStormEvents(state, "hail");
+      const hailHot    = hailEvents.filter((e) => e.magnitude >= 1.0).length;
+      const hailWarm   = hailEvents.length - hailHot;
 
-      if (hailEvents.length === 0) {
-        console.log(`[roofing-leads] ${state.abbreviation}: No hail events found.`);
-        continue;
-      }
+      // ── Wind ────────────────────────────────────────────────────────────
+      const windEvents = await fetchStormEvents(state, "wind");
+      const windHot    = windEvents.filter((e) => e.magnitude >= 50).length;
+      const windWarm   = windEvents.length - windHot;
 
-      const hotCount  = hailEvents.filter((e) => e.magnitude >= 1.0).length;
-      const warmCount = hailEvents.length - hotCount;
+      // ── Per-state summary ───────────────────────────────────────────────
       console.log(
-        `[roofing-leads] ${state.abbreviation}: ${hailEvents.length} events ` +
-          `(${hotCount} hot >= 1", ${warmCount} warm < 1")`
+        `[roofing-leads] ${state.abbreviation}: ` +
+          `${hailEvents.length} hail leads (${hailHot} hot >= 1", ${hailWarm} warm), ` +
+          `${windEvents.length} wind leads (${windHot} hot >= 50kts, ${windWarm} warm)`
       );
 
-      grandTotal += hailEvents.length;
+      grandTotalHail += hailEvents.length;
+      grandTotalWind += windEvents.length;
 
       if (DRY_RUN) {
         console.log(`[roofing-leads] ${state.abbreviation}: dry-run — skipping save.`);
         continue;
       }
 
-      const saved = await saveHailLeads(hailEvents);
+      const allEvents = [...hailEvents, ...windEvents];
+      if (allEvents.length === 0) {
+        console.log(`[roofing-leads] ${state.abbreviation}: No events to save.`);
+        continue;
+      }
+
+      const saved = await saveStormLeads(allEvents);
       console.log(`[roofing-leads] ${state.abbreviation}: ${saved} lead(s) saved/updated.`);
       grandSaved += saved;
     } catch (err) {
@@ -66,8 +79,11 @@ async function main() {
   }
 
   const elapsed = ((Date.now() - startedAt) / 1000).toFixed(1);
+  const grandTotal = grandTotalHail + grandTotalWind;
 
   console.log(`\n[roofing-leads] ── Summary ──`);
+  console.log(`[roofing-leads] Hail events fetched  : ${grandTotalHail}`);
+  console.log(`[roofing-leads] Wind events fetched  : ${grandTotalWind}`);
   console.log(`[roofing-leads] Total events fetched : ${grandTotal}`);
   if (!DRY_RUN) {
     console.log(`[roofing-leads] Total leads saved    : ${grandSaved}`);

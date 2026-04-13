@@ -1,15 +1,18 @@
 /**
  * save-leads.ts
  *
- * Takes an array of HailEvent objects and upserts them into the
- * Supabase `roofing_leads` table.
+ * Takes an array of StormEvent objects (hail or wind) and upserts them into
+ * the Supabase `roofing_leads` table.
  *
- * Upsert key: (county, state, event_date, source) — prevents duplicate rows
- * if the scraper is run multiple times across multiple states.
+ * Upsert key: (county, state, event_date, source, event_type)
+ *   — prevents duplicate rows if the scraper runs multiple times.
+ *   — allows hail and wind events on the same day/county to coexist.
  *
  * lead_score logic:
- *   "hot"  — hail magnitude >= 1.0 inch (significant damage threshold)
- *   "warm" — hail magnitude < 1.0 inch (smaller but still noteworthy)
+ *   Hail  — "hot"  if magnitude >= 1.0 inch
+ *          — "warm" if magnitude < 1.0 inch
+ *   Wind  — "hot"  if magnitude >= 50 knots (significant wind damage)
+ *          — "warm" if any wind event reported (magnitude < 50 or unknown)
  *
  * Required env vars (same as the rest of the app):
  *   NEXT_PUBLIC_SUPABASE_URL
@@ -20,7 +23,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import * as dotenv from "dotenv";
-import type { HailEvent } from "./noaa-hail";
+import type { StormEvent, EventType } from "./noaa-hail";
 
 dotenv.config();
 
@@ -32,11 +35,11 @@ export interface RoofingLead {
   address:    string | null;
   county:     string;
   state:      string;       // 2-letter abbreviation, e.g. "OH"
-  event_type: string;
+  event_type: string;       // "hail" | "wind"
   event_date: string;       // ISO date "YYYY-MM-DD"
   source:     string;
   lead_score: "hot" | "warm";
-  // id and created_at are set by the database
+  // id, magnitude, lat, lng, created_at are set by the database
 }
 
 // ---------------------------------------------------------------------------
@@ -60,11 +63,19 @@ function getSupabaseClient() {
 }
 
 // ---------------------------------------------------------------------------
-// Score helper
+// Score helpers
 // ---------------------------------------------------------------------------
 
-function scoreFromMagnitude(magnitudeInches: number): "hot" | "warm" {
+function scoreHail(magnitudeInches: number): "hot" | "warm" {
   return magnitudeInches >= 1.0 ? "hot" : "warm";
+}
+
+function scoreWind(magnitudeKnots: number): "hot" | "warm" {
+  return magnitudeKnots >= 50 ? "hot" : "warm";
+}
+
+function scoreEvent(eventType: EventType, magnitude: number): "hot" | "warm" {
+  return eventType === "hail" ? scoreHail(magnitude) : scoreWind(magnitude);
 }
 
 // ---------------------------------------------------------------------------
@@ -72,10 +83,10 @@ function scoreFromMagnitude(magnitudeInches: number): "hot" | "warm" {
 // ---------------------------------------------------------------------------
 
 /**
- * Upserts hail events into the roofing_leads table.
+ * Upserts storm events (hail or wind) into the roofing_leads table.
  * Returns the number of rows that were inserted or updated.
  */
-export async function saveHailLeads(events: HailEvent[]): Promise<number> {
+export async function saveStormLeads(events: StormEvent[]): Promise<number> {
   if (events.length === 0) {
     console.log("[save-leads] No events to save.");
     return 0;
@@ -83,18 +94,18 @@ export async function saveHailLeads(events: HailEvent[]): Promise<number> {
 
   const supabase = getSupabaseClient();
 
-  // Deduplicate by (county, state, event_date, source), keeping the
-  // highest-magnitude event — prevents the Postgres "ON CONFLICT DO UPDATE
+  // Deduplicate by (county, state, event_date, source, event_type), keeping
+  // the highest-magnitude event. Prevents the Postgres "ON CONFLICT DO UPDATE
   // command cannot affect row a second time" error.
-  const bestByKey = new Map<string, HailEvent>();
+  const bestByKey = new Map<string, StormEvent>();
   for (const event of events) {
-    const key = `${event.county}|${event.state}|${event.date}|noaa-storm-events`;
+    const key = `${event.county}|${event.state}|${event.date}|noaa-storm-events|${event.eventType}`;
     const existing = bestByKey.get(key);
     if (!existing || event.magnitude > existing.magnitude) {
       bestByKey.set(key, event);
     }
   }
-  const deduped = [...bestByKey.values()];
+  const deduped = Array.from(bestByKey.values());
   console.log(
     `[save-leads] ${events.length} events → ${deduped.length} after dedup`
   );
@@ -103,10 +114,10 @@ export async function saveHailLeads(events: HailEvent[]): Promise<number> {
     address:    null,
     county:     event.county,
     state:      event.state,
-    event_type: "hail",
+    event_type: event.eventType,
     event_date: event.date,
     source:     "noaa-storm-events",
-    lead_score: scoreFromMagnitude(event.magnitude),
+    lead_score: scoreEvent(event.eventType, event.magnitude),
   }));
 
   // Upsert in batches of 500 to stay within Supabase limits
@@ -119,7 +130,7 @@ export async function saveHailLeads(events: HailEvent[]): Promise<number> {
     const { data, error } = await supabase
       .from("roofing_leads")
       .upsert(batch, {
-        onConflict: "county,state,event_date,source",
+        onConflict: "county,state,event_date,source,event_type",
         ignoreDuplicates: false,
       })
       .select("id");
@@ -133,3 +144,6 @@ export async function saveHailLeads(events: HailEvent[]): Promise<number> {
 
   return savedCount;
 }
+
+// Backward-compatible alias
+export const saveHailLeads = saveStormLeads;

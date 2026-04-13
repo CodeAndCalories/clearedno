@@ -1,8 +1,9 @@
 /**
  * noaa-hail.ts
  *
- * Fetches hail storm events from the NOAA Storm Events Database for any
- * supported state.  https://www.ncei.noaa.gov/pub/data/swdi/stormevents/
+ * Fetches storm events (hail or thunderstorm wind) from the NOAA Storm Events
+ * Database for any supported state.
+ * https://www.ncei.noaa.gov/pub/data/swdi/stormevents/
  *
  * No API key required — data is publicly available as .csv.gz files.
  *
@@ -11,9 +12,9 @@
  *      for each year covered by the last 12 months.
  *   2. Download and gunzip each file in memory (cached so multi-state runs
  *      only fetch each year-file once).
- *   3. Parse the CSV, filter to the requested state's county-level hail
- *      events within the window.
- *   4. Return HailEvent[] tagged with the state abbreviation.
+ *   3. Parse the CSV, filter to the requested state's county-level events
+ *      of the requested type within the window.
+ *   4. Return StormEvent[] tagged with state and eventType.
  */
 
 import axios from "axios";
@@ -28,14 +29,20 @@ dotenv.config();
 // Types
 // ---------------------------------------------------------------------------
 
-export interface HailEvent {
+export type EventType = "hail" | "wind";
+
+export interface StormEvent {
   county:    string;       // e.g. "Cuyahoga County"
   state:     string;       // 2-letter abbreviation, e.g. "OH"
   date:      string;       // ISO date "YYYY-MM-DD"
-  magnitude: number;       // Hail diameter in inches
+  magnitude: number;       // Hail: diameter in inches; Wind: speed in knots
   lat:       number | null;
   lng:       number | null;
+  eventType: EventType;
 }
+
+// Backward-compatible alias
+export type HailEvent = StormEvent;
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -43,6 +50,12 @@ export interface HailEvent {
 
 const STORM_EVENTS_BASE =
   "https://www.ncei.noaa.gov/pub/data/swdi/stormevents/csvfiles/";
+
+// NOAA EVENT_TYPE strings (uppercase for comparison)
+const EVENT_TYPE_FILTER: Record<EventType, string> = {
+  hail: "HAIL",
+  wind: "THUNDERSTORM WIND",
+};
 
 // Storm Events BEGIN_DATE_TIME uses 3-letter month abbreviations
 const MONTH_MAP: Record<string, number> = {
@@ -52,7 +65,7 @@ const MONTH_MAP: Record<string, number> = {
 
 // ---------------------------------------------------------------------------
 // Module-level CSV cache — keyed by URL
-// Avoids re-downloading the same year file for each state in a multi-state run.
+// Avoids re-downloading the same year file for each state / event type.
 // ---------------------------------------------------------------------------
 
 const csvCache = new Map<string, string>();
@@ -142,12 +155,12 @@ async function findYearFileUrls(years: number[]): Promise<string[]> {
 
 async function getCsvText(url: string): Promise<string> {
   if (csvCache.has(url)) {
-    console.log(`[noaa-hail] Cache hit: ${url.split("/").pop()}`);
+    console.log(`[noaa] Cache hit: ${url.split("/").pop()}`);
     return csvCache.get(url)!;
   }
 
   const filename = url.split("/").pop() ?? url;
-  console.log(`[noaa-hail] Downloading ${filename} ...`);
+  console.log(`[noaa] Downloading ${filename} ...`);
 
   const { data } = await axios.get<ArrayBuffer>(url, {
     responseType: "arraybuffer",
@@ -160,17 +173,18 @@ async function getCsvText(url: string): Promise<string> {
 }
 
 // ---------------------------------------------------------------------------
-// Step 3 — parse one year file for a specific state
+// Step 3 — parse one year file for a specific state + event type
 // ---------------------------------------------------------------------------
 
 async function parseYearFile(
   url: string,
   state: StateConfig,
-  cutoff: Date
-): Promise<HailEvent[]> {
+  cutoff: Date,
+  eventType: EventType
+): Promise<StormEvent[]> {
   const filename = url.split("/").pop() ?? url;
-  const csv = await getCsvText(url);
-  const lines = csv.split("\n");
+  const csv      = await getCsvText(url);
+  const lines    = csv.split("\n");
   if (lines.length < 2) return [];
 
   const headers = parseCsvLine(lines[0]);
@@ -185,8 +199,9 @@ async function parseYearFile(
   const LAT_I      = col("BEGIN_LAT");
   const LON_I      = col("BEGIN_LON");
 
-  const stateUpper = state.name.toUpperCase();
-  const events: HailEvent[] = [];
+  const stateUpper  = state.name.toUpperCase();
+  const typeFilter  = EVENT_TYPE_FILTER[eventType];
+  const events: StormEvent[] = [];
 
   for (let i = 1; i < lines.length; i++) {
     const line = lines[i].trim();
@@ -195,7 +210,7 @@ async function parseYearFile(
     const f = parseCsvLine(line);
 
     if (f[STATE_I]?.toUpperCase()   !== stateUpper) continue;
-    if (f[TYPE_I]?.toUpperCase()    !== "HAIL")     continue;
+    if (f[TYPE_I]?.toUpperCase()    !== typeFilter) continue;
     if (f[CZ_TYPE_I]?.toUpperCase() !== "C")        continue;
 
     const eventDate = parseEventDate(f[DATE_I] ?? "");
@@ -212,11 +227,12 @@ async function parseYearFile(
       magnitude: isNaN(magRaw) ? 0 : magRaw,
       lat:       isNaN(latRaw) ? null : latRaw,
       lng:       isNaN(lngRaw) ? null : lngRaw,
+      eventType,
     });
   }
 
   console.log(
-    `[noaa-hail] ${filename}: ${events.length} ${state.abbreviation} hail event(s) in window`
+    `[noaa] ${filename}: ${events.length} ${state.abbreviation} ${eventType} event(s) in window`
   );
   return events;
 }
@@ -226,11 +242,16 @@ async function parseYearFile(
 // ---------------------------------------------------------------------------
 
 /**
- * Fetches hail events for the given state from the last 12 months via NOAA
- * Storm Events.  Year files are cached in memory, so calling this for multiple
- * states in the same process only downloads each file once.
+ * Fetches storm events (hail or thunderstorm wind) for the given state from
+ * the last 12 months via NOAA Storm Events.
+ *
+ * Year files are cached in memory, so calling this for multiple states or
+ * event types in the same process only downloads each file once.
  */
-export async function fetchHailEvents(state: StateConfig): Promise<HailEvent[]> {
+export async function fetchStormEvents(
+  state: StateConfig,
+  eventType: EventType
+): Promise<StormEvent[]> {
   const now    = new Date();
   const cutoff = new Date(now);
   cutoff.setFullYear(now.getFullYear() - 1);
@@ -238,7 +259,7 @@ export async function fetchHailEvents(state: StateConfig): Promise<HailEvent[]> 
   const startStr = cutoff.toISOString().split("T")[0];
   const endStr   = now.toISOString().split("T")[0];
   console.log(
-    `[noaa-hail] Fetching ${state.name} (${state.abbreviation}) hail events ${startStr} → ${endStr}`
+    `[noaa] Fetching ${state.name} (${state.abbreviation}) ${eventType} events ${startStr} → ${endStr}`
   );
 
   const yearsNeeded: number[] = [];
@@ -249,18 +270,22 @@ export async function fetchHailEvents(state: StateConfig): Promise<HailEvent[]> 
   const urls = await findYearFileUrls(yearsNeeded);
   if (urls.length === 0) {
     console.warn(
-      `[noaa-hail] No Storm Events files found for year(s): ${yearsNeeded.join(", ")}. ` +
+      `[noaa] No Storm Events files found for year(s): ${yearsNeeded.join(", ")}. ` +
         "The current year file may not yet be published — try again later."
     );
     return [];
   }
 
-  const all: HailEvent[] = [];
+  const all: StormEvent[] = [];
   for (const url of urls) {
-    const events = await parseYearFile(url, state, cutoff);
+    const events = await parseYearFile(url, state, cutoff, eventType);
     all.push(...events);
   }
 
-  console.log(`[noaa-hail] Total ${state.abbreviation} hail events: ${all.length}`);
+  console.log(`[noaa] Total ${state.abbreviation} ${eventType} events: ${all.length}`);
   return all;
 }
+
+// Backward-compatible alias
+export const fetchHailEvents = (state: StateConfig) =>
+  fetchStormEvents(state, "hail");
