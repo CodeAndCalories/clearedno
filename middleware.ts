@@ -2,8 +2,13 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Routes that require a valid session
+// Routes that require a valid session → redirect to /login
 const PROTECTED_PREFIXES = ["/dashboard"];
+
+// Routes that require a valid session → redirect to /leads/landing
+const LEADS_PREFIX = "/leads";
+// Public paths that must NOT be protected (avoids infinite redirect loop)
+const LEADS_PUBLIC_PREFIX = "/leads/landing";
 
 export async function middleware(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -35,13 +40,25 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const { pathname } = request.nextUrl;
-  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
 
+  // Dashboard routes → /login
+  const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
   if (isProtected && !user) {
     const loginUrl = request.nextUrl.clone();
     loginUrl.pathname = "/login";
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
+  }
+
+  // Leads routes → /leads/landing (public landing stays accessible)
+  const isLeadsProtected =
+    pathname.startsWith(LEADS_PREFIX) &&
+    !pathname.startsWith(LEADS_PUBLIC_PREFIX);
+  if (isLeadsProtected && !user) {
+    const landingUrl = request.nextUrl.clone();
+    landingUrl.pathname = "/leads/landing";
+    landingUrl.searchParams.delete("next");
+    return NextResponse.redirect(landingUrl);
   }
 
   return supabaseResponse;
