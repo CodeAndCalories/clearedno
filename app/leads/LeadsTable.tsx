@@ -2,9 +2,7 @@
 
 import { useState, useMemo } from "react";
 
-// ---------------------------------------------------------------------------
-// Types
-// ---------------------------------------------------------------------------
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface RoofingLead {
   id: string;
@@ -26,29 +24,39 @@ interface Props {
   subscriptionStatus: string | null;
 }
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const STATES = ["OH", "IN", "MI", "KY", "IL", "PA"] as const;
+const PAGE_SIZE = 25;
+
+type SortKey =
+  | "date-desc"
+  | "date-asc"
+  | "magnitude-desc"
+  | "score"
+  | "county-asc"
+  | "county-desc";
 
 const SCORE_CONFIG = {
   hot: {
     label: "HOT",
     color: "#FF6B00",
-    bg: "rgba(255,107,0,0.12)",
+    bg: "rgba(255,107,0,0.15)",
+    border: "rgba(255,107,0,0.5)",
     dot: "#FF6B00",
   },
   warm: {
     label: "WARM",
     color: "#EAB308",
-    bg: "rgba(234,179,8,0.12)",
+    bg: "rgba(234,179,8,0.15)",
+    border: "rgba(234,179,8,0.45)",
     dot: "#EAB308",
   },
 } as const;
 
 const SELECT_STYLE = {
-  backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FF6B00' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")",
+  backgroundImage:
+    "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FF6B00' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")",
   backgroundRepeat: "no-repeat" as const,
   backgroundPosition: "right 10px center",
 };
@@ -56,9 +64,7 @@ const SELECT_STYLE = {
 const SELECT_CLASS =
   "bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-xs font-mono px-3 py-2 focus:outline-none focus:border-[#FF6B00] transition-colors appearance-none pr-8";
 
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string): string {
   const d = new Date(iso + "T00:00:00");
@@ -71,7 +77,10 @@ function formatMagnitude(mag: number | null): string {
 }
 
 function exportCsv(rows: RoofingLead[]) {
-  const headers = ["county", "state", "event_date", "magnitude_in", "lead_score", "event_type", "source", "lat", "lng"];
+  const headers = [
+    "county", "state", "event_date", "magnitude_in",
+    "lead_score", "event_type", "source", "lat", "lng",
+  ];
   const lines = [
     headers.join(","),
     ...rows.map((r) =>
@@ -97,17 +106,39 @@ function exportCsv(rows: RoofingLead[]) {
   URL.revokeObjectURL(url);
 }
 
-// ---------------------------------------------------------------------------
-// Stat card
-// ---------------------------------------------------------------------------
+function sortLeads(arr: RoofingLead[], key: SortKey): RoofingLead[] {
+  const copy = [...arr];
+  switch (key) {
+    case "date-desc":
+      return copy.sort((a, b) => b.event_date.localeCompare(a.event_date));
+    case "date-asc":
+      return copy.sort((a, b) => a.event_date.localeCompare(b.event_date));
+    case "magnitude-desc":
+      return copy.sort((a, b) => (b.magnitude ?? 0) - (a.magnitude ?? 0));
+    case "score":
+      return copy.sort((a, b) =>
+        a.lead_score === b.lead_score ? 0 : a.lead_score === "hot" ? -1 : 1
+      );
+    case "county-asc":
+      return copy.sort((a, b) => a.county.localeCompare(b.county));
+    case "county-desc":
+      return copy.sort((a, b) => b.county.localeCompare(a.county));
+    default:
+      return copy;
+  }
+}
+
+// ─── Stat card ────────────────────────────────────────────────────────────────
 
 function StatCard({
   label,
   value,
+  subtitle,
   accent,
 }: {
   label: string;
   value: string | number;
+  subtitle: string;
   accent?: string;
 }) {
   return (
@@ -116,89 +147,141 @@ function StatCard({
       <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#FF6B00]/60 translate-x-px translate-y-px" />
       <p className="text-[9px] tracking-[0.3em] text-[#FF6B00]/60 uppercase mb-2">{label}</p>
       <p
-        className="font-heading text-4xl tracking-widest"
+        className="font-heading text-4xl tracking-widest leading-none mb-1"
         style={{ color: accent ?? "#F5F0E8" }}
       >
         {value}
       </p>
+      <p className="text-[9px] tracking-[0.15em] text-[#F5F0E8]/25 uppercase">{subtitle}</p>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Main component
-// ---------------------------------------------------------------------------
+// ─── Sort arrow ───────────────────────────────────────────────────────────────
+
+function SortArrow({ active, direction }: { active: boolean; direction: "asc" | "desc" }) {
+  if (!active) return <span className="ml-1 text-[#F5F0E8]/15">↕</span>;
+  return <span className="ml-1 text-[#FF6B00]">{direction === "asc" ? "↑" : "↓"}</span>;
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 
 export default function LeadsTable({ leads, subscriptionStatus }: Props) {
-  const [stateFilter, setStateFilter]   = useState<string>("all");
-  const [countyFilter, setCountyFilter] = useState<string>("all");
-  const [scoreFilter, setScoreFilter]   = useState<string>("all");
-  const [portalLoading, setPortalLoading] = useState(false);
+  const [stateFilter,    setStateFilter]    = useState<string>("all");
+  const [scoreFilter,    setScoreFilter]    = useState<string>("all");
+  const [search,         setSearch]         = useState<string>("");
+  const [sortKey,        setSortKey]        = useState<SortKey>("date-desc");
+  const [page,           setPage]           = useState(1);
+  const [portalLoading,  setPortalLoading]  = useState(false);
 
   async function openPortal() {
     setPortalLoading(true);
     try {
-      const res = await fetch("/api/leads-portal", { method: "POST" });
+      const res  = await fetch("/api/leads-portal", { method: "POST" });
       const data = await res.json();
-      if (data.url) {
-        window.location.href = data.url;
-      }
+      if (data.url) window.location.href = data.url;
     } finally {
       setPortalLoading(false);
     }
   }
 
-  // Leads after applying the state filter only (used to populate county dropdown)
+  // ── Filter pipeline ───────────────────────────────────────────────────────
+
   const stateFiltered = useMemo(() => {
     if (stateFilter === "all") return leads;
     return leads.filter((l) => l.state === stateFilter);
   }, [leads, stateFilter]);
 
-  // Unique counties from the current state selection
-  const counties = useMemo(() => {
-    const s = new Set(stateFiltered.map((l) => l.county));
-    return ["all", ...Array.from(s).sort()];
-  }, [stateFiltered]);
-
-  // All filters applied
   const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
     return stateFiltered.filter((l) => {
-      if (countyFilter !== "all" && l.county !== countyFilter) return false;
       if (scoreFilter !== "all" && l.lead_score !== scoreFilter) return false;
+      if (q) {
+        const countyMatch = l.county.toLowerCase().includes(q);
+        const stateMatch  = (l.state ?? "").toLowerCase().includes(q);
+        if (!countyMatch && !stateMatch) return false;
+      }
       return true;
     });
-  }, [stateFiltered, countyFilter, scoreFilter]);
+  }, [stateFiltered, scoreFilter, search]);
 
-  // Stat cards reflect the state filter (but not county/score)
-  const statBase = stateFilter === "all" ? leads : stateFiltered;
+  const sorted = useMemo(() => sortLeads(filtered, sortKey), [filtered, sortKey]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE));
+  const safePage   = Math.min(page, totalPages);
+  const paginated  = useMemo(() => {
+    const start = (safePage - 1) * PAGE_SIZE;
+    return sorted.slice(start, start + PAGE_SIZE);
+  }, [sorted, safePage]);
+
+  // ── Stat cards (stateFilter only, unaffected by search/score/sort) ────────
+
+  const statBase   = stateFilter === "all" ? leads : stateFiltered;
   const totalLeads = statBase.length;
   const hotLeads   = statBase.filter((l) => l.lead_score === "hot").length;
   const warmLeads  = statBase.filter((l) => l.lead_score === "warm").length;
-  const newestDate = statBase.length > 0 ? formatDate(statBase[0].event_date) : "—";
+  const newestDate =
+    statBase.length > 0
+      ? formatDate(
+          statBase.reduce((best, l) =>
+            l.event_date > best.event_date ? l : best
+          ).event_date
+        )
+      : "—";
 
-  function handleStateChange(val: string) {
-    setStateFilter(val);
-    setCountyFilter("all"); // reset county when state changes
+  // ── Handlers ──────────────────────────────────────────────────────────────
+
+  function handleColumnSort(col: "county" | "date") {
+    setSortKey((prev) => {
+      if (col === "county") return prev === "county-asc" ? "county-desc" : "county-asc";
+      return prev === "date-desc" ? "date-asc" : "date-desc";
+    });
+    setPage(1);
   }
 
+  function handleStateChange(val: string)  { setStateFilter(val);              setPage(1); }
+  function handleScoreChange(val: string)  { setScoreFilter(val);              setPage(1); }
+  function handleSortChange(val: SortKey)  { setSortKey(val);                  setPage(1); }
+  function handleSearch(val: string)       { setSearch(val);                   setPage(1); }
+
+  // ── Showing text ──────────────────────────────────────────────────────────
+
+  const showingFrom = sorted.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
+  const showingTo   = Math.min(safePage * PAGE_SIZE, sorted.length);
+
+  // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-8">
-      {/* ── Stat cards ─────────────────────────────────────────────── */}
+
+      {/* ── Stat cards ─────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Leads" value={totalLeads} />
-        <StatCard label="Hot Leads" value={hotLeads} accent="#FF6B00" />
-        <StatCard label="Warm Leads" value={warmLeads} accent="#EAB308" />
-        <StatCard label="Newest Event" value={newestDate} />
+        <StatCard label="Total Leads"  value={totalLeads} subtitle="across 6 states"  />
+        <StatCard label="Hot Leads"    value={hotLeads}   subtitle='1"+ hailstone'    accent="#FF6B00" />
+        <StatCard label="Warm Leads"   value={warmLeads}  subtitle='under 1" hail'    accent="#EAB308" />
+        <StatCard label="Newest Event" value={newestDate} subtitle="last event date"  />
       </div>
 
-      {/* ── Filters + export ────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
+      {/* ── Search bar ─────────────────────────────────────────────────── */}
+      <div>
+        <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">
+          Search
+        </label>
+        <input
+          type="text"
+          placeholder="Search county or state..."
+          value={search}
+          onChange={(e) => handleSearch(e.target.value)}
+          className="w-full sm:max-w-sm bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-xs font-mono px-3 py-2 placeholder:text-[#F5F0E8]/20 focus:outline-none focus:border-[#FF6B00] transition-colors"
+        />
+      </div>
+
+      {/* ── Filters + export ───────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end justify-between">
         <div className="flex flex-col sm:flex-row gap-3">
-          {/* State filter */}
+
+          {/* State */}
           <div>
-            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">
-              State
-            </label>
+            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">State</label>
             <select
               value={stateFilter}
               onChange={(e) => handleStateChange(e.target.value)}
@@ -212,50 +295,46 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
             </select>
           </div>
 
-          {/* County filter */}
+          {/* Score */}
           <div>
-            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">
-              County
-            </label>
+            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">Score</label>
             <select
-              value={countyFilter}
-              onChange={(e) => setCountyFilter(e.target.value)}
+              value={scoreFilter}
+              onChange={(e) => handleScoreChange(e.target.value)}
               className={SELECT_CLASS}
               style={SELECT_STYLE}
             >
-              {counties.map((c) => (
-                <option key={c} value={c} className="bg-[#0A0A0A]">
-                  {c === "all" ? "All Counties" : c}
-                </option>
-              ))}
+              <option value="all"  className="bg-[#0A0A0A]">All Scores</option>
+              <option value="hot"  className="bg-[#0A0A0A]">Hot</option>
+              <option value="warm" className="bg-[#0A0A0A]">Warm</option>
             </select>
           </div>
 
-          {/* Score filter */}
+          {/* Sort */}
           <div>
-            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">
-              Score
-            </label>
+            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">Sort</label>
             <select
-              value={scoreFilter}
-              onChange={(e) => setScoreFilter(e.target.value)}
+              value={
+                ["date-desc", "date-asc", "magnitude-desc", "score"].includes(sortKey)
+                  ? sortKey
+                  : "date-desc"
+              }
+              onChange={(e) => handleSortChange(e.target.value as SortKey)}
               className={SELECT_CLASS}
               style={SELECT_STYLE}
             >
-              <option value="all" className="bg-[#0A0A0A]">All Scores</option>
-              <option value="hot" className="bg-[#0A0A0A]">Hot</option>
-              <option value="warm" className="bg-[#0A0A0A]">Warm</option>
+              <option value="date-desc"       className="bg-[#0A0A0A]">Date (newest)</option>
+              <option value="date-asc"        className="bg-[#0A0A0A]">Date (oldest)</option>
+              <option value="magnitude-desc"  className="bg-[#0A0A0A]">Magnitude (highest)</option>
+              <option value="score"           className="bg-[#0A0A0A]">Score (hot first)</option>
             </select>
           </div>
         </div>
 
         {/* Export + Portal */}
         <div className="flex items-end gap-3">
-          <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase self-end pb-2">
-            {filtered.length} result{filtered.length !== 1 ? "s" : ""}
-          </p>
           <button
-            onClick={() => exportCsv(filtered)}
+            onClick={() => exportCsv(sorted)}
             className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors"
           >
             Download CSV
@@ -270,8 +349,13 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
         </div>
       </div>
 
-      {/* ── Table ───────────────────────────────────────────────────── */}
-      {filtered.length === 0 ? (
+      {/* ── Showing count ──────────────────────────────────────────────── */}
+      <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
+        Showing {showingFrom}–{showingTo} of {sorted.length} leads
+      </p>
+
+      {/* ── Table ──────────────────────────────────────────────────────── */}
+      {sorted.length === 0 ? (
         <div className="border border-[#FF6B00]/20 px-6 py-12 text-center">
           <p className="text-[10px] tracking-[0.3em] text-[#F5F0E8]/30 uppercase">
             No leads match the current filters
@@ -282,19 +366,55 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
           <table className="w-full text-xs font-mono">
             <thead>
               <tr className="border-b border-[#FF6B00]/20">
-                {["County", "State", "Event Date", "Magnitude", "Score", "Type"].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal"
-                  >
-                    {h}
-                  </th>
-                ))}
+
+                {/* County — clickable sort */}
+                <th
+                  className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal cursor-pointer hover:text-[#FF6B00] select-none"
+                  onClick={() => handleColumnSort("county")}
+                >
+                  County
+                  <SortArrow
+                    active={sortKey === "county-asc" || sortKey === "county-desc"}
+                    direction={sortKey === "county-asc" ? "asc" : "desc"}
+                  />
+                </th>
+
+                <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                  State
+                </th>
+
+                {/* Date — clickable sort */}
+                <th
+                  className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal cursor-pointer hover:text-[#FF6B00] select-none"
+                  onClick={() => handleColumnSort("date")}
+                >
+                  Event Date
+                  <SortArrow
+                    active={sortKey === "date-desc" || sortKey === "date-asc"}
+                    direction={sortKey === "date-asc" ? "asc" : "desc"}
+                  />
+                </th>
+
+                <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                  Magnitude
+                </th>
+                <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                  Score
+                </th>
+                <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                  Type
+                </th>
+                <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                  Map
+                </th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((lead, i) => {
-                const cfg = SCORE_CONFIG[lead.lead_score] ?? SCORE_CONFIG.warm;
+              {paginated.map((lead, i) => {
+                const cfg    = SCORE_CONFIG[lead.lead_score] ?? SCORE_CONFIG.warm;
+                const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(
+                  `${lead.county} ${lead.state ?? ""}`
+                )}`;
                 return (
                   <tr
                     key={lead.id}
@@ -311,13 +431,19 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
                     <td className="px-5 py-3 text-[#F5F0E8]/60 whitespace-nowrap">
                       {formatDate(lead.event_date)}
                     </td>
-                    <td className="px-5 py-3 text-[#F5F0E8]/80 whitespace-nowrap tabular-nums">
-                      {formatMagnitude(lead.magnitude)}
+                    <td className="px-5 py-3 whitespace-nowrap tabular-nums">
+                      <span style={{ color: lead.magnitude ? "#FF6B00" : "rgba(245,240,232,0.3)" }}>
+                        {formatMagnitude(lead.magnitude)}
+                      </span>
                     </td>
                     <td className="px-5 py-3 whitespace-nowrap">
                       <span
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] tracking-widest uppercase font-medium"
-                        style={{ color: cfg.color, backgroundColor: cfg.bg }}
+                        style={{
+                          color:           cfg.color,
+                          backgroundColor: cfg.bg,
+                          border:          `1px solid ${cfg.border}`,
+                        }}
                       >
                         <span
                           className="w-1.5 h-1.5 rounded-full flex-shrink-0"
@@ -329,6 +455,16 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
                     <td className="px-5 py-3 text-[#F5F0E8]/40 whitespace-nowrap uppercase tracking-widest text-[9px]">
                       {lead.event_type}
                     </td>
+                    <td className="px-5 py-3 whitespace-nowrap">
+                      <a
+                        href={mapUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[9px] tracking-widest uppercase font-mono text-[#F5F0E8]/30 border border-[#F5F0E8]/10 px-2 py-1 hover:border-[#FF6B00]/40 hover:text-[#FF6B00]/70 transition-colors"
+                      >
+                        Map ↗
+                      </a>
+                    </td>
                   </tr>
                 );
               })}
@@ -337,10 +473,34 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
         </div>
       )}
 
-      {/* Footer note */}
+      {/* ── Pagination ─────────────────────────────────────────────────── */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={safePage === 1}
+            className="border border-[#FF6B00]/30 text-[#FF6B00]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+          >
+            ← Prev
+          </button>
+          <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
+            Page {safePage} of {totalPages}
+          </p>
+          <button
+            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            disabled={safePage === totalPages}
+            className="border border-[#FF6B00]/30 text-[#FF6B00]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+          >
+            Next →
+          </button>
+        </div>
+      )}
+
+      {/* ── Bottom bar ─────────────────────────────────────────────────── */}
       <p className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/20 uppercase text-right">
-        Source: NOAA Storm Events Database · updated by scraper on demand
+        New leads drop every Monday — email notification when your list updates
       </p>
+
     </div>
   );
 }
