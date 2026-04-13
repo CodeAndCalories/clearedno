@@ -113,6 +113,15 @@ export default function LeadsLandingPage() {
           ))}
         </div>
 
+        {/* ── Early CTA ──────────────────────────────────────────────── */}
+        <button
+          onClick={handleCheckout}
+          disabled={loading}
+          className="w-full max-w-sm bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-6 py-4 mb-10 hover:bg-[#F5F0E8] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+        >
+          {loading ? "Redirecting…" : "Get Access — $300/mo"}
+        </button>
+
         <p className="text-[#F5F0E8]/50 text-sm sm:text-base max-w-xl leading-relaxed mb-14">
           We pull NOAA hail events weekly. You get a verified list of
           properties that need a new roof — scored by severity, ready to download.
