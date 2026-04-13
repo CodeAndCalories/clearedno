@@ -31,6 +31,20 @@ function LoginForm() {
       return;
     }
 
+    // Special case: user clicked "Get Access" on the leads landing page
+    // before logging in. Complete the Stripe checkout now.
+    if (next === "leads-checkout") {
+      const res = await fetch("/api/leads-checkout", { method: "POST" });
+      const json = await res.json();
+      if (json.url) {
+        window.location.href = json.url;
+      } else {
+        router.push("/leads/landing");
+        router.refresh();
+      }
+      return;
+    }
+
     router.push(next);
     router.refresh();
   }

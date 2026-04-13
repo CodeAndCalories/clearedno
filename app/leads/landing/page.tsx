@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LeadsLandingPage() {
   const [loading, setLoading] = useState(false);
@@ -10,6 +11,16 @@ export default function LeadsLandingPage() {
     setLoading(true);
     setError(null);
     try {
+      // Check auth state before hitting Stripe
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        window.location.href = "/login?next=leads-checkout";
+        return;
+      }
+
+      // Logged in — proceed directly to Stripe
       const res = await fetch("/api/leads-checkout", { method: "POST" });
       const json = await res.json();
       if (!res.ok || !json.url) {
