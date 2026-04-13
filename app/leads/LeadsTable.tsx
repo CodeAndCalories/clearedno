@@ -10,6 +10,7 @@ interface RoofingLead {
   id: string;
   address: string | null;
   county: string;
+  state: string | null;
   event_type: string;
   event_date: string;
   source: string;
@@ -26,8 +27,10 @@ interface Props {
 }
 
 // ---------------------------------------------------------------------------
-// Badge config
+// Constants
 // ---------------------------------------------------------------------------
+
+const STATES = ["OH", "IN", "MI", "KY", "IL", "PA"] as const;
 
 const SCORE_CONFIG = {
   hot: {
@@ -44,12 +47,21 @@ const SCORE_CONFIG = {
   },
 } as const;
 
+const SELECT_STYLE = {
+  backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FF6B00' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")",
+  backgroundRepeat: "no-repeat" as const,
+  backgroundPosition: "right 10px center",
+};
+
+const SELECT_CLASS =
+  "bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-xs font-mono px-3 py-2 focus:outline-none focus:border-[#FF6B00] transition-colors appearance-none pr-8";
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
 function formatDate(iso: string): string {
-  const d = new Date(iso + "T00:00:00"); // force local parse
+  const d = new Date(iso + "T00:00:00");
   return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
@@ -59,12 +71,13 @@ function formatMagnitude(mag: number | null): string {
 }
 
 function exportCsv(rows: RoofingLead[]) {
-  const headers = ["county", "event_date", "magnitude_in", "lead_score", "event_type", "source", "lat", "lng"];
+  const headers = ["county", "state", "event_date", "magnitude_in", "lead_score", "event_type", "source", "lat", "lng"];
   const lines = [
     headers.join(","),
     ...rows.map((r) =>
       [
         `"${r.county}"`,
+        r.state ?? "",
         r.event_date,
         r.magnitude ?? "",
         r.lead_score,
@@ -79,7 +92,7 @@ function exportCsv(rows: RoofingLead[]) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `roofing-leads-ohio-${new Date().toISOString().split("T")[0]}.csv`;
+  a.download = `roofing-leads-${new Date().toISOString().split("T")[0]}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -99,10 +112,8 @@ function StatCard({
 }) {
   return (
     <div className="border border-[#FF6B00]/20 p-5 relative bg-[#0A0A0A]">
-      {/* corner accents */}
       <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[#FF6B00]/60 -translate-x-px -translate-y-px" />
       <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#FF6B00]/60 translate-x-px translate-y-px" />
-
       <p className="text-[9px] tracking-[0.3em] text-[#FF6B00]/60 uppercase mb-2">{label}</p>
       <p
         className="font-heading text-4xl tracking-widest"
@@ -119,8 +130,9 @@ function StatCard({
 // ---------------------------------------------------------------------------
 
 export default function LeadsTable({ leads, subscriptionStatus }: Props) {
+  const [stateFilter, setStateFilter]   = useState<string>("all");
   const [countyFilter, setCountyFilter] = useState<string>("all");
-  const [scoreFilter, setScoreFilter] = useState<string>("all");
+  const [scoreFilter, setScoreFilter]   = useState<string>("all");
   const [portalLoading, setPortalLoading] = useState(false);
 
   async function openPortal() {
@@ -136,26 +148,38 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
     }
   }
 
-  // Unique sorted county list
-  const counties = useMemo(() => {
-    const s = new Set(leads.map((l) => l.county));
-    return ["all", ...Array.from(s).sort()];
-  }, [leads]);
+  // Leads after applying the state filter only (used to populate county dropdown)
+  const stateFiltered = useMemo(() => {
+    if (stateFilter === "all") return leads;
+    return leads.filter((l) => l.state === stateFilter);
+  }, [leads, stateFilter]);
 
-  // Filtered rows
+  // Unique counties from the current state selection
+  const counties = useMemo(() => {
+    const s = new Set(stateFiltered.map((l) => l.county));
+    return ["all", ...Array.from(s).sort()];
+  }, [stateFiltered]);
+
+  // All filters applied
   const filtered = useMemo(() => {
-    return leads.filter((l) => {
+    return stateFiltered.filter((l) => {
       if (countyFilter !== "all" && l.county !== countyFilter) return false;
       if (scoreFilter !== "all" && l.lead_score !== scoreFilter) return false;
       return true;
     });
-  }, [leads, countyFilter, scoreFilter]);
+  }, [stateFiltered, countyFilter, scoreFilter]);
 
-  // Stats (always from full dataset)
-  const totalLeads = leads.length;
-  const hotLeads = leads.filter((l) => l.lead_score === "hot").length;
-  const warmLeads = leads.filter((l) => l.lead_score === "warm").length;
-  const newestDate = leads.length > 0 ? formatDate(leads[0].event_date) : "—";
+  // Stat cards reflect the state filter (but not county/score)
+  const statBase = stateFilter === "all" ? leads : stateFiltered;
+  const totalLeads = statBase.length;
+  const hotLeads   = statBase.filter((l) => l.lead_score === "hot").length;
+  const warmLeads  = statBase.filter((l) => l.lead_score === "warm").length;
+  const newestDate = statBase.length > 0 ? formatDate(statBase[0].event_date) : "—";
+
+  function handleStateChange(val: string) {
+    setStateFilter(val);
+    setCountyFilter("all"); // reset county when state changes
+  }
 
   return (
     <div className="space-y-8">
@@ -170,6 +194,24 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
       {/* ── Filters + export ────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center justify-between">
         <div className="flex flex-col sm:flex-row gap-3">
+          {/* State filter */}
+          <div>
+            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">
+              State
+            </label>
+            <select
+              value={stateFilter}
+              onChange={(e) => handleStateChange(e.target.value)}
+              className={SELECT_CLASS}
+              style={SELECT_STYLE}
+            >
+              <option value="all" className="bg-[#0A0A0A]">All States</option>
+              {STATES.map((s) => (
+                <option key={s} value={s} className="bg-[#0A0A0A]">{s}</option>
+              ))}
+            </select>
+          </div>
+
           {/* County filter */}
           <div>
             <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">
@@ -178,8 +220,8 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
             <select
               value={countyFilter}
               onChange={(e) => setCountyFilter(e.target.value)}
-              className="bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-xs font-mono px-3 py-2 focus:outline-none focus:border-[#FF6B00] transition-colors appearance-none pr-8"
-              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FF6B00' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}
+              className={SELECT_CLASS}
+              style={SELECT_STYLE}
             >
               {counties.map((c) => (
                 <option key={c} value={c} className="bg-[#0A0A0A]">
@@ -197,8 +239,8 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
             <select
               value={scoreFilter}
               onChange={(e) => setScoreFilter(e.target.value)}
-              className="bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-xs font-mono px-3 py-2 focus:outline-none focus:border-[#FF6B00] transition-colors appearance-none pr-8"
-              style={{ backgroundImage: "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23FF6B00' d='M6 8L1 3h10z'/%3E%3C/svg%3E\")", backgroundRepeat: "no-repeat", backgroundPosition: "right 10px center" }}
+              className={SELECT_CLASS}
+              style={SELECT_STYLE}
             >
               <option value="all" className="bg-[#0A0A0A]">All Scores</option>
               <option value="hot" className="bg-[#0A0A0A]">Hot</option>
@@ -240,7 +282,7 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
           <table className="w-full text-xs font-mono">
             <thead>
               <tr className="border-b border-[#FF6B00]/20">
-                {["County", "Event Date", "Magnitude", "Score", "Type"].map((h) => (
+                {["County", "State", "Event Date", "Magnitude", "Score", "Type"].map((h) => (
                   <th
                     key={h}
                     className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal"
@@ -260,22 +302,18 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
                       i % 2 === 0 ? "bg-transparent" : "bg-[#F5F0E8]/[0.02]"
                     }`}
                   >
-                    {/* County */}
                     <td className="px-5 py-3 text-[#F5F0E8]/80 whitespace-nowrap">
                       {lead.county}
                     </td>
-
-                    {/* Event date */}
+                    <td className="px-5 py-3 text-[#F5F0E8]/50 whitespace-nowrap">
+                      {lead.state ?? "—"}
+                    </td>
                     <td className="px-5 py-3 text-[#F5F0E8]/60 whitespace-nowrap">
                       {formatDate(lead.event_date)}
                     </td>
-
-                    {/* Magnitude */}
                     <td className="px-5 py-3 text-[#F5F0E8]/80 whitespace-nowrap tabular-nums">
                       {formatMagnitude(lead.magnitude)}
                     </td>
-
-                    {/* Lead score badge */}
                     <td className="px-5 py-3 whitespace-nowrap">
                       <span
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] tracking-widest uppercase font-medium"
@@ -288,8 +326,6 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
                         {cfg.label}
                       </span>
                     </td>
-
-                    {/* Event type */}
                     <td className="px-5 py-3 text-[#F5F0E8]/40 whitespace-nowrap uppercase tracking-widest text-[9px]">
                       {lead.event_type}
                     </td>

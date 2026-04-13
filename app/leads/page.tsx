@@ -23,7 +23,7 @@ export default async function LeadsPage() {
 
   const { data: leads, error } = await supabase
     .from("roofing_leads")
-    .select("id, address, county, event_type, event_date, source, magnitude, lead_score, lat, lng, created_at")
+    .select("id, address, county, state, event_type, event_date, source, magnitude, lead_score, lat, lng, created_at")
     .order("event_date", { ascending: false });
 
   if (error) {
