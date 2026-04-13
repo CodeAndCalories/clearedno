@@ -37,7 +37,6 @@ export async function POST(req: NextRequest) {
     // Avoids stale test-mode customer IDs stored in the database.
     const session = await stripe.checkout.sessions.create({
       customer_email: user.email,
-      customer_creation: "always",
       mode: "subscription",
       payment_method_types: ["card"],
       line_items: [{ price: priceId, quantity: 1 }],
