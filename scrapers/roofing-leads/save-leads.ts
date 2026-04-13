@@ -4,8 +4,8 @@
  * Takes an array of HailEvent objects and upserts them into the
  * Supabase `roofing_leads` table.
  *
- * Upsert key: (county, event_date, source) — prevents duplicate rows
- * if the scraper is run multiple times.
+ * Upsert key: (county, state, event_date, source) — prevents duplicate rows
+ * if the scraper is run multiple times across multiple states.
  *
  * lead_score logic:
  *   "hot"  — hail magnitude >= 1.0 inch (significant damage threshold)
@@ -29,11 +29,12 @@ dotenv.config();
 // ---------------------------------------------------------------------------
 
 export interface RoofingLead {
-  address: string | null;
-  county: string;
+  address:    string | null;
+  county:     string;
+  state:      string;       // 2-letter abbreviation, e.g. "OH"
   event_type: string;
-  event_date: string;   // ISO date "YYYY-MM-DD"
-  source: string;
+  event_date: string;       // ISO date "YYYY-MM-DD"
+  source:     string;
   lead_score: "hot" | "warm";
   // id and created_at are set by the database
 }
@@ -44,8 +45,6 @@ export interface RoofingLead {
 
 function getSupabaseClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  // Prefer service role key for unauthenticated server-side writes;
-  // fall back to anon key if service role is not available.
   const key =
     process.env.SUPABASE_SERVICE_ROLE_KEY ??
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -84,13 +83,12 @@ export async function saveHailLeads(events: HailEvent[]): Promise<number> {
 
   const supabase = getSupabaseClient();
 
-  // Storm Events can have multiple hail reports for the same county on the
-  // same day. Deduplicate by (county, event_date, source), keeping the
+  // Deduplicate by (county, state, event_date, source), keeping the
   // highest-magnitude event — prevents the Postgres "ON CONFLICT DO UPDATE
   // command cannot affect row a second time" error.
   const bestByKey = new Map<string, HailEvent>();
   for (const event of events) {
-    const key = `${event.county}|${event.date}|noaa-storm-events`;
+    const key = `${event.county}|${event.state}|${event.date}|noaa-storm-events`;
     const existing = bestByKey.get(key);
     if (!existing || event.magnitude > existing.magnitude) {
       bestByKey.set(key, event);
@@ -102,12 +100,12 @@ export async function saveHailLeads(events: HailEvent[]): Promise<number> {
   );
 
   const rows: RoofingLead[] = deduped.map((event) => ({
-    // address is unknown from weather data alone; set to null for manual enrichment
-    address: null,
-    county: event.county,
+    address:    null,
+    county:     event.county,
+    state:      event.state,
     event_type: "hail",
     event_date: event.date,
-    source: "noaa-storm-events",
+    source:     "noaa-storm-events",
     lead_score: scoreFromMagnitude(event.magnitude),
   }));
 
@@ -121,8 +119,8 @@ export async function saveHailLeads(events: HailEvent[]): Promise<number> {
     const { data, error } = await supabase
       .from("roofing_leads")
       .upsert(batch, {
-        onConflict: "county,event_date,source", // unique constraint in DB
-        ignoreDuplicates: false, // update lead_score if magnitude changed
+        onConflict: "county,state,event_date,source",
+        ignoreDuplicates: false,
       })
       .select("id");
 

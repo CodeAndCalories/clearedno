@@ -1,17 +1,67 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface SampleLead {
+  county:     string;
+  state:      string | null;
+  event_date: string;
+  magnitude:  number | null;
+  lead_score: "hot" | "warm";
+}
+
+const SCORE_CONFIG = {
+  hot:  { label: "HOT",  color: "#FF6B00", bg: "rgba(255,107,0,0.12)"  },
+  warm: { label: "WARM", color: "#EAB308", bg: "rgba(234,179,8,0.12)"  },
+} as const;
+
+function formatDate(iso: string): string {
+  const d = new Date(iso + "T00:00:00");
+  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+// ---------------------------------------------------------------------------
+// Page
+// ---------------------------------------------------------------------------
+
 export default function LeadsLandingPage() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading]       = useState(false);
+  const [error, setError]           = useState<string | null>(null);
+  const [sampleLeads, setSampleLeads] = useState<SampleLead[]>([]);
+  const [totalCount, setTotalCount] = useState<number | null>(null);
+
+  // Fetch sample leads on mount using the public anon key
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function loadSample() {
+      const [sampleRes, countRes] = await Promise.all([
+        supabase
+          .from("roofing_leads")
+          .select("county, state, event_date, magnitude, lead_score")
+          .order("event_date", { ascending: false })
+          .limit(5),
+        supabase
+          .from("roofing_leads")
+          .select("id", { count: "exact", head: true }),
+      ]);
+
+      if (sampleRes.data) setSampleLeads(sampleRes.data as SampleLead[]);
+      if (countRes.count !== null) setTotalCount(countRes.count);
+    }
+
+    loadSample();
+  }, []);
 
   async function handleCheckout() {
     setLoading(true);
     setError(null);
     try {
-      // Check auth state before hitting Stripe
       const supabase = createClient();
       const { data: { user } } = await supabase.auth.getUser();
 
@@ -20,7 +70,6 @@ export default function LeadsLandingPage() {
         return;
       }
 
-      // Logged in — proceed directly to Stripe
       const res = await fetch("/api/leads-checkout", { method: "POST" });
       const json = await res.json();
       if (!res.ok || !json.url) {
@@ -78,6 +127,79 @@ export default function LeadsLandingPage() {
             </div>
           ))}
         </div>
+
+        {/* ── Sample data table ──────────────────────────────────────── */}
+        {sampleLeads.length > 0 && (
+          <div className="w-full max-w-2xl mb-16 text-left">
+            {/* Label */}
+            <div className="flex items-center gap-3 mb-3">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] animate-pulse flex-shrink-0" />
+              <p className="text-[10px] tracking-[0.3em] text-[#FF6B00]/70 uppercase">
+                Live sample — updated weekly
+              </p>
+            </div>
+
+            {/* Table */}
+            <div className="border border-[#FF6B00]/20 overflow-x-auto">
+              <table className="w-full text-xs font-mono">
+                <thead>
+                  <tr className="border-b border-[#FF6B00]/20">
+                    {["County", "State", "Date", "Score"].map((h) => (
+                      <th
+                        key={h}
+                        className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal"
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sampleLeads.map((lead, i) => {
+                    const cfg = SCORE_CONFIG[lead.lead_score] ?? SCORE_CONFIG.warm;
+                    return (
+                      <tr
+                        key={i}
+                        className={`border-b border-[#FF6B00]/10 ${
+                          i % 2 === 0 ? "bg-transparent" : "bg-[#F5F0E8]/[0.02]"
+                        }`}
+                      >
+                        <td className="px-5 py-3 text-[#F5F0E8]/80 whitespace-nowrap">
+                          {lead.county}
+                        </td>
+                        <td className="px-5 py-3 text-[#F5F0E8]/50 whitespace-nowrap">
+                          {lead.state ?? "—"}
+                        </td>
+                        <td className="px-5 py-3 text-[#F5F0E8]/60 whitespace-nowrap">
+                          {formatDate(lead.event_date)}
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap">
+                          <span
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] tracking-widest uppercase font-medium"
+                            style={{ color: cfg.color, backgroundColor: cfg.bg }}
+                          >
+                            <span
+                              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: cfg.color }}
+                            />
+                            {cfg.label}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Count footer */}
+            {totalCount !== null && (
+              <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase mt-3 text-right">
+                + {(totalCount - sampleLeads.length).toLocaleString()} more leads available this month
+              </p>
+            )}
+          </div>
+        )}
 
         {/* Pricing card */}
         <div className="border border-[#FF6B00]/30 p-8 relative max-w-sm w-full mb-8">
