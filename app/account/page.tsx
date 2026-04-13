@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { stripe } from "@/lib/stripe";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 export const metadata = {
   title: "My Account | ClearedNo",
@@ -25,6 +28,54 @@ function statusBadge(status: string | null) {
       {cfg.label}
     </span>
   );
+}
+
+async function startLeadsCheckout() {
+  "use server";
+
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const priceId = process.env.STRIPE_LEADS_PRICE_ID;
+  if (!priceId) throw new Error("STRIPE_LEADS_PRICE_ID is not configured.");
+
+  const { data: profile } = await supabaseAdmin
+    .from("profiles")
+    .select("stripe_customer_id, full_name")
+    .eq("user_id", user.id)
+    .single();
+
+  let customerId = profile?.stripe_customer_id;
+
+  if (!customerId) {
+    const customer = await stripe.customers.create({
+      email: user.email,
+      name: profile?.full_name ?? undefined,
+      metadata: { supabase_user_id: user.id },
+    });
+    customerId = customer.id;
+    await supabaseAdmin
+      .from("profiles")
+      .update({ stripe_customer_id: customerId })
+      .eq("user_id", user.id);
+  }
+
+  const host = headers().get("host") ?? "www.clearedno.com";
+  const origin = `https://${host}`;
+
+  const session = await stripe.checkout.sessions.create({
+    customer: customerId,
+    mode: "subscription",
+    payment_method_types: ["card"],
+    line_items: [{ price: priceId, quantity: 1 }],
+    allow_promotion_codes: true,
+    success_url: `${origin}/leads`,
+    cancel_url: `${origin}/leads/landing`,
+    subscription_data: { metadata: { supabase_user_id: user.id } },
+  });
+
+  redirect(session.url!);
 }
 
 export default async function AccountPage() {
@@ -142,12 +193,14 @@ export default async function AccountPage() {
                   View Leads →
                 </a>
               ) : (
-                <a
-                  href="/leads/landing"
-                  className="inline-block border border-[#F5F0E8]/30 text-[#F5F0E8]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#F5F0E8]/60 hover:text-[#F5F0E8] transition-colors"
-                >
-                  Get Access →
-                </a>
+                <form action={startLeadsCheckout}>
+                  <button
+                    type="submit"
+                    className="border border-[#F5F0E8]/30 text-[#F5F0E8]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#F5F0E8]/60 hover:text-[#F5F0E8] transition-colors"
+                  >
+                    Get Access →
+                  </button>
+                </form>
               )}
             </div>
           </div>
