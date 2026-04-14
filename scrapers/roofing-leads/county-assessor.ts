@@ -9,7 +9,7 @@ const supabase = createClient(
 )
 
 const FRANKLIN_ARCGIS =
-  'https://services1.arcgis.com/cJ9YHowT8TU7DUyn/arcgis/rest/services/Franklin_County_Parcels/FeatureServer/0/query'
+  'https://gis.franklincountyohio.gov/hosting/rest/services/ParcelFeatures/Parcel_Features/MapServer/0/query'
 
 const BATCH_SIZE = 1000
 
@@ -20,8 +20,8 @@ async function fetchFranklinCounty() {
 
   while (hasMore) {
     const params = new URLSearchParams({
-      where: "YEARBUILT > 0 AND YEARBUILT < 2005 AND CLASSCD LIKE '1%'", // residential only
-      outFields: 'SITEADDRESS,OWNERNAME1,OWNERADDR,OWNERCITY,OWNERSTATE,OWNERZIP,YEARBUILT',
+      where: "RESYRBLT > 0 AND RESYRBLT < 2005 AND PCLASS LIKE '1%'", // residential only
+      outFields: 'SITEADDRESS,CNVYNAME,OWNERMADDR,OWNERCITY,OWNERSTATE,OWNERZIP,RESYRBLT',
       returnGeometry: 'false',
       resultOffset: String(offset),
       resultRecordCount: String(BATCH_SIZE),
@@ -39,22 +39,13 @@ async function fetchFranklinCounty() {
     const rows = json.features
       .map((f: any) => {
         const a = f.attributes
-        const ownerMailingAddress = [
-          a.OWNERADDR,
-          a.OWNERCITY,
-          a.OWNERSTATE,
-          a.OWNERZIP,
-        ]
-          .filter(Boolean)
-          .join(', ')
-
         return {
           address: a.SITEADDRESS || null,
           county: 'franklin',
           state: 'OH',
-          owner_name: a.OWNERNAME1 || null,
-          owner_mailing_address: ownerMailingAddress || null,
-          year_built: a.YEARBUILT ? parseInt(a.YEARBUILT) : null,
+          owner_name: a.CNVYNAME || null,
+          owner_mailing_address: [a.OWNERMADDR, a.OWNERCITY, a.OWNERSTATE, a.OWNERZIP].filter(Boolean).join(', ') || null,
+          year_built: a.RESYRBLT ? parseInt(a.RESYRBLT) : null,
           source: 'franklin-arcgis',
           created_at: new Date().toISOString(),
         }
