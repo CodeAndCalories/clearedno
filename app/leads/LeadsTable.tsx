@@ -44,6 +44,11 @@ interface Props {
 const STATES = ["OH", "IN", "MI", "KY", "IL", "PA"] as const;
 const PAGE_SIZE = 25;
 
+// Computed once at load time so all "new this week" checks are consistent
+const SEVEN_DAYS_AGO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+  .toISOString()
+  .split("T")[0];
+
 type SortKey =
   | "date-desc"
   | "date-asc"
@@ -97,6 +102,10 @@ const SELECT_CLASS =
   "bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-xs font-mono px-3 py-2 focus:outline-none focus:border-[#FF6B00] transition-colors appearance-none pr-8";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
+
+function isNewThisWeek(date: string): boolean {
+  return date >= SEVEN_DAYS_AGO;
+}
 
 function formatDate(iso: string): string {
   const d = new Date(iso + "T00:00:00");
@@ -191,17 +200,24 @@ function StatCard({
   value,
   subtitle,
   accent,
+  showPulse,
 }: {
   label: string;
   value: string | number;
   subtitle: string;
   accent?: string;
+  showPulse?: boolean;
 }) {
   return (
     <div className="border border-[#FF6B00]/20 p-5 relative bg-[#0A0A0A]">
       <span className="absolute top-0 left-0 w-4 h-4 border-t border-l border-[#FF6B00]/60 -translate-x-px -translate-y-px" />
       <span className="absolute bottom-0 right-0 w-4 h-4 border-b border-r border-[#FF6B00]/60 translate-x-px translate-y-px" />
-      <p className="text-[9px] tracking-[0.3em] text-[#FF6B00]/60 uppercase mb-2">{label}</p>
+      <div className="flex items-center gap-2 mb-2">
+        <p className="text-[9px] tracking-[0.3em] text-[#FF6B00]/60 uppercase">{label}</p>
+        {showPulse && (
+          <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] animate-pulse flex-shrink-0" />
+        )}
+      </div>
       <p
         className="font-heading text-4xl tracking-widest leading-none mb-1"
         style={{ color: accent ?? "#F5F0E8" }}
@@ -234,10 +250,31 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
   const [sortKey,        setSortKey]        = useState<SortKey>("date-desc");
   const [page,           setPage]           = useState(1);
   const [portalLoading,  setPortalLoading]  = useState(false);
+  const [hideContacted,  setHideContacted]  = useState(false);
 
   // ── Property tab state ────────────────────────────────────────────────────
-  const [propSearch,  setPropSearch]  = useState<string>("");
-  const [propPage,    setPropPage]    = useState(1);
+  const [propSearch,        setPropSearch]        = useState<string>("");
+  const [propPage,          setPropPage]          = useState(1);
+  const [propHideContacted, setPropHideContacted] = useState(false);
+
+  // ── Shared contact state (optimistic, client-side only) ───────────────────
+  const [contactedIds,  setContactedIds]  = useState<Set<string>>(new Set());
+  const [contactingId,  setContactingId]  = useState<string | null>(null);
+
+  async function markContacted(id: string) {
+    setContactingId(id);
+    try {
+      await fetch("/api/leads/contact", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ lead_id: id }),
+      });
+      // Optimistically mark regardless of response
+      setContactedIds((prev) => new Set(Array.from(prev).concat(id)));
+    } finally {
+      setContactingId(null);
+    }
+  }
 
   async function openPortal() {
     setPortalLoading(true);
@@ -260,8 +297,14 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return stateFiltered.filter((l) => {
-      if (scoreFilter     !== "all" && l.lead_score  !== scoreFilter)     return false;
-      if (eventTypeFilter !== "all" && l.event_type  !== eventTypeFilter) return false;
+      // Score / new-week filter
+      if (scoreFilter === "new-week") {
+        if (!isNewThisWeek(l.event_date)) return false;
+      } else if (scoreFilter !== "all") {
+        if (l.lead_score !== scoreFilter) return false;
+      }
+      if (eventTypeFilter !== "all" && l.event_type !== eventTypeFilter) return false;
+      if (hideContacted && contactedIds.has(l.id)) return false;
       if (q) {
         const countyMatch = l.county.toLowerCase().includes(q);
         const stateMatch  = (l.state ?? "").toLowerCase().includes(q);
@@ -269,7 +312,7 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
       }
       return true;
     });
-  }, [stateFiltered, scoreFilter, search, eventTypeFilter]);
+  }, [stateFiltered, scoreFilter, eventTypeFilter, search, hideContacted, contactedIds]);
 
   const sorted = useMemo(() => sortLeads(filtered, sortKey), [filtered, sortKey]);
 
@@ -282,10 +325,14 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
 
   // ── Storm stat cards ──────────────────────────────────────────────────────
 
-  const statBase   = stateFilter === "all" ? leads : stateFiltered;
-  const totalLeads = statBase.length;
-  const hotLeads   = statBase.filter((l) => l.lead_score === "hot").length;
-  const warmLeads  = statBase.filter((l) => l.lead_score === "warm").length;
+  const statBase      = stateFilter === "all" ? leads : stateFiltered;
+  const totalLeads    = statBase.length;
+  const hotLeads      = statBase.filter((l) => l.lead_score === "hot").length;
+  const warmLeads     = statBase.filter((l) => l.lead_score === "warm").length;
+  const hasNewThisWeek = useMemo(
+    () => statBase.some((l) => isNewThisWeek(l.event_date)),
+    [statBase]
+  );
   const newestDate =
     statBase.length > 0
       ? formatDate(
@@ -299,13 +346,14 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
 
   const filteredProps = useMemo(() => {
     const q = propSearch.trim().toLowerCase();
-    if (!q) return propertyLeads;
     return propertyLeads.filter((p) => {
+      if (propHideContacted && contactedIds.has(p.id)) return false;
+      if (!q) return true;
       const addrMatch  = (p.address ?? "").toLowerCase().includes(q);
       const ownerMatch = (p.owner_name ?? "").toLowerCase().includes(q);
       return addrMatch || ownerMatch;
     });
-  }, [propertyLeads, propSearch]);
+  }, [propertyLeads, propSearch, propHideContacted, contactedIds]);
 
   const propTotalPages = Math.max(1, Math.ceil(filteredProps.length / PAGE_SIZE));
   const safePropPage   = Math.min(propPage, propTotalPages);
@@ -328,6 +376,17 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
     return new Set(propertyLeads.map((p) => p.county)).size;
   }, [propertyLeads]);
 
+  // ── Contacted counts ──────────────────────────────────────────────────────
+
+  const stormContactedCount = useMemo(
+    () => leads.filter((l) => contactedIds.has(l.id)).length,
+    [leads, contactedIds]
+  );
+  const propContactedCount = useMemo(
+    () => propertyLeads.filter((p) => contactedIds.has(p.id)).length,
+    [propertyLeads, contactedIds]
+  );
+
   // ── Storm handlers ────────────────────────────────────────────────────────
 
   function handleColumnSort(col: "county" | "date") {
@@ -349,6 +408,14 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
 
   const propShowingFrom = filteredProps.length === 0 ? 0 : (safePropPage - 1) * PAGE_SIZE + 1;
   const propShowingTo   = Math.min(safePropPage * PAGE_SIZE, filteredProps.length);
+
+  // ── Print canvassing sheet ────────────────────────────────────────────────
+
+  function openCanvass() {
+    const params = new URLSearchParams();
+    if (propSearch) params.set("q", propSearch);
+    window.open(`/leads/canvass?${params.toString()}`, "_blank");
+  }
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
@@ -385,7 +452,12 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
             <StatCard label="Total Leads"  value={totalLeads} subtitle="across 6 states"  />
             <StatCard label="Hot Leads"    value={hotLeads}   subtitle='1"+ hailstone'    accent="#FF6B00" />
             <StatCard label="Warm Leads"   value={warmLeads}  subtitle='under 1" hail'    accent="#EAB308" />
-            <StatCard label="Newest Event" value={newestDate} subtitle="last event date"  />
+            <StatCard
+              label="Newest Event"
+              value={newestDate}
+              subtitle="last event date"
+              showPulse={hasNewThisWeek}
+            />
           </div>
 
           {/* ── Search bar ─────────────────────────────────────────────── */}
@@ -431,9 +503,10 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
                   className={SELECT_CLASS}
                   style={SELECT_STYLE}
                 >
-                  <option value="all"  className="bg-[#0A0A0A]">All Scores</option>
-                  <option value="hot"  className="bg-[#0A0A0A]">Hot</option>
-                  <option value="warm" className="bg-[#0A0A0A]">Warm</option>
+                  <option value="all"      className="bg-[#0A0A0A]">All Scores</option>
+                  <option value="hot"      className="bg-[#0A0A0A]">Hot</option>
+                  <option value="warm"     className="bg-[#0A0A0A]">Warm</option>
+                  <option value="new-week" className="bg-[#0A0A0A]">New this week</option>
                 </select>
               </div>
 
@@ -473,7 +546,7 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
               </div>
             </div>
 
-            {/* Export + Portal */}
+            {/* Export + Portal + Alerts */}
             <div className="flex items-end gap-3">
               <button
                 onClick={() => exportStormCsv(sorted)}
@@ -497,10 +570,29 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
             </div>
           </div>
 
-          {/* ── Showing count ──────────────────────────────────────────── */}
-          <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
-            Showing {showingFrom}–{showingTo} of {sorted.length} leads
-          </p>
+          {/* ── Showing count + hide contacted toggle ──────────────────── */}
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
+              Showing {showingFrom}–{showingTo} of {sorted.length} leads
+            </p>
+            <div className="flex items-center gap-3">
+              {stormContactedCount > 0 && (
+                <span className="text-[9px] tracking-[0.2em] text-[#22C55E]/60 uppercase">
+                  {stormContactedCount} contacted
+                </span>
+              )}
+              <button
+                onClick={() => setHideContacted((v) => !v)}
+                className={`text-[9px] tracking-[0.2em] uppercase font-mono border px-3 py-1 transition-colors ${
+                  hideContacted
+                    ? "border-[#FF6B00]/60 text-[#FF6B00]/80 bg-[#FF6B00]/5"
+                    : "border-[#F5F0E8]/15 text-[#F5F0E8]/30 hover:border-[#F5F0E8]/30"
+                }`}
+              >
+                {hideContacted ? "Showing uncontacted" : "Hide contacted"}
+              </button>
+            </div>
+          </div>
 
           {/* ── Table ──────────────────────────────────────────────────── */}
           {sorted.length === 0 ? (
@@ -549,23 +641,39 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
                     <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
                       Map
                     </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Contacted
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginated.map((lead, i) => {
-                    const cfg    = SCORE_CONFIG[lead.lead_score] ?? SCORE_CONFIG.warm;
-                    const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(
+                    const cfg        = SCORE_CONFIG[lead.lead_score] ?? SCORE_CONFIG.warm;
+                    const isNew      = isNewThisWeek(lead.event_date);
+                    const isContacted = contactedIds.has(lead.id);
+                    const mapUrl     = `https://maps.google.com/?q=${encodeURIComponent(
                       `${lead.county} ${lead.state ?? ""}`
                     )}`;
                     return (
                       <tr
                         key={lead.id}
-                        className={`border-b border-[#FF6B00]/10 hover:bg-[#FF6B00]/5 transition-colors ${
-                          i % 2 === 0 ? "bg-transparent" : "bg-[#F5F0E8]/[0.02]"
+                        className={`border-b border-[#FF6B00]/10 transition-colors ${
+                          isContacted
+                            ? "opacity-40"
+                            : i % 2 === 0
+                            ? "bg-transparent hover:bg-[#FF6B00]/5"
+                            : "bg-[#F5F0E8]/[0.02] hover:bg-[#FF6B00]/5"
                         }`}
                       >
                         <td className="px-5 py-3 text-[#F5F0E8]/80 whitespace-nowrap">
-                          {lead.county}
+                          <span className="inline-flex items-center gap-2">
+                            {lead.county}
+                            {isNew && (
+                              <span className="inline-flex items-center px-1.5 py-0.5 text-[8px] tracking-widest uppercase font-bold rounded-full bg-[#FF6B00]/20 text-[#FF6B00] border border-[#FF6B00]/40">
+                                NEW
+                              </span>
+                            )}
+                          </span>
                         </td>
                         <td className="px-5 py-3 text-[#F5F0E8]/50 whitespace-nowrap">
                           {lead.state ?? "—"}
@@ -622,6 +730,19 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
                             Map ↗
                           </a>
                         </td>
+                        <td className="px-5 py-3 whitespace-nowrap">
+                          {isContacted ? (
+                            <span className="text-[#22C55E] text-sm">✓</span>
+                          ) : (
+                            <button
+                              onClick={() => markContacted(lead.id)}
+                              disabled={contactingId === lead.id}
+                              className="text-[9px] tracking-widest uppercase font-mono text-[#F5F0E8]/25 border border-[#F5F0E8]/10 px-2 py-1 hover:border-[#22C55E]/40 hover:text-[#22C55E]/70 transition-colors disabled:opacity-30"
+                            >
+                              {contactingId === lead.id ? "…" : "Mark"}
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     );
                   })}
@@ -667,10 +788,10 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
         <>
           {/* ── Stat cards ─────────────────────────────────────────────── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Total Properties" value={totalProps}    subtitle="property records"       />
-            <StatCard label="Avg Year Built"   value={avgYearBuilt} subtitle="median build year"      accent="#FF6B00" />
-            <StatCard label="Pre-1990 Roofs"   value={pre1990}      subtitle="highest priority"       accent="#FF6B00" />
-            <StatCard label="County Coverage"  value={countyCoverage} subtitle="counties tracked"    />
+            <StatCard label="Total Properties" value={totalProps}      subtitle="property records"   />
+            <StatCard label="Avg Year Built"   value={avgYearBuilt}   subtitle="median build year"  accent="#FF6B00" />
+            <StatCard label="Pre-1990 Roofs"   value={pre1990}        subtitle="highest priority"   accent="#FF6B00" />
+            <StatCard label="County Coverage"  value={countyCoverage} subtitle="counties tracked"   />
           </div>
 
           {/* ── Search + export ────────────────────────────────────────── */}
@@ -687,18 +808,45 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
                 className="w-full sm:w-80 bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-xs font-mono px-3 py-2 placeholder:text-[#F5F0E8]/20 focus:outline-none focus:border-[#FF6B00] transition-colors"
               />
             </div>
-            <button
-              onClick={() => exportPropertyCsv(filteredProps)}
-              className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors"
-            >
-              Download CSV
-            </button>
+            <div className="flex items-end gap-3">
+              <button
+                onClick={() => exportPropertyCsv(filteredProps)}
+                className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors"
+              >
+                Download CSV
+              </button>
+              <button
+                onClick={openCanvass}
+                className="border border-[#F5F0E8]/30 text-[#F5F0E8]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#F5F0E8]/60 hover:text-[#F5F0E8] transition-colors"
+              >
+                Print Canvassing Sheet
+              </button>
+            </div>
           </div>
 
-          {/* ── Showing count ──────────────────────────────────────────── */}
-          <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
-            Showing {propShowingFrom}–{propShowingTo} of {filteredProps.length} properties
-          </p>
+          {/* ── Showing count + hide contacted toggle ──────────────────── */}
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
+              Showing {propShowingFrom}–{propShowingTo} of {filteredProps.length} properties
+            </p>
+            <div className="flex items-center gap-3">
+              {propContactedCount > 0 && (
+                <span className="text-[9px] tracking-[0.2em] text-[#22C55E]/60 uppercase">
+                  {propContactedCount} contacted
+                </span>
+              )}
+              <button
+                onClick={() => setPropHideContacted((v) => !v)}
+                className={`text-[9px] tracking-[0.2em] uppercase font-mono border px-3 py-1 transition-colors ${
+                  propHideContacted
+                    ? "border-[#FF6B00]/60 text-[#FF6B00]/80 bg-[#FF6B00]/5"
+                    : "border-[#F5F0E8]/15 text-[#F5F0E8]/30 hover:border-[#F5F0E8]/30"
+                }`}
+              >
+                {propHideContacted ? "Showing uncontacted" : "Hide contacted"}
+              </button>
+            </div>
+          </div>
 
           {/* ── Table ──────────────────────────────────────────────────── */}
           {filteredProps.length === 0 ? (
@@ -727,19 +875,27 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
                     <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
                       Map
                     </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Contacted
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {paginatedProps.map((prop, i) => {
-                    const isOld   = prop.year_built !== null && prop.year_built < 1990;
-                    const mapUrl  = `https://maps.google.com/?q=${encodeURIComponent(
+                    const isOld       = prop.year_built !== null && prop.year_built < 1990;
+                    const isContacted = contactedIds.has(prop.id);
+                    const mapUrl      = `https://maps.google.com/?q=${encodeURIComponent(
                       `${prop.address ?? ""} ${prop.county} ${prop.state ?? ""}`
                     )}`;
                     return (
                       <tr
                         key={prop.id}
-                        className={`border-b border-[#FF6B00]/10 hover:bg-[#FF6B00]/5 transition-colors ${
-                          i % 2 === 0 ? "bg-transparent" : "bg-[#F5F0E8]/[0.02]"
+                        className={`border-b border-[#FF6B00]/10 transition-colors ${
+                          isContacted
+                            ? "opacity-40"
+                            : i % 2 === 0
+                            ? "bg-transparent hover:bg-[#FF6B00]/5"
+                            : "bg-[#F5F0E8]/[0.02] hover:bg-[#FF6B00]/5"
                         }`}
                       >
                         <td className="px-5 py-3 text-[#F5F0E8]/80 max-w-[200px] truncate">
@@ -765,6 +921,19 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
                           >
                             Map ↗
                           </a>
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap">
+                          {isContacted ? (
+                            <span className="text-[#22C55E] text-sm">✓</span>
+                          ) : (
+                            <button
+                              onClick={() => markContacted(prop.id)}
+                              disabled={contactingId === prop.id}
+                              className="text-[9px] tracking-widest uppercase font-mono text-[#F5F0E8]/25 border border-[#F5F0E8]/10 px-2 py-1 hover:border-[#22C55E]/40 hover:text-[#22C55E]/70 transition-colors disabled:opacity-30"
+                            >
+                              {contactingId === prop.id ? "…" : "Mark"}
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
