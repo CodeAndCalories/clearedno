@@ -2,19 +2,53 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Contractor Blog — Permit Tips & News | ClearedNo",
+  title: "Blog — Roofing Leads & Permit Guides | ClearedNo",
   description:
-    "Guides and tips for Texas contractors on building permits, approval times, and status tracking in Austin, Dallas, Houston, and San Antonio.",
+    "Storm data insights, roofing lead strategies, and contractor permit guides from the ClearedNo team.",
   alternates: { canonical: "https://www.clearedno.com/blog" },
   openGraph: {
-    title: "Contractor Blog | ClearedNo",
-    description: "Permit guides for Texas contractors.",
+    title: "Blog | ClearedNo",
+    description: "Roofing lead strategies and permit guides for contractors.",
     url: "https://www.clearedno.com/blog",
     type: "website",
   },
 };
 
-const POSTS = [
+// ── Roofing leads articles ────────────────────────────────────────────────────
+
+const ROOFING_POSTS = [
+  {
+    href: "/blog/ohio-roofing-leads",
+    title: "Roofing leads in Ohio — how contractors find storm damage jobs in 2026",
+    excerpt:
+      "Ohio sees dozens of hail and wind damage events every year. Here's how the best roofing contractors find jobs before their competitors.",
+    tag: "Roofing Leads",
+    date: "April 2026",
+    readTime: "5 min read",
+  },
+  {
+    href: "/blog/roofing-lead-sources-2026",
+    title: "Angi vs HomeAdvisor vs storm data — best roofing lead sources in 2026",
+    excerpt:
+      "Paying $300–600/month for shared leads that go to 5 competitors? There's a better way.",
+    tag: "Roofing Leads",
+    date: "April 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/ohio-hail-season-2025",
+    title: "Ohio hail season 2025 — which counties got hit hardest",
+    excerpt:
+      "NOAA recorded 117 hail events in Ohio last year. Franklin, Hamilton and Cuyahoga counties saw the most activity.",
+    tag: "Storm Data",
+    date: "April 2026",
+    readTime: "5 min read",
+  },
+];
+
+// ── Permit articles ───────────────────────────────────────────────────────────
+
+const PERMIT_POSTS = [
   {
     href: "/blog/austin-permit-tx-search-tool",
     title: "Austin TX Permit Search Tool: How to Find Any Permit in 2026",
@@ -267,45 +301,36 @@ const POSTS = [
     date: "March 2026",
     readTime: "5 min read",
   },
-  {
-    href: "/blog/san-antonio-tx-permit-tracking-contractors",
-    title: "San Antonio TX Permit Tracking for Contractors: 2026 Guide",
-    excerpt:
-      "San Antonio is one of the fastest-growing cities in Texas. High permit volume, a slow portal, and no notifications mean contractors lose days. ClearedNo monitors SA permits 24/7.",
-    tag: "San Antonio, TX",
-    date: "March 2026",
-    readTime: "6 min read",
-  },
-  {
-    href: "/blog/how-to-never-miss-permit-approval",
-    title: "How Contractors Never Miss a Permit Approval (Without Checking Every Day)",
-    excerpt:
-      "The problem with manual checking. What missing an approval actually costs. The automation solution and the real workflow of a contractor using instant permit alerts.",
-    tag: "Operations",
-    date: "March 2026",
-    readTime: "6 min read",
-  },
-  {
-    href: "/blog/permit-status-pending-what-it-means",
-    title: "Permit Status Pending: What It Means and What to Do While You Wait",
-    excerpt:
-      "Every permit status explained — pending, under review, approved, cleared, rejected. What contractors should do at each stage and how monitoring catches the moment it changes.",
-    tag: "Permits 101",
-    date: "March 2026",
-    readTime: "7 min read",
-  },
-  {
-    href: "/blog/reduce-permit-wait-time-contractors",
-    title: "How Contractors Reduce the Real Cost of Permit Wait Time in 2026",
-    excerpt:
-      "You can't speed up the city — but you can react instantly when it's done. The difference between finding out in seconds vs next morning. Real dollars. Monitoring as competitive advantage.",
-    tag: "Business",
-    date: "March 2026",
-    readTime: "7 min read",
-  },
 ];
 
+function PostRow({ post, last }: { post: typeof PERMIT_POSTS[number]; last: boolean }) {
+  return (
+    <Link
+      href={post.href}
+      className={`block group px-6 py-8 hover:bg-[#FF6B00]/5 transition-colors ${
+        !last ? "border-b border-[#FF6B00]/20" : ""
+      }`}
+    >
+      <div className="flex items-center gap-3 mb-3">
+        <span className="text-[9px] tracking-[0.25em] text-[#FF6B00] uppercase font-mono border border-[#FF6B00]/40 px-2 py-0.5">
+          {post.tag}
+        </span>
+        <span className="text-[10px] text-[#F5F0E8]/25 font-mono">{post.date}</span>
+        <span className="text-[10px] text-[#F5F0E8]/25 font-mono">· {post.readTime}</span>
+      </div>
+      <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] group-hover:text-[#FF6B00] transition-colors mb-3 leading-[1.1]">
+        {post.title.toUpperCase()}
+      </h2>
+      <p className="text-sm text-[#F5F0E8]/50 leading-relaxed">{post.excerpt}</p>
+      <div className="mt-4 text-[10px] tracking-[0.2em] text-[#FF6B00] uppercase font-mono group-hover:translate-x-1 transition-transform inline-block">
+        Read More →
+      </div>
+    </Link>
+  );
+}
+
 export default function BlogIndexPage() {
+  const allPosts = [...ROOFING_POSTS, ...PERMIT_POSTS];
   return (
     <div>
       <div className="mb-12">
@@ -314,39 +339,18 @@ export default function BlogIndexPage() {
           <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">ClearedNo Blog</span>
         </div>
         <h1 className="font-heading text-5xl sm:text-6xl tracking-widest text-[#F5F0E8] leading-[0.95] mb-4">
-          PERMIT GUIDES<br />
+          FIELD NOTES<br />
           <span className="text-[#FF6B00]">FOR CONTRACTORS.</span>
         </h1>
         <p className="text-sm text-[#F5F0E8]/50 leading-relaxed max-w-lg">
-          No-fluff guides on building permits in Texas — written for the people actually waiting
-          on them, not the bureaucrats issuing them.
+          Roofing lead strategies, storm data insights, and permit guides — written for the people
+          actually doing the work.
         </p>
       </div>
 
       <div className="space-y-0 border border-[#FF6B00]/20">
-        {POSTS.map((post, i) => (
-          <Link
-            key={post.href}
-            href={post.href}
-            className={`block group px-6 py-8 hover:bg-[#FF6B00]/5 transition-colors ${
-              i < POSTS.length - 1 ? "border-b border-[#FF6B00]/20" : ""
-            }`}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <span className="text-[9px] tracking-[0.25em] text-[#FF6B00] uppercase font-mono border border-[#FF6B00]/40 px-2 py-0.5">
-                {post.tag}
-              </span>
-              <span className="text-[10px] text-[#F5F0E8]/25 font-mono">{post.date}</span>
-              <span className="text-[10px] text-[#F5F0E8]/25 font-mono">· {post.readTime}</span>
-            </div>
-            <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] group-hover:text-[#FF6B00] transition-colors mb-3 leading-[1.1]">
-              {post.title.toUpperCase()}
-            </h2>
-            <p className="text-sm text-[#F5F0E8]/50 leading-relaxed">{post.excerpt}</p>
-            <div className="mt-4 text-[10px] tracking-[0.2em] text-[#FF6B00] uppercase font-mono group-hover:translate-x-1 transition-transform inline-block">
-              Read More →
-            </div>
-          </Link>
+        {allPosts.map((post, i) => (
+          <PostRow key={post.href} post={post} last={i === allPosts.length - 1} />
         ))}
       </div>
     </div>

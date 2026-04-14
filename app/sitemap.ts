@@ -39,6 +39,12 @@ const PERMIT_PROJECT_TYPES = [
   "plumbing-permit",
 ];
 
+const LEADS_BLOG_SLUGS = [
+  "ohio-roofing-leads",
+  "roofing-lead-sources-2026",
+  "ohio-hail-season-2025",
+];
+
 const BLOG_SLUGS = [
   "austin-permit-tx-search-tool",
   "contractor-permit-tracking-multiple-jobs",
@@ -121,6 +127,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.7,
+  }));
+
+  const leadsBlogEntries: MetadataRoute.Sitemap = LEADS_BLOG_SLUGS.map((slug) => ({
+    url: `${BASE}/blog/${slug}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly",
+    priority: 0.8,
   }));
 
   const locationEntries: MetadataRoute.Sitemap = cities.map((c) => ({
@@ -232,6 +245,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     ...locationEntries,
     ...blogEntries,
+    ...leadsBlogEntries,
     ...permitIndexEntry,
     ...permitCityEntries,
     ...permitProjectEntries,

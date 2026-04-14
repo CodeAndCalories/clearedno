@@ -239,6 +239,40 @@ export default function LeadsLandingPage() {
           </div>
         </div>
 
+        {/* ── ROI section ────────────────────────────────────────────── */}
+        <div className="w-full max-w-2xl mb-16 text-left">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-px bg-[#FF6B00]" />
+            <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">The Math</span>
+          </div>
+
+          <div className="border border-[#FF6B00]/20 p-8">
+            <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] uppercase mb-8">
+              The math is simple
+            </h2>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 border border-[#FF6B00]/10 mb-6">
+              {[
+                { label: "Average roof job", value: "$8,000–$15,000 revenue" },
+                { label: "Cost per month",   value: "$300/month" },
+                { label: "Break even",       value: "1 callback per month" },
+              ].map(({ label, value }, i) => (
+                <div
+                  key={label}
+                  className={`p-5 ${i < 2 ? "border-b sm:border-b-0 sm:border-r border-[#FF6B00]/10" : ""}`}
+                >
+                  <p className="text-[9px] tracking-[0.25em] text-[#F5F0E8]/35 uppercase mb-2">{label}</p>
+                  <p className="font-heading text-lg tracking-widest text-[#FF6B00]">{value}</p>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-xs text-[#F5F0E8]/40 leading-relaxed">
+              Most contractors close 3–5 jobs per month from our list.
+            </p>
+          </div>
+        </div>
+
         {/* ── Objection row ──────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-8 mb-10">
           {["No contracts", "Cancel anytime", "30-day money back"].map((item) => (

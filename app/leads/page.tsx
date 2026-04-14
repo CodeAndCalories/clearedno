@@ -2,8 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import LeadsTable from "./LeadsTable";
 
 export const metadata = {
-  title: "Roofing Leads — Ohio | ClearedNo",
-  description: "Ohio hail storm roofing leads sourced from NOAA Storm Events data.",
+  title: "Roofing Leads — Midwest | ClearedNo",
+  description: "Hail and wind damage roofing leads across 6 Midwest states, sourced from NOAA Storm Events data.",
 };
 
 export default async function LeadsPage() {
@@ -48,10 +48,10 @@ export default async function LeadsPage() {
             ClearedNo / Leads
           </p>
           <h1 className="font-heading text-5xl tracking-widest text-[#F5F0E8] uppercase">
-            Roofing Leads — Ohio
+            Roofing Leads — Midwest
           </h1>
           <p className="text-sm text-[#F5F0E8]/40 mt-2">
-            Sourced from NOAA Storm Events Database · hail events past 12 months
+            Sourced from NOAA Storm Events Database · hail + wind damage events · 6 states · updated weekly
           </p>
         </div>
       </div>
