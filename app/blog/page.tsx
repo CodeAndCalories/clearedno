@@ -44,6 +44,15 @@ const ROOFING_POSTS = [
     date: "April 2026",
     readTime: "5 min read",
   },
+  {
+    href: "/blog/storm-data-roofing-leads",
+    title: "How roofing contractors use storm data to find jobs before competitors",
+    excerpt:
+      "The best roofing contractors don't wait for homeowners to call them. They use NOAA storm data to knock on doors before anyone else.",
+    tag: "Storm Data",
+    date: "April 2026",
+    readTime: "7 min read",
+  },
 ];
 
 // ── Permit articles ───────────────────────────────────────────────────────────

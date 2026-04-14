@@ -215,6 +215,146 @@ const ARTICLES: Article[] = [
       </>
     ),
   },
+  {
+    title: "How roofing contractors use storm data to find jobs before competitors",
+    slug: "storm-data-roofing-leads",
+    date: "April 15, 2026",
+    description:
+      "The best roofing contractors don't wait for homeowners to call them. They use NOAA storm data to knock on doors before anyone else.",
+    body: (
+      <>
+        <p>
+          The difference between a roofing contractor who closes 30 jobs a summer and one who
+          closes 10 often isn't skill, crew size, or marketing budget. It's timing. The
+          contractors who win consistently have figured out one thing: the job exists the moment
+          hail hits the ground — not the moment the homeowner picks up the phone.
+        </p>
+        <p>
+          That's the insight behind storm-data lead generation. NOAA tracks every significant
+          hail and wind event in the country by county, date, and magnitude. The contractors who
+          pull that data fast and move on it immediately are the ones who get to the door first.
+        </p>
+
+        <h2>The 72-hour window</h2>
+        <p>
+          After a hail event, there's a narrow window — typically 48 to 72 hours — where most
+          homeowners don't yet know they have damage. Insurance adjusters haven't been called.
+          Other contractors haven't canvassed yet. The neighborhood is wide open.
+        </p>
+        <p>
+          Contractors who reach homeowners inside that window have a massive advantage. They're
+          the first professional voice the homeowner hears. They can walk the property while
+          fresh damage is still visible, obvious, and easy to document. They can help the
+          homeowner file the claim before anyone else is in the picture.
+        </p>
+        <p>
+          After 72 hours, other contractors start appearing. By day five or six, the best
+          homeowners — the ones in high-damage areas with newer homes and good insurance — have
+          already committed to someone. The window doesn't close forever, but it gets
+          significantly harder and more competitive.
+        </p>
+
+        <h2>How NOAA tracks hail and wind damage by county</h2>
+        <p>
+          NOAA's Storm Events Database is the authoritative federal record for severe weather in
+          the United States. It logs hail events with the date, county, state, hailstone size
+          in inches, and any additional notes from trained storm spotters and National Weather
+          Service field offices.
+        </p>
+        <p>
+          A typical hail event record looks like this: Franklin County, Ohio — June 12 —
+          1.25-inch hailstones — NWS Columbus confirmed. That single record represents an entire
+          county of homes that took impact damage that day. Not all of them will need a full
+          replacement, but a meaningful percentage will — and the homeowners don't know it yet.
+        </p>
+        <p>
+          Wind events are also tracked, with wind speeds and damage descriptions. High-wind
+          events above 58 mph routinely lift and crack shingles, especially on roofs that are
+          10 or more years old. NOAA captures these events the same way it captures hail —
+          by county, date, and intensity.
+        </p>
+
+        <h2>What "hot" vs "warm" leads mean</h2>
+        <p>
+          Not all storm events are equal, and the smartest contractors prioritize their canvass
+          accordingly. At ClearedNo, we classify leads into two tiers based on hailstone size:
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Hot leads</strong> are counties that received
+          1-inch or larger hail. At 1 inch (quarter-sized), asphalt shingles reliably sustain
+          measurable granule loss and bruising. Insurance carriers approve claims on 1-inch
+          events at high rates because the damage is visible and documentable. A hot lead is a
+          county where you should expect a strong positive response from canvassing — homeowners
+          will have damage whether they know it or not.
+        </p>
+        <p>
+          <strong style={{ color: "#EAB308" }}>Warm leads</strong> are counties that saw
+          under-1-inch hail or wind events that caused shingle damage. These are still worth
+          canvassing — especially on older roofs — but the close rate will be lower. Warm leads
+          are best for contractors with larger crews or those covering secondary markets where
+          hot leads are less frequent.
+        </p>
+
+        <h2>How to prioritize which counties to target</h2>
+        <p>
+          When multiple counties have events in the same week, experienced contractors use a
+          simple triage:
+        </p>
+        <p>
+          First, go to the hot leads — 1-inch+ hail — in the counties closest to your base.
+          Distance matters because canvassing is a time-and-fuel game. A hot lead 20 miles
+          away beats a hot lead 80 miles away if you can only run one canvass per week.
+        </p>
+        <p>
+          Second, look at the density of the county. Franklin County (Columbus, Ohio) has
+          1.3 million people. A hot lead there means thousands of addressable homes.
+          A rural county with 40,000 residents might have 200 homes worth knocking on. High
+          population density multiplies the value of a storm event.
+        </p>
+        <p>
+          Third, consider roof age in the area. Neighborhoods built in the 1980s and 90s are
+          at or past the typical 25–30 year shingle lifespan. A hail event on a 30-year-old
+          roof almost guarantees an insurance claim. Neighborhoods with newer construction
+          may have more resistant materials and lower close rates.
+        </p>
+
+        <h2>How to use a canvassing sheet effectively</h2>
+        <p>
+          A canvassing sheet is a structured list of streets or neighborhoods within the
+          affected county, organized for efficient door-to-door coverage. The goal is to
+          minimize backtracking, maximize doors per hour, and track which homes you've
+          contacted so you can follow up without re-knocking.
+        </p>
+        <p>
+          ClearedNo generates a downloadable canvassing sheet with each lead set. It organizes
+          addresses and neighborhoods by the event impact area, sorted so crews can work a
+          street efficiently without crossing back and forth. Each row has space to note the
+          result: homeowner interested, not home, declined, or signed.
+        </p>
+        <p>
+          The contractors who close the most jobs from canvassing sheets are the ones who treat
+          it like a sales pipeline — not just a list of doors. They track call-backs, schedule
+          follow-ups for "not home" entries, and return to warm leads from previous weeks when
+          a new event hits nearby.
+        </p>
+
+        <h2>The compounding advantage</h2>
+        <p>
+          Here's what separates the best storm-data contractors from the average ones: they
+          build a territory. Every week, they're adding counties to their coverage map. Every
+          new event is a new canvass in a market they may have already touched. Homeowners who
+          said "not right now" three months ago may be ready to move when another storm hits
+          nearby and a familiar face shows up at the door again.
+        </p>
+        <p>
+          The contractors who use storm data as a long-term system — not a one-time experiment —
+          are the ones who eventually dominate their markets. They're not paying $60/lead for
+          shared contacts from Angi. They're running an information advantage that compounds
+          every week.
+        </p>
+      </>
+    ),
+  },
 ];
 
 // ---------------------------------------------------------------------------

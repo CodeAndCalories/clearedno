@@ -89,15 +89,58 @@ export default async function AccountPage() {
 
   const { data: profile } = await supabase
     .from("profiles")
-    .select("full_name, subscription_status, leads_subscription_status")
+    .select("full_name, subscription_status, leads_subscription_status, trial_ends_at")
     .eq("user_id", user.id)
     .single();
 
   const permitStatus = profile?.subscription_status ?? null;
   const leadsStatus  = profile?.leads_subscription_status ?? null;
+  const trialEndsAt  = profile?.trial_ends_at as string | null | undefined;
 
   const permitActive = permitStatus === "active" || permitStatus === "trialing";
   const leadsActive  = leadsStatus === "active";
+
+  // ── Account age (use auth user created_at) ──────────────────────────────
+  const accountCreatedAt  = user.created_at ? new Date(user.created_at) : null;
+  const accountAgeDays    = accountCreatedAt
+    ? Math.floor((Date.now() - accountCreatedAt.getTime()) / (1000 * 60 * 60 * 24))
+    : 999;
+  const showChecklist = accountAgeDays < 30;
+
+  // ── Next billing date ───────────────────────────────────────────────────
+  const nextBillingDate = (() => {
+    if (!trialEndsAt) return null;
+    const d = new Date(trialEndsAt);
+    if (isNaN(d.getTime()) || d <= new Date()) return null;
+    return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
+  })();
+
+  // ── Leads stats (only if active) ───────────────────────────────────────
+  let leadsStats: { total: number; newThisWeek: number; counties: number } | null = null;
+  if (leadsActive) {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    const sevenDaysAgoStr = sevenDaysAgo.toISOString().split("T")[0];
+
+    const [totalRes, weekRes, countyRes] = await Promise.all([
+      supabaseAdmin.from("roofing_leads").select("id", { count: "exact", head: true }),
+      supabaseAdmin
+        .from("roofing_leads")
+        .select("id", { count: "exact", head: true })
+        .gte("event_date", sevenDaysAgoStr),
+      supabaseAdmin.from("roofing_leads").select("county, state"),
+    ]);
+
+    const distinctCounties = new Set(
+      (countyRes.data ?? []).map((r) => `${r.county}|${r.state}`)
+    ).size;
+
+    leadsStats = {
+      total:      totalRes.count  ?? 0,
+      newThisWeek: weekRes.count  ?? 0,
+      counties:   distinctCounties,
+    };
+  }
 
   return (
     <main className="min-h-screen bg-[#0A0A0A] text-[#F5F0E8] font-mono">
@@ -203,8 +246,57 @@ export default async function AccountPage() {
                 </form>
               )}
             </div>
+
+            {nextBillingDate && (
+              <p className="text-[9px] tracking-[0.15em] text-[#F5F0E8]/25 uppercase mt-1">
+                Next charge: {nextBillingDate}
+              </p>
+            )}
           </div>
         </div>
+
+        {/* ── Quick stats bar ──────────────────────────────────────────── */}
+        {leadsStats && (
+          <div className="mt-8 border border-[#FF6B00]/20 divide-y sm:divide-y-0 sm:divide-x divide-[#FF6B00]/20 flex flex-col sm:flex-row">
+            {[
+              { stat: leadsStats.total.toLocaleString(),       label: "Total leads available" },
+              { stat: leadsStats.newThisWeek.toLocaleString(), label: "New this week"         },
+              { stat: leadsStats.counties.toLocaleString(),    label: "Counties covered"      },
+            ].map(({ stat, label }) => (
+              <div key={label} className="flex-1 px-6 py-4 text-center">
+                <p className="font-heading text-2xl tracking-widest text-[#FF6B00] mb-0.5">{stat}</p>
+                <p className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/35 uppercase">{label}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* ── Getting started checklist ────────────────────────────────── */}
+        {showChecklist && (
+          <div className="mt-8 border border-[#FF6B00]/15 p-6">
+            <p className="text-[9px] tracking-[0.3em] text-[#FF6B00]/60 uppercase mb-4">
+              Getting Started
+            </p>
+            <div className="space-y-3">
+              {[
+                { label: "Browse storm events in your state",  href: "/leads"           },
+                { label: "Download your first CSV",            href: "/leads"           },
+                { label: "Set up a county alert",              href: "/leads/alerts"    },
+              ].map(({ label, href }) => (
+                <a
+                  key={label}
+                  href={href}
+                  className="flex items-center gap-3 group"
+                >
+                  <span className="w-4 h-4 border border-[#FF6B00]/30 flex-shrink-0 group-hover:border-[#FF6B00]/60 transition-colors" />
+                  <span className="text-xs text-[#F5F0E8]/50 group-hover:text-[#F5F0E8]/70 transition-colors">
+                    {label}
+                  </span>
+                </a>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Sign out */}
         <div className="mt-10 pt-8 border-t border-[#FF6B00]/10">

@@ -43,6 +43,7 @@ const LEADS_BLOG_SLUGS = [
   "ohio-roofing-leads",
   "roofing-lead-sources-2026",
   "ohio-hail-season-2025",
+  "storm-data-roofing-leads",
 ];
 
 const BLOG_SLUGS = [

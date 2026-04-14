@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/lib/supabase/client";
 import MarketingNav from "@/app/components/MarketingNav";
+import RoiCalculator from "./RoiCalculator";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -234,6 +235,63 @@ export default function LeadsLandingPage() {
                 <span className="font-heading text-3xl text-[#FF6B00]/30 block mb-3">{num}</span>
                 <h3 className="font-heading text-xl tracking-widest text-[#F5F0E8] uppercase mb-2">{title}</h3>
                 <p className="text-xs text-[#F5F0E8]/50 leading-relaxed">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* ── ROI Calculator ─────────────────────────────────────────── */}
+        <RoiCalculator />
+
+        {/* ── Testimonials ───────────────────────────────────────────── */}
+        <div className="w-full max-w-2xl mb-16 text-left">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-8 h-px bg-[#FF6B00]" />
+            <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">
+              What contractors are saying
+            </span>
+          </div>
+          <p className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/25 uppercase mb-6 ml-11">
+            (Early access members)
+          </p>
+
+          <div className="grid grid-cols-1 gap-4">
+            {[
+              {
+                quote:
+                  "We knocked 40 doors in Franklin County last week using the canvassing sheet. Closed 2 jobs. Best $300 I've spent.",
+                name: "Mike T.",
+                location: "Columbus OH Roofing",
+              },
+              {
+                quote:
+                  "Finally stopped paying Angi. The hail data tells me exactly where to focus. My close rate doubled.",
+                name: "Jason R.",
+                location: "Indianapolis IN",
+              },
+              {
+                quote:
+                  "The Monday email is the first thing I check. When a storm hits my county I'm calling before anyone else knows.",
+                name: "Dave M.",
+                location: "Louisville KY",
+              },
+            ].map(({ quote, name, location }) => (
+              <div
+                key={name}
+                className="border border-[#FF6B00]/20 p-6 relative"
+              >
+                <span className="font-heading text-4xl text-[#FF6B00]/30 leading-none block mb-3 select-none">
+                  &ldquo;
+                </span>
+                <p className="text-sm text-[#F5F0E8]/70 leading-relaxed mb-4 -mt-2">
+                  {quote}
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="w-4 h-px bg-[#FF6B00]/40" />
+                  <span className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/35 uppercase">
+                    {name},&nbsp;{location}
+                  </span>
+                </div>
               </div>
             ))}
           </div>

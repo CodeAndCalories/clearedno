@@ -17,6 +17,14 @@ function formatDate(iso: string): string {
   });
 }
 
+function getNextMonday(): string {
+  const d   = new Date();
+  const day = d.getDay(); // 0=Sun … 6=Sat
+  const diff = day === 0 ? 1 : 8 - day;
+  d.setDate(d.getDate() + diff);
+  return d.toLocaleDateString("en-US", { month: "long", day: "numeric" });
+}
+
 function buildEmailHtml(
   leads: Array<{
     county: string;
@@ -25,107 +33,173 @@ function buildEmailHtml(
     lead_score: string;
     event_date: string;
   }>,
-  weekLabel: string
+  weekLabel: string,
+  totalLeadsInSystem: number
 ): string {
-  const hot  = leads.filter((l) => l.lead_score === "hot").length;
-  const warm = leads.filter((l) => l.lead_score === "warm").length;
+  const statesCovered = new Set(leads.map((l) => l.state).filter(Boolean)).size;
+  const nextUpdate    = getNextMonday();
+  const tableLeads    = leads.slice(0, 10);
+  const overflow      = leads.length > 10 ? leads.length - 10 : 0;
 
-  const rows = leads
-    .slice(0, 50) // cap at 50 rows in email
+  const scoreCell = (score: string) =>
+    score === "hot"
+      ? `<span style="display:inline-block;background:rgba(255,107,0,0.15);color:#ff6b00;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;font-weight:bold;padding:3px 8px;">HOT</span>`
+      : `<span style="display:inline-block;background:rgba(234,179,8,0.15);color:#eab308;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;font-weight:bold;padding:3px 8px;">WARM</span>`;
+
+  const rows = tableLeads
     .map(
-      (l) => `
-      <tr style="border-bottom:1px solid #1a1a1a;">
-        <td style="padding:8px 12px;color:#a0a0a0;font-size:12px;">${l.state ?? "—"}</td>
-        <td style="padding:8px 12px;color:#f5f0e8;font-size:12px;">${l.county}</td>
-        <td style="padding:8px 12px;color:#a0a0a0;font-size:12px;text-transform:uppercase;">${l.event_type}</td>
-        <td style="padding:8px 12px;font-size:12px;">
-          <span style="color:${l.lead_score === "hot" ? "#ff6b00" : "#eab308"};text-transform:uppercase;font-weight:bold;">
-            ${l.lead_score}
-          </span>
-        </td>
-        <td style="padding:8px 12px;color:#a0a0a0;font-size:12px;">${formatDate(l.event_date)}</td>
+      (l, i) => `
+      <tr style="background:${i % 2 === 0 ? "#0f0f0f" : "#0a0a0a"};">
+        <td style="padding:10px 14px;color:#f5f0e8;font-size:12px;font-family:monospace;border-bottom:1px solid #1a1a1a;">${l.county}</td>
+        <td style="padding:10px 14px;color:#888;font-size:12px;font-family:monospace;border-bottom:1px solid #1a1a1a;">${l.state ?? "—"}</td>
+        <td style="padding:10px 14px;color:#888;font-size:11px;font-family:monospace;text-transform:uppercase;border-bottom:1px solid #1a1a1a;">${l.event_type}</td>
+        <td style="padding:10px 14px;font-family:monospace;border-bottom:1px solid #1a1a1a;">${scoreCell(l.lead_score)}</td>
+        <td style="padding:10px 14px;color:#666;font-size:12px;font-family:monospace;border-bottom:1px solid #1a1a1a;">${formatDate(l.event_date)}</td>
       </tr>`
     )
     .join("");
 
-  const overflow =
-    leads.length > 50
-      ? `<p style="color:#666;font-size:11px;text-align:center;margin-top:8px;">
-           + ${leads.length - 50} more leads in the dashboard
-         </p>`
-      : "";
+  const overflowRow = overflow > 0
+    ? `<tr><td colspan="5" style="padding:10px 14px;text-align:center;font-family:monospace;">
+         <a href="${BASE_URL}/leads" style="color:#ff6b00;font-size:11px;text-decoration:none;letter-spacing:0.15em;text-transform:uppercase;">
+           view all ${leads.length} leads →
+         </a>
+       </td></tr>`
+    : "";
 
   return `<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Your weekly roofing leads</title>
+</head>
 <body style="margin:0;padding:0;background:#0a0a0a;font-family:monospace;">
-  <div style="max-width:640px;margin:0 auto;padding:40px 20px;">
 
-    <!-- Header -->
-    <div style="border-bottom:1px solid #2a2a2a;padding-bottom:24px;margin-bottom:32px;">
-      <p style="color:#ff6b00;font-size:10px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 8px;">
-        ClearedNo / Roofing Leads
-      </p>
-      <h1 style="color:#f5f0e8;font-size:28px;letter-spacing:0.1em;text-transform:uppercase;margin:0;">
-        New leads this week
-      </h1>
-      <p style="color:#555;font-size:12px;margin:8px 0 0;">${weekLabel}</p>
-    </div>
+  <!-- Outer wrapper -->
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#0a0a0a;">
+    <tr>
+      <td align="center" style="padding:40px 16px;">
 
-    <!-- Summary -->
-    <div style="display:flex;gap:24px;margin-bottom:32px;">
-      <div style="flex:1;border:1px solid #2a2a2a;padding:16px;">
-        <p style="color:#666;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 4px;">Hot Leads</p>
-        <p style="color:#ff6b00;font-size:32px;font-weight:bold;margin:0;">${hot}</p>
-        <p style="color:#444;font-size:9px;text-transform:uppercase;margin:4px 0 0;">1&quot;+ hailstone</p>
-      </div>
-      <div style="flex:1;border:1px solid #2a2a2a;padding:16px;">
-        <p style="color:#666;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 4px;">Warm Leads</p>
-        <p style="color:#eab308;font-size:32px;font-weight:bold;margin:0;">${warm}</p>
-        <p style="color:#444;font-size:9px;text-transform:uppercase;margin:4px 0 0;">under 1&quot; hail</p>
-      </div>
-      <div style="flex:1;border:1px solid #2a2a2a;padding:16px;">
-        <p style="color:#666;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;margin:0 0 4px;">Total</p>
-        <p style="color:#f5f0e8;font-size:32px;font-weight:bold;margin:0;">${leads.length}</p>
-        <p style="color:#444;font-size:9px;text-transform:uppercase;margin:4px 0 0;">this week</p>
-      </div>
-    </div>
+        <!-- Card -->
+        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;width:100%;">
 
-    <!-- Table -->
-    <table style="width:100%;border-collapse:collapse;border:1px solid #1a1a1a;margin-bottom:8px;">
-      <thead>
-        <tr style="border-bottom:1px solid #2a2a2a;background:#111;">
-          <th style="text-align:left;padding:8px 12px;color:#ff6b00;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;font-weight:normal;">State</th>
-          <th style="text-align:left;padding:8px 12px;color:#ff6b00;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;font-weight:normal;">County</th>
-          <th style="text-align:left;padding:8px 12px;color:#ff6b00;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;font-weight:normal;">Type</th>
-          <th style="text-align:left;padding:8px 12px;color:#ff6b00;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;font-weight:normal;">Score</th>
-          <th style="text-align:left;padding:8px 12px;color:#ff6b00;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;font-weight:normal;">Date</th>
-        </tr>
-      </thead>
-      <tbody>${rows}</tbody>
-    </table>
-    ${overflow}
+          <!-- ── Logo / Header ─────────────────────────────────────── -->
+          <tr>
+            <td style="padding-bottom:8px;">
+              <p style="margin:0;color:#ff6b00;font-family:monospace;font-size:10px;letter-spacing:0.4em;text-transform:uppercase;">
+                CLEAREDNO
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="border-bottom:1px solid #2a2a2a;padding-bottom:28px;margin-bottom:0;">
+              <p style="margin:0 0 6px;color:#666;font-family:monospace;font-size:10px;letter-spacing:0.25em;text-transform:uppercase;">
+                Roofing Leads Digest
+              </p>
+              <p style="margin:0;color:#555;font-family:monospace;font-size:11px;">${weekLabel}</p>
+            </td>
+          </tr>
 
-    <!-- CTA -->
-    <div style="text-align:center;margin:40px 0;">
-      <a href="${BASE_URL}/leads"
-         style="display:inline-block;background:#ff6b00;color:#0a0a0a;font-family:monospace;font-size:13px;font-weight:bold;letter-spacing:0.15em;text-transform:uppercase;padding:14px 32px;text-decoration:none;">
-        View Full Dashboard →
-      </a>
-    </div>
+          <!-- ── Hero ─────────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:36px 0 32px;text-align:center;border-bottom:1px solid #1a1a1a;">
+              <p style="margin:0 0 8px;color:#ff6b00;font-family:monospace;font-size:56px;font-weight:bold;line-height:1;">
+                ${leads.length}
+              </p>
+              <p style="margin:0;color:#f5f0e8;font-family:monospace;font-size:14px;letter-spacing:0.25em;text-transform:uppercase;">
+                new leads dropped this week
+              </p>
+            </td>
+          </tr>
 
-    <!-- Footer -->
-    <div style="border-top:1px solid #1a1a1a;padding-top:20px;text-align:center;">
-      <p style="color:#333;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;margin:0 0 8px;">
-        ${hot} hot leads · ${warm} warm leads this week
-      </p>
-      <a href="${BASE_URL}/leads"
-         style="color:#555;font-size:10px;text-decoration:none;letter-spacing:0.15em;text-transform:uppercase;">
-        Manage your subscription →
-      </a>
-    </div>
+          <!-- ── Storm Events Table ────────────────────────────────── -->
+          <tr>
+            <td style="padding-top:28px;padding-bottom:8px;">
+              <p style="margin:0 0 12px;color:#ff6b00;font-family:monospace;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;">
+                Storm Events
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border:1px solid #1a1a1a;border-collapse:collapse;">
+                <thead>
+                  <tr style="background:#111;border-bottom:1px solid #2a2a2a;">
+                    <th style="text-align:left;padding:10px 14px;color:#ff6b00;font-family:monospace;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;font-weight:normal;">County</th>
+                    <th style="text-align:left;padding:10px 14px;color:#ff6b00;font-family:monospace;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;font-weight:normal;">State</th>
+                    <th style="text-align:left;padding:10px 14px;color:#ff6b00;font-family:monospace;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;font-weight:normal;">Type</th>
+                    <th style="text-align:left;padding:10px 14px;color:#ff6b00;font-family:monospace;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;font-weight:normal;">Score</th>
+                    <th style="text-align:left;padding:10px 14px;color:#ff6b00;font-family:monospace;font-size:9px;letter-spacing:0.25em;text-transform:uppercase;font-weight:normal;">Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows}
+                  ${overflowRow}
+                </tbody>
+              </table>
+            </td>
+          </tr>
 
-  </div>
+          <!-- ── Stats Row ─────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:28px 0;border-top:1px solid #1a1a1a;border-bottom:1px solid #1a1a1a;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td width="33%" style="text-align:center;padding:0 8px;">
+                    <p style="margin:0 0 4px;color:#ff6b00;font-family:monospace;font-size:22px;font-weight:bold;">
+                      ${totalLeadsInSystem.toLocaleString()}
+                    </p>
+                    <p style="margin:0;color:#555;font-family:monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;">
+                      Total leads in system
+                    </p>
+                  </td>
+                  <td width="33%" style="text-align:center;padding:0 8px;border-left:1px solid #1a1a1a;border-right:1px solid #1a1a1a;">
+                    <p style="margin:0 0 4px;color:#ff6b00;font-family:monospace;font-size:22px;font-weight:bold;">
+                      ${statesCovered}
+                    </p>
+                    <p style="margin:0;color:#555;font-family:monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;">
+                      States covered
+                    </p>
+                  </td>
+                  <td width="33%" style="text-align:center;padding:0 8px;">
+                    <p style="margin:0 0 4px;color:#f5f0e8;font-family:monospace;font-size:14px;font-weight:bold;">
+                      ${nextUpdate}
+                    </p>
+                    <p style="margin:0;color:#555;font-family:monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;">
+                      Next update
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── CTA Button ────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:40px 0;text-align:center;">
+              <a href="${BASE_URL}/leads"
+                 style="display:inline-block;background:#ff6b00;color:#0a0a0a;font-family:monospace;font-size:13px;font-weight:bold;letter-spacing:0.2em;text-transform:uppercase;padding:16px 40px;text-decoration:none;">
+                Open your dashboard →
+              </a>
+            </td>
+          </tr>
+
+          <!-- ── Footer ───────────────────────────────────────────── -->
+          <tr>
+            <td style="border-top:1px solid #1a1a1a;padding-top:24px;text-align:center;">
+              <p style="margin:0 0 10px;color:#333;font-family:monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;">
+                clearedno.com
+              </p>
+              <p style="margin:0;font-family:monospace;font-size:10px;">
+                <a href="${BASE_URL}/account" style="color:#444;text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;">Manage subscription</a>
+                &nbsp;·&nbsp;
+                <a href="${BASE_URL}/account" style="color:#444;text-decoration:none;letter-spacing:0.1em;text-transform:uppercase;">Unsubscribe</a>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+
 </body>
 </html>`;
 }
@@ -142,14 +216,22 @@ export async function POST(req: NextRequest) {
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const weekLabel = `Week of ${now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
 
-    // ── Fetch leads from last 7 days ───────────────────────────────────────
-    const { data: leads, error: leadsError } = await supabaseAdmin
-      .from("roofing_leads")
-      .select("county, state, event_type, lead_score, event_date")
-      .not("event_date", "is", null)
-      .gte("event_date", weekAgo.toISOString().split("T")[0])
-      .order("lead_score", { ascending: true }) // hot first
-      .order("event_date", { ascending: false });
+    // ── Fetch leads from last 7 days + total system count ─────────────────
+    const [leadsRes, totalCountRes] = await Promise.all([
+      supabaseAdmin
+        .from("roofing_leads")
+        .select("county, state, event_type, lead_score, event_date")
+        .not("event_date", "is", null)
+        .gte("event_date", weekAgo.toISOString().split("T")[0])
+        .order("lead_score", { ascending: true }) // hot first
+        .order("event_date", { ascending: false }),
+      supabaseAdmin
+        .from("roofing_leads")
+        .select("id", { count: "exact", head: true }),
+    ]);
+
+    const { data: leads, error: leadsError } = leadsRes;
+    const totalLeadsInSystem = totalCountRes.count ?? 0;
 
     if (leadsError) throw leadsError;
     if (!leads || leads.length === 0) {
@@ -172,7 +254,7 @@ export async function POST(req: NextRequest) {
 
     // ── Send one email per subscriber ──────────────────────────────────────
     const subject  = `Your weekly roofing leads — ${now.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}`;
-    const html     = buildEmailHtml(leads, weekLabel);
+    const html     = buildEmailHtml(leads, weekLabel, totalLeadsInSystem);
 
     let sent = 0;
     for (const profile of profiles) {
