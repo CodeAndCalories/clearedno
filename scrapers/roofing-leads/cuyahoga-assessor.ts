@@ -55,7 +55,7 @@ async function fetchCuyahogaCounty() {
     // Upsert matching on county + address
     const { error } = await supabase
       .from('roofing_leads')
-      .upsert(rows, { onConflict: 'county,address', ignoreDuplicates: false })
+      .upsert(rows, { onConflict: 'county,address', ignoreDuplicates: true })
 
     if (error) {
       console.error(`[ERROR] batch at offset ${offset}:`, error.message)
