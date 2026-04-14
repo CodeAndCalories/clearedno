@@ -1,3 +1,6 @@
+import * as dotenv from 'dotenv'
+dotenv.config({ path: '.env' })
+
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
