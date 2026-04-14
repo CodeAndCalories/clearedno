@@ -20,8 +20,8 @@ async function fetchFranklinCounty() {
 
   while (hasMore) {
     const params = new URLSearchParams({
-      where: "RESYRBLT > 0 AND RESYRBLT < 2005 AND PCLASS LIKE '1%'", // residential only
-      outFields: 'SITEADDRESS,CNVYNAME,OWNERMADDR,OWNERCITY,OWNERSTATE,OWNERZIP,RESYRBLT',
+      where: "RESYRBLT > 0 AND RESYRBLT < 2005 AND CLASSCD LIKE '5%'", // residential only
+      outFields: 'SITEADDRESS,ZIPCD,OWNERNME1,PSTLADDRES,RESYRBLT,CLASSCD',
       returnGeometry: 'false',
       resultOffset: String(offset),
       resultRecordCount: String(BATCH_SIZE),
@@ -43,8 +43,8 @@ async function fetchFranklinCounty() {
           address: a.SITEADDRESS || null,
           county: 'franklin',
           state: 'OH',
-          owner_name: a.CNVYNAME || null,
-          owner_mailing_address: [a.OWNERMADDR, a.OWNERCITY, a.OWNERSTATE, a.OWNERZIP].filter(Boolean).join(', ') || null,
+          owner_name: a.OWNERNME1 || null,
+          owner_mailing_address: a.PSTLADDRES || null,
           year_built: a.RESYRBLT ? parseInt(a.RESYRBLT) : null,
           source: 'franklin-arcgis',
           created_at: new Date().toISOString(),
