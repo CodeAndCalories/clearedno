@@ -21,10 +21,24 @@ export default async function LeadsPage() {
         .single()
     : { data: null };
 
-  const { data: leads, error } = await supabase
-    .from("roofing_leads")
-    .select("id, address, county, state, event_type, event_date, source, magnitude, lead_score, lat, lng, created_at")
-    .order("event_date", { ascending: false });
+  const [
+    { data: stormLeads, error: stormError },
+    { data: propertyLeads, error: propertyError },
+  ] = await Promise.all([
+    supabase
+      .from("roofing_leads")
+      .select("id, address, county, state, event_type, event_date, source, magnitude, lead_score, lat, lng, created_at")
+      .not("event_date", "is", null)
+      .order("event_date", { ascending: false }),
+    supabase
+      .from("roofing_leads")
+      .select("id, address, county, state, owner_name, owner_mailing_address, year_built, source, lat, lng")
+      .eq("source", "franklin-arcgis")
+      .order("year_built", { ascending: true })
+      .limit(1000),
+  ]);
+
+  const error = stormError ?? propertyError;
 
   if (error) {
     return (
@@ -58,7 +72,11 @@ export default async function LeadsPage() {
 
       {/* Content */}
       <div className="max-w-6xl mx-auto px-6 py-8">
-        <LeadsTable leads={leads ?? []} subscriptionStatus={profile?.subscription_status ?? null} />
+        <LeadsTable
+          leads={stormLeads ?? []}
+          propertyLeads={propertyLeads ?? []}
+          subscriptionStatus={profile?.subscription_status ?? null}
+        />
       </div>
     </main>
   );

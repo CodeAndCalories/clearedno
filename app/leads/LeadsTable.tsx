@@ -19,8 +19,22 @@ interface RoofingLead {
   created_at: string;
 }
 
+interface PropertyLead {
+  id: string;
+  address: string | null;
+  county: string;
+  state: string | null;
+  owner_name: string | null;
+  owner_mailing_address: string | null;
+  year_built: number | null;
+  source: string;
+  lat: number | null;
+  lng: number | null;
+}
+
 interface Props {
   leads: RoofingLead[];
+  propertyLeads: PropertyLead[];
   subscriptionStatus: string | null;
 }
 
@@ -36,6 +50,8 @@ type SortKey =
   | "score"
   | "county-asc"
   | "county-desc";
+
+type Tab = "storm" | "property";
 
 const EVENT_TYPE_CONFIG = {
   hail: {
@@ -91,7 +107,7 @@ function formatMagnitude(mag: number | null): string {
   return `${mag.toFixed(2)}"`;
 }
 
-function exportCsv(rows: RoofingLead[]) {
+function exportStormCsv(rows: RoofingLead[]) {
   const headers = [
     "county", "state", "event_date", "magnitude_in",
     "lead_score", "event_type", "source", "lat", "lng",
@@ -116,7 +132,31 @@ function exportCsv(rows: RoofingLead[]) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `roofing-leads-${new Date().toISOString().split("T")[0]}.csv`;
+  a.download = `storm-leads-${new Date().toISOString().split("T")[0]}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function exportPropertyCsv(rows: PropertyLead[]) {
+  const headers = ["address", "county", "state", "owner_name", "owner_mailing_address", "year_built"];
+  const lines = [
+    headers.join(","),
+    ...rows.map((r) =>
+      [
+        `"${r.address ?? ""}"`,
+        `"${r.county}"`,
+        r.state ?? "",
+        `"${r.owner_name ?? ""}"`,
+        `"${r.owner_mailing_address ?? ""}"`,
+        r.year_built ?? "",
+      ].join(",")
+    ),
+  ];
+  const blob = new Blob([lines.join("\n")], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `property-leads-${new Date().toISOString().split("T")[0]}.csv`;
   a.click();
   URL.revokeObjectURL(url);
 }
@@ -181,7 +221,11 @@ function SortArrow({ active, direction }: { active: boolean; direction: "asc" | 
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function LeadsTable({ leads, subscriptionStatus }: Props) {
+export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }: Props) {
+  // ── Tab state ─────────────────────────────────────────────────────────────
+  const [activeTab, setActiveTab] = useState<Tab>("storm");
+
+  // ── Storm tab state ───────────────────────────────────────────────────────
   const [stateFilter,     setStateFilter]     = useState<string>("all");
   const [scoreFilter,     setScoreFilter]     = useState<string>("all");
   const [eventTypeFilter, setEventTypeFilter] = useState<string>("all");
@@ -189,6 +233,10 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
   const [sortKey,        setSortKey]        = useState<SortKey>("date-desc");
   const [page,           setPage]           = useState(1);
   const [portalLoading,  setPortalLoading]  = useState(false);
+
+  // ── Property tab state ────────────────────────────────────────────────────
+  const [propSearch,  setPropSearch]  = useState<string>("");
+  const [propPage,    setPropPage]    = useState(1);
 
   async function openPortal() {
     setPortalLoading(true);
@@ -201,7 +249,7 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
     }
   }
 
-  // ── Filter pipeline ───────────────────────────────────────────────────────
+  // ── Storm filter pipeline ─────────────────────────────────────────────────
 
   const stateFiltered = useMemo(() => {
     if (stateFilter === "all") return leads;
@@ -220,7 +268,7 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
       }
       return true;
     });
-  }, [stateFiltered, scoreFilter, search]);
+  }, [stateFiltered, scoreFilter, search, eventTypeFilter]);
 
   const sorted = useMemo(() => sortLeads(filtered, sortKey), [filtered, sortKey]);
 
@@ -231,7 +279,7 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
     return sorted.slice(start, start + PAGE_SIZE);
   }, [sorted, safePage]);
 
-  // ── Stat cards (stateFilter only, unaffected by search/score/sort) ────────
+  // ── Storm stat cards ──────────────────────────────────────────────────────
 
   const statBase   = stateFilter === "all" ? leads : stateFiltered;
   const totalLeads = statBase.length;
@@ -246,7 +294,40 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
         )
       : "—";
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // ── Property filter pipeline ──────────────────────────────────────────────
+
+  const filteredProps = useMemo(() => {
+    const q = propSearch.trim().toLowerCase();
+    if (!q) return propertyLeads;
+    return propertyLeads.filter((p) => {
+      const addrMatch  = (p.address ?? "").toLowerCase().includes(q);
+      const ownerMatch = (p.owner_name ?? "").toLowerCase().includes(q);
+      return addrMatch || ownerMatch;
+    });
+  }, [propertyLeads, propSearch]);
+
+  const propTotalPages = Math.max(1, Math.ceil(filteredProps.length / PAGE_SIZE));
+  const safePropPage   = Math.min(propPage, propTotalPages);
+  const paginatedProps = useMemo(() => {
+    const start = (safePropPage - 1) * PAGE_SIZE;
+    return filteredProps.slice(start, start + PAGE_SIZE);
+  }, [filteredProps, safePropPage]);
+
+  // ── Property stat cards ───────────────────────────────────────────────────
+
+  const totalProps   = propertyLeads.length;
+  const pre1990      = propertyLeads.filter((p) => p.year_built !== null && p.year_built < 1990).length;
+  const avgYearBuilt = useMemo(() => {
+    const withYear = propertyLeads.filter((p) => p.year_built !== null);
+    if (withYear.length === 0) return "—";
+    const avg = Math.round(withYear.reduce((s, p) => s + p.year_built!, 0) / withYear.length);
+    return String(avg);
+  }, [propertyLeads]);
+  const countyCoverage = useMemo(() => {
+    return new Set(propertyLeads.map((p) => p.county)).size;
+  }, [propertyLeads]);
+
+  // ── Storm handlers ────────────────────────────────────────────────────────
 
   function handleColumnSort(col: "county" | "date") {
     setSortKey((prev) => {
@@ -262,292 +343,458 @@ export default function LeadsTable({ leads, subscriptionStatus }: Props) {
   function handleSortChange(val: SortKey)      { setSortKey(val);                  setPage(1); }
   function handleSearch(val: string)           { setSearch(val);                   setPage(1); }
 
-  // ── Showing text ──────────────────────────────────────────────────────────
-
   const showingFrom = sorted.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
   const showingTo   = Math.min(safePage * PAGE_SIZE, sorted.length);
+
+  const propShowingFrom = filteredProps.length === 0 ? 0 : (safePropPage - 1) * PAGE_SIZE + 1;
+  const propShowingTo   = Math.min(safePropPage * PAGE_SIZE, filteredProps.length);
 
   // ─────────────────────────────────────────────────────────────────────────
   return (
     <div className="space-y-8">
 
-      {/* ── Stat cards ─────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Leads"  value={totalLeads} subtitle="across 6 states"  />
-        <StatCard label="Hot Leads"    value={hotLeads}   subtitle='1"+ hailstone'    accent="#FF6B00" />
-        <StatCard label="Warm Leads"   value={warmLeads}  subtitle='under 1" hail'    accent="#EAB308" />
-        <StatCard label="Newest Event" value={newestDate} subtitle="last event date"  />
+      {/* ── Tab switcher ───────────────────────────────────────────────── */}
+      <div className="flex border border-[#FF6B00]/20">
+        {(["storm", "property"] as Tab[]).map((tab) => {
+          const label = tab === "storm" ? "Storm Events" : "Property Records";
+          const isActive = activeTab === tab;
+          return (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`flex-1 px-6 py-3 text-[10px] tracking-[0.25em] uppercase font-mono transition-colors ${
+                isActive
+                  ? "bg-[#FF6B00] text-[#0A0A0A] font-bold"
+                  : "text-[#F5F0E8]/40 hover:text-[#FF6B00] hover:bg-[#FF6B00]/5"
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
-      {/* ── Search bar ─────────────────────────────────────────────────── */}
-      <div>
-        <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">
-          Search
-        </label>
-        <input
-          type="text"
-          placeholder="Search county or state..."
-          value={search}
-          onChange={(e) => handleSearch(e.target.value)}
-          className="w-full sm:max-w-sm bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-xs font-mono px-3 py-2 placeholder:text-[#F5F0E8]/20 focus:outline-none focus:border-[#FF6B00] transition-colors"
-        />
-      </div>
-
-      {/* ── Filters + export ───────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end justify-between">
-        <div className="flex flex-col sm:flex-row gap-3">
-
-          {/* State */}
-          <div>
-            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">State</label>
-            <select
-              value={stateFilter}
-              onChange={(e) => handleStateChange(e.target.value)}
-              className={SELECT_CLASS}
-              style={SELECT_STYLE}
-            >
-              <option value="all" className="bg-[#0A0A0A]">All States</option>
-              {STATES.map((s) => (
-                <option key={s} value={s} className="bg-[#0A0A0A]">{s}</option>
-              ))}
-            </select>
+      {/* ══════════════════════════════════════════════════════════════════
+          STORM EVENTS TAB
+      ══════════════════════════════════════════════════════════════════ */}
+      {activeTab === "storm" && (
+        <>
+          {/* ── Stat cards ─────────────────────────────────────────────── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Total Leads"  value={totalLeads} subtitle="across 6 states"  />
+            <StatCard label="Hot Leads"    value={hotLeads}   subtitle='1"+ hailstone'    accent="#FF6B00" />
+            <StatCard label="Warm Leads"   value={warmLeads}  subtitle='under 1" hail'    accent="#EAB308" />
+            <StatCard label="Newest Event" value={newestDate} subtitle="last event date"  />
           </div>
 
-          {/* Score */}
+          {/* ── Search bar ─────────────────────────────────────────────── */}
           <div>
-            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">Score</label>
-            <select
-              value={scoreFilter}
-              onChange={(e) => handleScoreChange(e.target.value)}
-              className={SELECT_CLASS}
-              style={SELECT_STYLE}
-            >
-              <option value="all"  className="bg-[#0A0A0A]">All Scores</option>
-              <option value="hot"  className="bg-[#0A0A0A]">Hot</option>
-              <option value="warm" className="bg-[#0A0A0A]">Warm</option>
-            </select>
+            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">
+              Search
+            </label>
+            <input
+              type="text"
+              placeholder="Search county or state..."
+              value={search}
+              onChange={(e) => handleSearch(e.target.value)}
+              className="w-full sm:max-w-sm bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-xs font-mono px-3 py-2 placeholder:text-[#F5F0E8]/20 focus:outline-none focus:border-[#FF6B00] transition-colors"
+            />
           </div>
 
-          {/* Type */}
-          <div>
-            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">Type</label>
-            <select
-              value={eventTypeFilter}
-              onChange={(e) => handleEventTypeChange(e.target.value)}
-              className={SELECT_CLASS}
-              style={SELECT_STYLE}
-            >
-              <option value="all"  className="bg-[#0A0A0A]">All Types</option>
-              <option value="hail" className="bg-[#0A0A0A]">Hail</option>
-              <option value="wind" className="bg-[#0A0A0A]">Wind</option>
-            </select>
+          {/* ── Filters + export ───────────────────────────────────────── */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end justify-between">
+            <div className="flex flex-col sm:flex-row gap-3">
+
+              {/* State */}
+              <div>
+                <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">State</label>
+                <select
+                  value={stateFilter}
+                  onChange={(e) => handleStateChange(e.target.value)}
+                  className={SELECT_CLASS}
+                  style={SELECT_STYLE}
+                >
+                  <option value="all" className="bg-[#0A0A0A]">All States</option>
+                  {STATES.map((s) => (
+                    <option key={s} value={s} className="bg-[#0A0A0A]">{s}</option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Score */}
+              <div>
+                <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">Score</label>
+                <select
+                  value={scoreFilter}
+                  onChange={(e) => handleScoreChange(e.target.value)}
+                  className={SELECT_CLASS}
+                  style={SELECT_STYLE}
+                >
+                  <option value="all"  className="bg-[#0A0A0A]">All Scores</option>
+                  <option value="hot"  className="bg-[#0A0A0A]">Hot</option>
+                  <option value="warm" className="bg-[#0A0A0A]">Warm</option>
+                </select>
+              </div>
+
+              {/* Type */}
+              <div>
+                <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">Type</label>
+                <select
+                  value={eventTypeFilter}
+                  onChange={(e) => handleEventTypeChange(e.target.value)}
+                  className={SELECT_CLASS}
+                  style={SELECT_STYLE}
+                >
+                  <option value="all"  className="bg-[#0A0A0A]">All Types</option>
+                  <option value="hail" className="bg-[#0A0A0A]">Hail</option>
+                  <option value="wind" className="bg-[#0A0A0A]">Wind</option>
+                </select>
+              </div>
+
+              {/* Sort */}
+              <div>
+                <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">Sort</label>
+                <select
+                  value={
+                    ["date-desc", "date-asc", "magnitude-desc", "score"].includes(sortKey)
+                      ? sortKey
+                      : "date-desc"
+                  }
+                  onChange={(e) => handleSortChange(e.target.value as SortKey)}
+                  className={SELECT_CLASS}
+                  style={SELECT_STYLE}
+                >
+                  <option value="date-desc"       className="bg-[#0A0A0A]">Date (newest)</option>
+                  <option value="date-asc"        className="bg-[#0A0A0A]">Date (oldest)</option>
+                  <option value="magnitude-desc"  className="bg-[#0A0A0A]">Magnitude (highest)</option>
+                  <option value="score"           className="bg-[#0A0A0A]">Score (hot first)</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Export + Portal */}
+            <div className="flex items-end gap-3">
+              <button
+                onClick={() => exportStormCsv(sorted)}
+                className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors"
+              >
+                Download CSV
+              </button>
+              <button
+                onClick={openPortal}
+                disabled={portalLoading}
+                className="border border-[#F5F0E8]/30 text-[#F5F0E8]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#F5F0E8]/60 hover:text-[#F5F0E8] transition-colors disabled:opacity-40"
+              >
+                {portalLoading ? "Loading…" : "Manage Subscription"}
+              </button>
+            </div>
           </div>
 
-          {/* Sort */}
-          <div>
-            <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">Sort</label>
-            <select
-              value={
-                ["date-desc", "date-asc", "magnitude-desc", "score"].includes(sortKey)
-                  ? sortKey
-                  : "date-desc"
-              }
-              onChange={(e) => handleSortChange(e.target.value as SortKey)}
-              className={SELECT_CLASS}
-              style={SELECT_STYLE}
-            >
-              <option value="date-desc"       className="bg-[#0A0A0A]">Date (newest)</option>
-              <option value="date-asc"        className="bg-[#0A0A0A]">Date (oldest)</option>
-              <option value="magnitude-desc"  className="bg-[#0A0A0A]">Magnitude (highest)</option>
-              <option value="score"           className="bg-[#0A0A0A]">Score (hot first)</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Export + Portal */}
-        <div className="flex items-end gap-3">
-          <button
-            onClick={() => exportCsv(sorted)}
-            className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors"
-          >
-            Download CSV
-          </button>
-          <button
-            onClick={openPortal}
-            disabled={portalLoading}
-            className="border border-[#F5F0E8]/30 text-[#F5F0E8]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#F5F0E8]/60 hover:text-[#F5F0E8] transition-colors disabled:opacity-40"
-          >
-            {portalLoading ? "Loading…" : "Manage Subscription"}
-          </button>
-        </div>
-      </div>
-
-      {/* ── Showing count ──────────────────────────────────────────────── */}
-      <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
-        Showing {showingFrom}–{showingTo} of {sorted.length} leads
-      </p>
-
-      {/* ── Table ──────────────────────────────────────────────────────── */}
-      {sorted.length === 0 ? (
-        <div className="border border-[#FF6B00]/20 px-6 py-12 text-center">
-          <p className="text-[10px] tracking-[0.3em] text-[#F5F0E8]/30 uppercase">
-            No leads match the current filters
+          {/* ── Showing count ──────────────────────────────────────────── */}
+          <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
+            Showing {showingFrom}–{showingTo} of {sorted.length} leads
           </p>
-        </div>
-      ) : (
-        <div className="border border-[#FF6B00]/20 overflow-x-auto">
-          <table className="w-full text-xs font-mono">
-            <thead>
-              <tr className="border-b border-[#FF6B00]/20">
 
-                {/* County — clickable sort */}
-                <th
-                  className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal cursor-pointer hover:text-[#FF6B00] select-none"
-                  onClick={() => handleColumnSort("county")}
-                >
-                  County
-                  <SortArrow
-                    active={sortKey === "county-asc" || sortKey === "county-desc"}
-                    direction={sortKey === "county-asc" ? "asc" : "desc"}
-                  />
-                </th>
-
-                <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
-                  State
-                </th>
-
-                {/* Date — clickable sort */}
-                <th
-                  className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal cursor-pointer hover:text-[#FF6B00] select-none"
-                  onClick={() => handleColumnSort("date")}
-                >
-                  Event Date
-                  <SortArrow
-                    active={sortKey === "date-desc" || sortKey === "date-asc"}
-                    direction={sortKey === "date-asc" ? "asc" : "desc"}
-                  />
-                </th>
-
-                <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
-                  Magnitude
-                </th>
-                <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
-                  Score
-                </th>
-                <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
-                  Type
-                </th>
-                <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
-                  Map
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginated.map((lead, i) => {
-                const cfg    = SCORE_CONFIG[lead.lead_score] ?? SCORE_CONFIG.warm;
-                const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(
-                  `${lead.county} ${lead.state ?? ""}`
-                )}`;
-                return (
-                  <tr
-                    key={lead.id}
-                    className={`border-b border-[#FF6B00]/10 hover:bg-[#FF6B00]/5 transition-colors ${
-                      i % 2 === 0 ? "bg-transparent" : "bg-[#F5F0E8]/[0.02]"
-                    }`}
-                  >
-                    <td className="px-5 py-3 text-[#F5F0E8]/80 whitespace-nowrap">
-                      {lead.county}
-                    </td>
-                    <td className="px-5 py-3 text-[#F5F0E8]/50 whitespace-nowrap">
-                      {lead.state ?? "—"}
-                    </td>
-                    <td className="px-5 py-3 text-[#F5F0E8]/60 whitespace-nowrap">
-                      {formatDate(lead.event_date)}
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap tabular-nums">
-                      <span style={{ color: lead.magnitude ? "#FF6B00" : "rgba(245,240,232,0.3)" }}>
-                        {formatMagnitude(lead.magnitude)}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <span
-                        className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] tracking-widest uppercase font-medium"
-                        style={{
-                          color:           cfg.color,
-                          backgroundColor: cfg.bg,
-                          border:          `1px solid ${cfg.border}`,
-                        }}
+          {/* ── Table ──────────────────────────────────────────────────── */}
+          {sorted.length === 0 ? (
+            <div className="border border-[#FF6B00]/20 px-6 py-12 text-center">
+              <p className="text-[10px] tracking-[0.3em] text-[#F5F0E8]/30 uppercase">
+                No leads match the current filters
+              </p>
+            </div>
+          ) : (
+            <div className="border border-[#FF6B00]/20 overflow-x-auto">
+              <table className="w-full text-xs font-mono">
+                <thead>
+                  <tr className="border-b border-[#FF6B00]/20">
+                    <th
+                      className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal cursor-pointer hover:text-[#FF6B00] select-none"
+                      onClick={() => handleColumnSort("county")}
+                    >
+                      County
+                      <SortArrow
+                        active={sortKey === "county-asc" || sortKey === "county-desc"}
+                        direction={sortKey === "county-asc" ? "asc" : "desc"}
+                      />
+                    </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      State
+                    </th>
+                    <th
+                      className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal cursor-pointer hover:text-[#FF6B00] select-none"
+                      onClick={() => handleColumnSort("date")}
+                    >
+                      Event Date
+                      <SortArrow
+                        active={sortKey === "date-desc" || sortKey === "date-asc"}
+                        direction={sortKey === "date-asc" ? "asc" : "desc"}
+                      />
+                    </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Magnitude
+                    </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Score
+                    </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Type
+                    </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Map
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginated.map((lead, i) => {
+                    const cfg    = SCORE_CONFIG[lead.lead_score] ?? SCORE_CONFIG.warm;
+                    const mapUrl = `https://maps.google.com/?q=${encodeURIComponent(
+                      `${lead.county} ${lead.state ?? ""}`
+                    )}`;
+                    return (
+                      <tr
+                        key={lead.id}
+                        className={`border-b border-[#FF6B00]/10 hover:bg-[#FF6B00]/5 transition-colors ${
+                          i % 2 === 0 ? "bg-transparent" : "bg-[#F5F0E8]/[0.02]"
+                        }`}
                       >
-                        <span
-                          className="w-1.5 h-1.5 rounded-full flex-shrink-0"
-                          style={{ backgroundColor: cfg.dot }}
-                        />
-                        {cfg.label}
-                      </span>
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      {(() => {
-                        const tc = EVENT_TYPE_CONFIG[lead.event_type as keyof typeof EVENT_TYPE_CONFIG]
-                          ?? EVENT_TYPE_CONFIG.hail;
-                        return (
+                        <td className="px-5 py-3 text-[#F5F0E8]/80 whitespace-nowrap">
+                          {lead.county}
+                        </td>
+                        <td className="px-5 py-3 text-[#F5F0E8]/50 whitespace-nowrap">
+                          {lead.state ?? "—"}
+                        </td>
+                        <td className="px-5 py-3 text-[#F5F0E8]/60 whitespace-nowrap">
+                          {formatDate(lead.event_date)}
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap tabular-nums">
+                          <span style={{ color: lead.magnitude ? "#FF6B00" : "rgba(245,240,232,0.3)" }}>
+                            {formatMagnitude(lead.magnitude)}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap">
                           <span
-                            className="inline-flex items-center px-2.5 py-1 text-[9px] tracking-widest uppercase font-medium"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] tracking-widest uppercase font-medium"
                             style={{
-                              color:           tc.color,
-                              backgroundColor: tc.bg,
-                              border:          `1px solid ${tc.border}`,
+                              color:           cfg.color,
+                              backgroundColor: cfg.bg,
+                              border:          `1px solid ${cfg.border}`,
                             }}
                           >
-                            {tc.label}
+                            <span
+                              className="w-1.5 h-1.5 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: cfg.dot }}
+                            />
+                            {cfg.label}
                           </span>
-                        );
-                      })()}
-                    </td>
-                    <td className="px-5 py-3 whitespace-nowrap">
-                      <a
-                        href={mapUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[9px] tracking-widest uppercase font-mono text-[#F5F0E8]/30 border border-[#F5F0E8]/10 px-2 py-1 hover:border-[#FF6B00]/40 hover:text-[#FF6B00]/70 transition-colors"
-                      >
-                        Map ↗
-                      </a>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      )}
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap">
+                          {(() => {
+                            const tc = EVENT_TYPE_CONFIG[lead.event_type as keyof typeof EVENT_TYPE_CONFIG]
+                              ?? EVENT_TYPE_CONFIG.hail;
+                            return (
+                              <span
+                                className="inline-flex items-center px-2.5 py-1 text-[9px] tracking-widest uppercase font-medium"
+                                style={{
+                                  color:           tc.color,
+                                  backgroundColor: tc.bg,
+                                  border:          `1px solid ${tc.border}`,
+                                }}
+                              >
+                                {tc.label}
+                              </span>
+                            );
+                          })()}
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap">
+                          <a
+                            href={mapUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[9px] tracking-widest uppercase font-mono text-[#F5F0E8]/30 border border-[#F5F0E8]/10 px-2 py-1 hover:border-[#FF6B00]/40 hover:text-[#FF6B00]/70 transition-colors"
+                          >
+                            Map ↗
+                          </a>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
 
-      {/* ── Pagination ─────────────────────────────────────────────────── */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <button
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            disabled={safePage === 1}
-            className="border border-[#FF6B00]/30 text-[#FF6B00]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-          >
-            ← Prev
-          </button>
-          <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
-            Page {safePage} of {totalPages}
+          {/* ── Pagination ─────────────────────────────────────────────── */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+                className="border border-[#FF6B00]/30 text-[#FF6B00]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+              >
+                ← Prev
+              </button>
+              <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
+                Page {safePage} of {totalPages}
+              </p>
+              <button
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+                className="border border-[#FF6B00]/30 text-[#FF6B00]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+              >
+                Next →
+              </button>
+            </div>
+          )}
+
+          {/* ── Bottom bar ─────────────────────────────────────────────── */}
+          <p className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/20 uppercase text-right">
+            New leads drop every Monday — email notification when your list updates
           </p>
-          <button
-            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-            disabled={safePage === totalPages}
-            className="border border-[#FF6B00]/30 text-[#FF6B00]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
-          >
-            Next →
-          </button>
-        </div>
+        </>
       )}
 
-      {/* ── Bottom bar ─────────────────────────────────────────────────── */}
-      <p className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/20 uppercase text-right">
-        New leads drop every Monday — email notification when your list updates
-      </p>
+      {/* ══════════════════════════════════════════════════════════════════
+          PROPERTY RECORDS TAB
+      ══════════════════════════════════════════════════════════════════ */}
+      {activeTab === "property" && (
+        <>
+          {/* ── Stat cards ─────────────────────────────────────────────── */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <StatCard label="Total Properties" value={totalProps}    subtitle="property records"       />
+            <StatCard label="Avg Year Built"   value={avgYearBuilt} subtitle="median build year"      accent="#FF6B00" />
+            <StatCard label="Pre-1990 Roofs"   value={pre1990}      subtitle="highest priority"       accent="#FF6B00" />
+            <StatCard label="County Coverage"  value={countyCoverage} subtitle="counties tracked"    />
+          </div>
+
+          {/* ── Search + export ────────────────────────────────────────── */}
+          <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-end justify-between">
+            <div>
+              <label className="block text-[9px] tracking-[0.2em] text-[#FF6B00]/60 uppercase mb-1">
+                Search
+              </label>
+              <input
+                type="text"
+                placeholder="Search address or owner name..."
+                value={propSearch}
+                onChange={(e) => { setPropSearch(e.target.value); setPropPage(1); }}
+                className="w-full sm:w-80 bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-xs font-mono px-3 py-2 placeholder:text-[#F5F0E8]/20 focus:outline-none focus:border-[#FF6B00] transition-colors"
+              />
+            </div>
+            <button
+              onClick={() => exportPropertyCsv(filteredProps)}
+              className="border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors"
+            >
+              Download CSV
+            </button>
+          </div>
+
+          {/* ── Showing count ──────────────────────────────────────────── */}
+          <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
+            Showing {propShowingFrom}–{propShowingTo} of {filteredProps.length} properties
+          </p>
+
+          {/* ── Table ──────────────────────────────────────────────────── */}
+          {filteredProps.length === 0 ? (
+            <div className="border border-[#FF6B00]/20 px-6 py-12 text-center">
+              <p className="text-[10px] tracking-[0.3em] text-[#F5F0E8]/30 uppercase">
+                No properties match the current search
+              </p>
+            </div>
+          ) : (
+            <div className="border border-[#FF6B00]/20 overflow-x-auto">
+              <table className="w-full text-xs font-mono">
+                <thead>
+                  <tr className="border-b border-[#FF6B00]/20">
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Address
+                    </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Owner Name
+                    </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Mailing Address
+                    </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Year Built
+                    </th>
+                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
+                      Map
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {paginatedProps.map((prop, i) => {
+                    const isOld   = prop.year_built !== null && prop.year_built < 1990;
+                    const mapUrl  = `https://maps.google.com/?q=${encodeURIComponent(
+                      `${prop.address ?? ""} ${prop.county} ${prop.state ?? ""}`
+                    )}`;
+                    return (
+                      <tr
+                        key={prop.id}
+                        className={`border-b border-[#FF6B00]/10 hover:bg-[#FF6B00]/5 transition-colors ${
+                          i % 2 === 0 ? "bg-transparent" : "bg-[#F5F0E8]/[0.02]"
+                        }`}
+                      >
+                        <td className="px-5 py-3 text-[#F5F0E8]/80 max-w-[200px] truncate">
+                          {prop.address ?? "—"}
+                        </td>
+                        <td className="px-5 py-3 text-[#F5F0E8]/60 whitespace-nowrap max-w-[160px] truncate">
+                          {prop.owner_name ?? "—"}
+                        </td>
+                        <td className="px-5 py-3 text-[#F5F0E8]/40 max-w-[200px] truncate">
+                          {prop.owner_mailing_address ?? "—"}
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap tabular-nums">
+                          <span style={{ color: isOld ? "#FF6B00" : "rgba(245,240,232,0.6)" }}>
+                            {prop.year_built ?? "—"}
+                          </span>
+                        </td>
+                        <td className="px-5 py-3 whitespace-nowrap">
+                          <a
+                            href={mapUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[9px] tracking-widest uppercase font-mono text-[#F5F0E8]/30 border border-[#F5F0E8]/10 px-2 py-1 hover:border-[#FF6B00]/40 hover:text-[#FF6B00]/70 transition-colors"
+                          >
+                            Map ↗
+                          </a>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {/* ── Pagination ─────────────────────────────────────────────── */}
+          {propTotalPages > 1 && (
+            <div className="flex items-center justify-between">
+              <button
+                onClick={() => setPropPage((p) => Math.max(1, p - 1))}
+                disabled={safePropPage === 1}
+                className="border border-[#FF6B00]/30 text-[#FF6B00]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+              >
+                ← Prev
+              </button>
+              <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
+                Page {safePropPage} of {propTotalPages}
+              </p>
+              <button
+                onClick={() => setPropPage((p) => Math.min(propTotalPages, p + 1))}
+                disabled={safePropPage === propTotalPages}
+                className="border border-[#FF6B00]/30 text-[#FF6B00]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors disabled:opacity-20 disabled:cursor-not-allowed"
+              >
+                Next →
+              </button>
+            </div>
+          )}
+
+          <p className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/20 uppercase text-right">
+            Franklin County parcel data — sourced from county assessor
+          </p>
+        </>
+      )}
 
     </div>
   );
