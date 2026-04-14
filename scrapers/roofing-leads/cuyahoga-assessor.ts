@@ -9,7 +9,7 @@ const supabase = createClient(
 )
 
 const CUYAHOGA_ARCGIS =
-  'https://gis.cuyahogacounty.gov/arcgis/rest/services/OpenData/Parcels/MapServer/0/query'
+  'https://gis.cuyahogacounty.us/server/rest/services/MyPLACE/Parcels_WMA_GJOIN_WGS84/MapServer/0/query'
 
 const BATCH_SIZE = 1000
 
@@ -20,8 +20,8 @@ async function fetchCuyahogaCounty() {
 
   while (hasMore) {
     const params = new URLSearchParams({
-      where: "YRBLT > 0 AND YRBLT < 2005 AND SITEADDRESS IS NOT NULL", // residential, pre-2005
-      outFields: 'SITEADDRESS,OWNERNAME1,OWNERADDR,YRBLT',
+      where: "property_class = 'R'", // residential only
+      outFields: 'par_addr_all,par_city,par_zip,deeded_owner,mail_addr_street,mail_city,mail_state,mail_zip',
       returnGeometry: 'false',
       resultOffset: String(offset),
       resultRecordCount: String(BATCH_SIZE),
@@ -40,12 +40,12 @@ async function fetchCuyahogaCounty() {
       .map((f: any) => {
         const a = f.attributes
         return {
-          address: a.SITEADDRESS || null,
+          address: a.par_addr_all || null,
           county: 'cuyahoga',
           state: 'OH',
-          owner_name: a.OWNERNAME1 || null,
-          owner_mailing_address: a.OWNERADDR || null,
-          year_built: a.YRBLT ? parseInt(a.YRBLT) : null,
+          owner_name: a.deeded_owner || null,
+          owner_mailing_address: [a.mail_addr_street, a.mail_city, a.mail_state, a.mail_zip].filter(Boolean).join(', ') || null,
+          year_built: null,
           source: 'cuyahoga-arcgis',
           created_at: new Date().toISOString(),
         }
