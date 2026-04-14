@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from "next/link";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -487,6 +488,12 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
               >
                 {portalLoading ? "Loading…" : "Manage Subscription"}
               </button>
+              <Link
+                href="/leads/alerts"
+                className="border border-[#FF6B00]/30 text-[#FF6B00]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors"
+              >
+                County Alerts
+              </Link>
             </div>
           </div>
 
