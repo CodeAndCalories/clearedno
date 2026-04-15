@@ -211,8 +211,28 @@ export default async function CountyLeadsPage({
     new Set((otherCountyData ?? []).map((r: { county: string }) => r.county))
   ).slice(0, 3);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    name: `Roofing Leads - ${displayCounty} County ${stateName}`,
+    description: `Storm damage roofing leads for ${displayCounty} County, ${stateName}`,
+    provider: {
+      "@type": "Organization",
+      name: "ClearedNo",
+      url: "https://clearedno.com",
+    },
+    areaServed: {
+      "@type": "AdministrativeArea",
+      name: `${displayCounty} County, ${stateName}`,
+    },
+  };
+
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#F5F0E8] font-mono">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <MarketingNav />
 
       {/* Header */}

@@ -1187,8 +1187,27 @@ export default async function BlogPostPage({
   const article = ARTICLES.find((a) => a.slug === slug);
   if (!article) notFound();
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: article!.title,
+    description: article!.description,
+    author: { "@type": "Organization", name: "ClearedNo" },
+    publisher: {
+      "@type": "Organization",
+      name: "ClearedNo",
+      url: "https://clearedno.com",
+    },
+    datePublished: article!.date,
+    url: `https://clearedno.com/blog/${article!.slug}`,
+  };
+
   return (
     <div className="font-mono text-[#F5F0E8]">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumb */}
       <p className="text-[9px] tracking-[0.3em] text-[#F5F0E8]/25 uppercase mb-8">
         <Link href="/blog" className="hover:text-[#FF6B00] transition-colors">
