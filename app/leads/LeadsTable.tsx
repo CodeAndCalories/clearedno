@@ -44,10 +44,6 @@ interface Props {
 const STATES = ["OH", "IN", "MI", "KY", "IL", "PA"] as const;
 const PAGE_SIZE = 25;
 
-// Computed once at load time so all "new this week" checks are consistent
-const SEVEN_DAYS_AGO = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-  .toISOString()
-  .split("T")[0];
 
 type SortKey =
   | "date-desc"
@@ -103,8 +99,14 @@ const SELECT_CLASS =
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function isNewThisWeek(date: string): boolean {
-  return date >= SEVEN_DAYS_AGO;
+// Returns true only when event_date is a real date string within the last 7 days.
+// Passing null (property records have no event_date) always returns false.
+function isNewThisWeek(eventDate: string | null | undefined): boolean {
+  if (!eventDate) return false;
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .split("T")[0];
+  return eventDate >= sevenDaysAgo;
 }
 
 function formatDate(iso: string): string {
