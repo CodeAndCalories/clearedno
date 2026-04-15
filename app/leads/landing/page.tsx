@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import MarketingNav from "@/app/components/MarketingNav";
 import RoiCalculator from "./RoiCalculator";
@@ -36,6 +37,7 @@ export default function LeadsLandingPage() {
   const [error, setError]             = useState<string | null>(null);
   const [sampleLeads, setSampleLeads] = useState<SampleLead[]>([]);
   const [totalCount, setTotalCount]   = useState<number | null>(null);
+  const [openFaq, setOpenFaq]         = useState<number | null>(null);
 
   useEffect(() => {
     const supabase = createClient();
@@ -328,6 +330,111 @@ export default function LeadsLandingPage() {
             <p className="text-xs text-[#F5F0E8]/40 leading-relaxed">
               Most contractors close 3–5 jobs per month from our list.
             </p>
+          </div>
+        </div>
+
+        {/* ── Resources ──────────────────────────────────────────────── */}
+        <div className="w-full max-w-2xl mb-16 text-left">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-px bg-[#FF6B00]" />
+            <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Resources</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-0 border border-[#FF6B00]/20">
+            {[
+              {
+                title: "How to Find Storm Damage Leads in Ohio",
+                href: "/blog/how-to-find-storm-damage-leads-ohio",
+                tag: "Ohio Guide",
+              },
+              {
+                title: "7 Roofing Lead Generation Tips That Actually Work",
+                href: "/blog/roofing-contractor-lead-generation-tips",
+                tag: "Strategy",
+              },
+              {
+                title: "How Roofing Contractors Use Hail Storm Trackers",
+                href: "/blog/hail-storm-tracker-roofing-contractors",
+                tag: "Storm Data",
+              },
+            ].map(({ title, href, tag }, i) => (
+              <Link
+                key={href}
+                href={href}
+                className={`group block p-6 hover:bg-[#FF6B00]/5 transition-colors ${
+                  i < 2 ? "border-b sm:border-b-0 sm:border-r border-[#FF6B00]/20" : ""
+                }`}
+              >
+                <span className="text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase border border-[#FF6B00]/30 px-2 py-0.5 inline-block mb-3">
+                  {tag}
+                </span>
+                <p className="text-xs text-[#F5F0E8]/70 leading-relaxed mb-3 group-hover:text-[#F5F0E8] transition-colors">
+                  {title}
+                </p>
+                <span className="text-[9px] tracking-[0.2em] text-[#FF6B00] uppercase group-hover:translate-x-1 transition-transform inline-block">
+                  Read →
+                </span>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* ── FAQ ────────────────────────────────────────────────────── */}
+        <div className="w-full max-w-2xl mb-16 text-left">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-px bg-[#FF6B00]" />
+            <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">FAQ</span>
+          </div>
+
+          <div className="border border-[#FF6B00]/20 divide-y divide-[#FF6B00]/10">
+            {[
+              {
+                q: "Does this work in my state?",
+                a: "Yes — we currently cover Ohio, Indiana, Michigan, Kentucky, Illinois, and Pennsylvania. Storm data updates every Monday. Property records include Franklin County (Columbus) and Cuyahoga County (Cleveland) with more counties being added monthly.",
+              },
+              {
+                q: "How fresh is the storm data?",
+                a: "Storm leads are pulled from NOAA every Monday morning and are typically 3–7 days old when they hit your dashboard. You'll see a NEW badge on any lead from the past 7 days.",
+              },
+              {
+                q: "What's included in the sample CSV?",
+                a: "50 real Franklin County, Ohio properties with owner name, mailing address, year built, and GPS coordinates. No fake data.",
+              },
+              {
+                q: "Can I cancel anytime?",
+                a: "Yes. Cancel from your account page anytime. We also offer a 30-day money-back guarantee — no questions asked.",
+              },
+              {
+                q: "How is this different from HomeAdvisor or Angi?",
+                a: "Those platforms sell the same lead to 5+ contractors and charge per lead. ClearedNo is a flat $300/mo and the data is yours — no competing bids, no per-lead fees.",
+              },
+              {
+                q: "What's a \"hot\" vs \"warm\" lead?",
+                a: "Hot leads are properties in counties that received hail 1.5\"+ or damaging wind in the last 30 days. Warm leads are properties in counties with storm activity in the last 90 days.",
+              },
+            ].map(({ q, a }, i) => (
+              <div key={i}>
+                <button
+                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                  className="w-full flex items-center justify-between px-6 py-5 text-left hover:bg-[#FF6B00]/5 transition-colors group"
+                >
+                  <span className="text-sm text-[#F5F0E8]/80 group-hover:text-[#F5F0E8] transition-colors pr-4">
+                    {q}
+                  </span>
+                  <span
+                    className="text-[#FF6B00] text-lg leading-none flex-shrink-0 transition-transform duration-200"
+                    style={{ transform: openFaq === i ? "rotate(45deg)" : "rotate(0deg)" }}
+                  >
+                    +
+                  </span>
+                </button>
+                {openFaq === i && (
+                  <div className="px-6 pb-5">
+                    <p className="text-sm text-[#F5F0E8]/50 leading-relaxed">{a}</p>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
 
