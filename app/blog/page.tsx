@@ -53,6 +53,60 @@ const ROOFING_POSTS = [
     date: "April 2026",
     readTime: "7 min read",
   },
+  {
+    href: "/blog/how-to-find-storm-damage-leads-ohio",
+    title: "How to Find Storm Damage Leads in Ohio (Without Door Knocking Every Street)",
+    excerpt:
+      "Ohio hail season creates thousands of roofing opportunities every year. Here's how to use NOAA storm data and property records to find them without wasting a single step.",
+    tag: "Storm Leads",
+    date: "April 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/hail-damage-roof-leads-columbus-ohio",
+    title: "Hail Damage Roof Leads in Columbus, Ohio: What the Data Shows",
+    excerpt:
+      "Franklin County has 47,000+ homes built before 2005 and a storm history that keeps insurance adjusters busy every summer. Here's what the data says.",
+    tag: "Columbus, OH",
+    date: "April 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/roofing-leads-cleveland-ohio",
+    title: "Roofing Leads in Cleveland, Ohio: How Smart Contractors Are Winning Jobs After Storms",
+    excerpt:
+      "Cuyahoga County sees Lake Erie-driven storm patterns that most lead gen companies ignore. Here's how Cleveland contractors are finding jobs the smart way.",
+    tag: "Cleveland, OH",
+    date: "April 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/best-roofing-leads-midwest",
+    title: "Best Roofing Leads in the Midwest: A Contractor's Guide to Storm Season 2025",
+    excerpt:
+      "OH, IN, MI, KY, IL, and PA all see significant storm seasons. Hot vs warm leads explained, why timing matters, and how to run a data-driven canvass.",
+    tag: "Roofing Leads",
+    date: "April 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/roofing-contractor-lead-generation-tips",
+    title: "7 Roofing Lead Generation Tips That Actually Work in 2025",
+    excerpt:
+      "Practical tips: storm tracking, door knocking with data, direct mail from assessor records, county alert monitoring, speed to contact, canvassing sheets, and weekly review.",
+    tag: "Lead Generation",
+    date: "April 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/hail-storm-tracker-roofing-contractors",
+    title: "How Roofing Contractors Use Hail Storm Trackers to Find New Jobs",
+    excerpt:
+      "What NOAA storm data is, how hail size predicts damage likelihood, why the first contractor on the block wins, and how to combine storm data with property records.",
+    tag: "Storm Data",
+    date: "April 2026",
+    readTime: "6 min read",
+  },
 ];
 
 // ── Permit articles ───────────────────────────────────────────────────────────

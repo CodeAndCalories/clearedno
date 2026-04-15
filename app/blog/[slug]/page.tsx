@@ -225,7 +225,7 @@ const ARTICLES: Article[] = [
       <>
         <p>
           The difference between a roofing contractor who closes 30 jobs a summer and one who
-          closes 10 often isn't skill, crew size, or marketing budget. It's timing. The
+          closes 10 often isn&apos;t skill, crew size, or marketing budget. It&apos;s timing. The
           contractors who win consistently have figured out one thing: the job exists the moment
           hail hits the ground — not the moment the homeowner picks up the phone.
         </p>
@@ -351,6 +351,737 @@ const ARTICLES: Article[] = [
           are the ones who eventually dominate their markets. They're not paying $60/lead for
           shared contacts from Angi. They're running an information advantage that compounds
           every week.
+        </p>
+      </>
+    ),
+  },
+  // ── NEW POST 5 ────────────────────────────────────────────────────────────
+  {
+    title: "How to Find Storm Damage Leads in Ohio (Without Door Knocking Every Street)",
+    slug: "how-to-find-storm-damage-leads-ohio",
+    date: "April 14, 2026",
+    description:
+      "Ohio hail season creates thousands of roofing opportunities every year. Here's how to use NOAA storm data and property records to find them without wasting a single step.",
+    body: (
+      <>
+        <p>
+          Ohio sits directly in the path of some of the most active storm corridors in the country.
+          Every spring and summer, warm Gulf air collides with cold fronts rolling off the Great
+          Lakes, producing thunderstorms capable of dropping golf ball-sized hail on suburban
+          neighborhoods from Toledo to Youngstown. NOAA logged over 100 significant hail events in
+          Ohio in 2025 alone — and every one of those events represents a county full of homes with
+          damaged shingles that homeowners haven&apos;t dealt with yet.
+        </p>
+        <p>
+          The problem roofing contractors face isn&apos;t a shortage of storm damage leads in Ohio.
+          It&apos;s finding them efficiently. Door knocking every street in a county after a storm is
+          expensive, slow, and demoralizing when you&apos;re hitting houses that weren&apos;t even in
+          the impact zone. The contractors closing the most storm damage jobs in Ohio aren&apos;t
+          working harder — they&apos;re working with better data.
+        </p>
+
+        <h2>Why Ohio hail season matters for roofing contractors</h2>
+        <p>
+          Ohio&apos;s geographic position makes it one of the top five most hail-active states east of
+          the Mississippi. The combination of Lake Erie moisture, warm southwesterly flow from the
+          Gulf, and cold air dropping in from Canada creates the perfect conditions for large,
+          damaging hail multiple times per season. April through September is the primary window,
+          but early spring and late fall events aren&apos;t uncommon.
+        </p>
+        <p>
+          More importantly, Ohio has a massive stock of aging residential roofs. Millions of homes
+          were built between 1970 and 2000 — meaning their asphalt shingles are at or near the end
+          of a 25–30 year lifespan. A hail event hitting a 30-year-old roof isn&apos;t a close call. It&apos;s
+          a guaranteed replacement. Insurance carriers know this, and they approve claims on
+          older-roof counties at significantly higher rates than on newer construction.
+        </p>
+
+        <h2>How contractors traditionally find storm damage leads</h2>
+        <p>
+          The traditional approach is what most contractors still use: drive the neighborhoods that
+          look like they got hit, knock on doors, and hope someone answers. It works, but it&apos;s
+          inefficient. You might spend eight hours canvassing before finding a homeowner who wasn&apos;t
+          already called by three other contractors yesterday.
+        </p>
+        <p>
+          Some contractors buy lead lists from third-party services — shared leads that go to five
+          competitors simultaneously. Others run Google ads and wait for inbound calls. Both
+          approaches are expensive and slow compared to getting to the damage first, before the
+          market floods.
+        </p>
+
+        <h2>What NOAA storm data tells you — and how to use it</h2>
+        <p>
+          NOAA&apos;s Storm Events Database is the federal record of every significant weather event in
+          the United States. For roofing contractors, the key fields are: the event date, the
+          county, the hailstone size in inches, and the storm type (hail vs. wind). This data gets
+          updated within days of an event and is publicly available — but pulling it, cleaning it,
+          and turning it into a usable lead list requires work most contractors don&apos;t have time for.
+        </p>
+        <p>
+          Hailstone size is the most important field. Hail at 0.75 inches causes marginal granule
+          loss on older shingles. At 1.0 inch (quarter-sized), damage is reliable and visible. At
+          1.5 inches (golf ball-sized), full replacement is almost certain regardless of roof age.
+          Knowing the size of the hail that hit a county tells you how aggressively to prioritize
+          your canvass and what close rate to expect.
+        </p>
+
+        <h2>Prioritizing neighborhoods by event_date and year built</h2>
+        <p>
+          Not all homes in a hail-affected county are equal opportunities. The smartest contractors
+          cross-reference storm events with county assessor data — specifically, the year each home
+          was built. A hail event hitting a block of homes built in 1985 is a different opportunity
+          than the same event hitting new construction from 2018.
+        </p>
+        <p>
+          The prioritization logic is simple: newest event date + oldest homes = highest close rate.
+          If Franklin County saw 1.25-inch hail last Tuesday, and the affected neighborhood was
+          built in the 1980s, that&apos;s your first stop Thursday morning. Neighborhoods built after 2010
+          can wait — the newer shingles may show damage, but insurance claims will be harder to
+          document.
+        </p>
+        <p>
+          Running this kind of triage manually is possible but time-consuming. Tools that
+          automatically cross-reference NOAA storm events with property age data let you walk into
+          a canvass with a street-level list, sorted by priority, instead of driving the county
+          hoping to find the right neighborhoods.
+        </p>
+
+        <h2>Speed is the only real competitive advantage</h2>
+        <p>
+          The 72-hour window after a hail event is when the best jobs are won. Homeowners who
+          haven&apos;t been contacted are still deciding whether they have damage. Adjusters haven&apos;t
+          started inspections. Other contractors haven&apos;t saturated the neighborhood. The contractor
+          who shows up Tuesday after a Sunday storm has the entire neighborhood as a green field.
+          The contractor who shows up Friday is competing with four others for the same doors.
+        </p>
+        <p>
+          That speed advantage comes from having your lead list ready before you even load the
+          truck. Weekly NOAA data pulls, pre-sorted by county and hail size, mean you can plan
+          Monday&apos;s canvass before the weekend is over. That&apos;s the difference between reacting to
+          storms and building a sustainable outbound lead system around them.
+        </p>
+
+        <h2>Start with the data, not the street</h2>
+        <p>
+          Ohio produces more roofing leads than most contractors have the capacity to work. The
+          constraint isn&apos;t opportunity — it&apos;s organization. The contractors scaling their storm
+          damage revenue in 2025 and 2026 are the ones who stopped driving neighborhoods blind and
+          started running a weekly data review to prioritize exactly where to go.
+        </p>
+        <p>
+          ClearedNo pulls NOAA storm data weekly across Ohio and five other Midwest states, scores
+          every event by hail size, and delivers a sorted lead list every Monday. Hot leads are
+          1-inch+ hail events. Warm leads are under 1 inch but still worth canvassing. Visit{" "}
+          <a
+            href="https://clearedno.com/leads"
+            className="text-[#FF6B00] hover:underline"
+          >
+            clearedno.com/leads
+          </a>{" "}
+          to see what&apos;s available in your county this week.
+        </p>
+      </>
+    ),
+  },
+  // ── NEW POST 6 ────────────────────────────────────────────────────────────
+  {
+    title: "Hail Damage Roof Leads in Columbus, Ohio: What the Data Shows",
+    slug: "hail-damage-roof-leads-columbus-ohio",
+    date: "April 14, 2026",
+    description:
+      "Franklin County has 47,000+ homes built before 2005 and a storm history that keeps insurance adjusters busy every summer. Here's what the data says about Columbus roofing leads.",
+    body: (
+      <>
+        <p>
+          Columbus is one of the fastest-growing cities in the Midwest, but underneath the new
+          construction and urban development, Franklin County has a massive stock of aging residential
+          roofs that get hit by hail every single year. For roofing contractors working central Ohio,
+          Columbus represents a concentrated, high-volume opportunity — if you know where to look.
+        </p>
+
+        <h2>Columbus storm history: what NOAA shows</h2>
+        <p>
+          Franklin County recorded 14 significant hail events in 2025 — more than any other Ohio
+          county — including two June storms that dropped 1.5 to 1.75-inch hailstones across the
+          northeast and northwest suburbs. At that size, asphalt shingles don&apos;t just sustain granule
+          loss. They sustain visible impact craters, cracked tabs, and compromised underlayment that
+          insurance carriers approve for full replacement.
+        </p>
+        <p>
+          Columbus&apos;s storm profile benefits from its geography. The city sits at the convergence of
+          the Scioto and Olentangy river valleys, which funnel warm moist air from the south into
+          contact with cold fronts dropping from the north. This creates an above-average frequency
+          of severe thunderstorms relative to other Ohio metros, and the suburban sprawl — Westerville,
+          Gahanna, Dublin, Hilliard, Grove City — gives contractors a dense patchwork of neighborhoods
+          to canvass after each event.
+        </p>
+
+        <h2>47,000+ homes built before 2005</h2>
+        <p>
+          Franklin County&apos;s housing stock tells the real story. According to county assessor data,
+          more than 47,000 residential properties in the county were built before 2005 — meaning
+          their original roofs are at or approaching the end of a standard 25–30 year asphalt
+          shingle lifespan. Many of these homes received roofs during the build-out of Columbus&apos;s
+          suburban expansion in the 1980s and 90s, and those roofs haven&apos;t been replaced.
+        </p>
+        <p>
+          A 1.25-inch hail event hitting a neighborhood of 1988-vintage homes isn&apos;t a borderline
+          claim situation. It&apos;s a near-certain replacement. Insurance adjusters know the roof age,
+          they know the hail size, and they approve the claims. The contractors who reach those
+          homeowners first — before the adjuster visits — can help document the damage, guide
+          the claim process, and sign the job.
+        </p>
+        <p>
+          The highest-value targets in Franklin County are the inner-ring suburbs built between
+          1975 and 1995: Whitehall, Reynoldsburg, Hilliard (older sections), and Grove City.
+          These neighborhoods have dense housing, aging roofs, and homeowners who are typically
+          owner-occupied (meaning they have the authority to authorize work and file claims).
+        </p>
+
+        <h2>How owner name and mailing address data helps</h2>
+        <p>
+          Franklin County&apos;s auditor publishes public property records that include the owner name,
+          mailing address, and property address for every parcel. For roofing contractors, this is
+          valuable for two reasons: direct mail and door-knocking verification.
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Direct mail:</strong> After a storm event, contractors
+          can pull a list of properties in the affected area, filter by year-built, and mail a
+          targeted postcard to every owner within a week. Unlike generic mailers, a storm-specific
+          postcard — "We noticed your neighborhood was hit by hail on June 12. Here&apos;s how to check
+          if your roof was damaged." — has a relevance and urgency that generic marketing doesn&apos;t.
+          Response rates on post-storm direct mail typically run 3–5x above baseline.
+        </p>
+        <p>
+          <strong style={{ color: "#EAB308" }}>Door-knocking verification:</strong> When you
+          knock on a door and the homeowner isn&apos;t home, having the owner name lets you leave a
+          personalized note rather than a generic flyer. "Hi [Name], we were in the neighborhood
+          checking on storm damage from last week&apos;s hail..." converts significantly better than an
+          anonymous door hanger. Owner name data from the assessor&apos;s office turns a cold knock
+          into a warm introduction.
+        </p>
+
+        <h2>Timing your Columbus canvass</h2>
+        <p>
+          The best canvass windows in Columbus follow a pattern: storm hits Thursday or Friday,
+          weekend passes (homeowners start noticing damage Saturday and Sunday), contractors
+          arrive Monday or Tuesday before the market floods. By Wednesday of the following week,
+          other contractors are working the same neighborhoods. By the following Monday, the
+          best opportunities are gone.
+        </p>
+        <p>
+          Contractors who consistently win the best Columbus jobs run a Monday morning data
+          review. They check the previous week&apos;s NOAA events for Franklin County, identify the
+          highest-severity events, cross-reference with roof age data, and have a canvass plan
+          ready before lunch. That process takes 30–45 minutes when the data is already organized
+          and scored for you.
+        </p>
+
+        <h2>The Columbus market opportunity</h2>
+        <p>
+          Columbus is a genuinely underserved roofing lead market relative to its storm activity.
+          The city&apos;s rapid population growth has attracted more attention to new construction than
+          to storm repair, and many of the major lead gen platforms don&apos;t have strong coverage of
+          Franklin County&apos;s secondary suburbs. That means contractors working the data have a
+          real first-mover advantage — less competition on the same doors.
+        </p>
+        <p>
+          ClearedNo tracks every NOAA storm event in Franklin County and surrounding counties
+          weekly, scores them by hail size, and pairs them with property age data so you know
+          which neighborhoods to hit first. See what&apos;s available at{" "}
+          <a
+            href="https://clearedno.com/leads"
+            className="text-[#FF6B00] hover:underline"
+          >
+            clearedno.com/leads
+          </a>.
+        </p>
+      </>
+    ),
+  },
+  // ── NEW POST 7 ────────────────────────────────────────────────────────────
+  {
+    title: "Roofing Leads in Cleveland, Ohio: How Smart Contractors Are Winning Jobs After Storms",
+    slug: "roofing-leads-cleveland-ohio",
+    date: "April 14, 2026",
+    description:
+      "Cuyahoga County sees Lake Erie-driven storm patterns that most lead gen companies ignore. Here's how Cleveland roofing contractors are finding jobs the smart way.",
+    body: (
+      <>
+        <p>
+          Cleveland&apos;s roofing market operates differently than Columbus or Cincinnati. Lake Erie
+          creates a storm dynamic that&apos;s equal parts hail season and wind season — and most of the
+          national lead gen companies don&apos;t understand it. The contractors who do understand it are
+          quietly building dominant positions in Cuyahoga County while the competition wastes money
+          on shared platform leads.
+        </p>
+
+        <h2>The Lake Erie storm pattern</h2>
+        <p>
+          Lake Erie sits north of Cleveland and profoundly shapes the city&apos;s severe weather
+          profile. During late spring and early summer, warm moist air moving northeast from the
+          Gulf of Mexico encounters cooler lake air and produces thunderstorm cells that often
+          intensify as they approach the southern shoreline. Cleveland, Parma, Lakewood, Euclid,
+          and the eastern suburbs sit directly in this convergence zone.
+        </p>
+        <p>
+          The result: Cuyahoga County sees both hail events and significant wind events that damage
+          roofs in different ways. Hail above 1 inch bruises shingles and destroys granules. High
+          winds — the 60–70 mph gusts that Lake Erie storms routinely produce — lift shingle tabs,
+          break seals, and create the kind of edge and ridge damage that leads to leaks within a
+          season or two. Both damage types are insurable. Both create legitimate roofing jobs.
+        </p>
+        <p>
+          NOAA recorded 9 hail events in Cuyahoga County in 2025, plus an additional 11 significant
+          wind damage events. That&apos;s 20 lead-generation opportunities in a single year, in a single
+          county with nearly 1.3 million residents.
+        </p>
+
+        <h2>Why Cleveland is underserved by lead gen companies</h2>
+        <p>
+          The major lead gen platforms — Angi, HomeAdvisor, Thumbtack — invest their targeting
+          budgets in markets where consumers are actively searching for contractors. That tends to
+          favor the Sun Belt and high-growth metros. The Rust Belt, including Cleveland, gets less
+          platform attention despite having some of the highest concentrations of aging housing stock
+          in the country.
+        </p>
+        <p>
+          Cuyahoga County has an enormous inventory of homes built between 1940 and 1980. These
+          older neighborhoods — Garfield Heights, Maple Heights, Lyndhurst, South Euclid, and
+          dozens of inner-ring suburbs — have housing stock that predates modern roofing materials.
+          Many of these roofs have been replaced once since original construction and are now on
+          their second or third lifespan. A storm event hitting these neighborhoods is a near-certain
+          replacement scenario, not a maybe.
+        </p>
+        <p>
+          For contractors willing to work with data rather than waiting for platform leads, this
+          underservice is an advantage. Less competition on the same doors. Better conversion rates
+          because you&apos;re first. Higher average job values because the homes are owner-occupied
+          with real insurance policies.
+        </p>
+
+        <h2>Cuyahoga County leads data: what to look for</h2>
+        <p>
+          When evaluating storm events in Cuyahoga County, experienced Cleveland contractors look
+          at three things: hail size, wind speed, and proximity to the lakefront. Events that
+          originate over the lake and come ashore often produce damage patterns that are concentrated
+          along specific corridors — the I-90 lakefront strip, the eastern suburbs along Route 2,
+          and the south suburbs where storms track after crossing the county.
+        </p>
+        <p>
+          The most actionable leads combine a hail event with an older housing stock neighborhood.
+          Garfield Heights, for example, is almost entirely housing stock from the 1950s and 60s.
+          A 1.0-inch hail event there is a very different opportunity than the same event hitting
+          a Solon or Strongsville subdivision built in 2005. Age of construction is the multiplier.
+        </p>
+
+        <h2>Building a Cleveland canvassing strategy</h2>
+        <p>
+          Cleveland&apos;s geography makes canvassing efficient when you have good data. The city&apos;s
+          grid layout in the inner suburbs means canvassing a neighborhood doesn&apos;t require
+          backtracking — you can work a street systematically and cover a lot of ground in a
+          morning. The key is knowing which neighborhoods to prioritize before you load the truck.
+        </p>
+        <p>
+          The contractors winning the most jobs in Cuyahoga County are running a simple system:
+          weekly NOAA data review on Mondays, prioritized by hail size and housing age, with a
+          canvass plan for the top two or three neighborhoods by Wednesday. They&apos;re not canvassing
+          the whole county — they&apos;re targeting the highest-probability blocks.
+        </p>
+        <p>
+          ClearedNo tracks Cuyahoga County storm events weekly and scores them by severity and
+          roof damage potential. See the current leads at{" "}
+          <a
+            href="https://clearedno.com/leads"
+            className="text-[#FF6B00] hover:underline"
+          >
+            clearedno.com/leads
+          </a>.
+        </p>
+      </>
+    ),
+  },
+  // ── NEW POST 8 ────────────────────────────────────────────────────────────
+  {
+    title: "Best Roofing Leads in the Midwest: A Contractor's Guide to Storm Season 2025",
+    slug: "best-roofing-leads-midwest",
+    date: "April 14, 2026",
+    description:
+      "OH, IN, MI, KY, IL, and PA all see significant storm seasons. Here's what makes a hot vs warm lead, why timing after a storm matters, and how to run a data-driven canvass.",
+    body: (
+      <>
+        <p>
+          The Midwest produces some of the best roofing leads in the country — not because the
+          marketing is easier, but because the storms are real and the housing stock is old.
+          Ohio, Indiana, Michigan, Kentucky, Illinois, and Pennsylvania collectively record
+          hundreds of significant hail and wind events every year, across millions of homes
+          that are at or past their shingle replacement window. For contractors who understand
+          how to work the data, the Midwest is the best lead market in North America.
+        </p>
+
+        <h2>Storm seasons by state: what to expect</h2>
+        <p>
+          Each Midwest state has a distinct storm season profile that shapes when and where
+          the best roofing leads appear:
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Ohio</strong> sees its peak activity from April
+          through August, with the southwest (Hamilton County) getting hit earlier in the season
+          and the northeast (Cuyahoga, Trumbull) staying active into September due to Lake Erie
+          moisture. Ohio logged 117 significant hail events in 2025 — the most of any state in
+          the ClearedNo coverage area.
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Indiana</strong> peaks from May through July.
+          Marion County (Indianapolis) and the northern counties near Lake Michigan — Lake, Porter,
+          St. Joseph — see the highest frequency. Indianapolis&apos;s suburban sprawl makes it a dense
+          target when storms hit.
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Michigan</strong> is split between Lake Superior
+          and Lake Huron/Erie influences. The southeastern counties — Wayne (Detroit), Oakland,
+          Macomb — see the most storm activity and have the highest housing density. Western Michigan
+          (Kent County, Grand Rapids) also sees consistent hail events.
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Kentucky</strong> has an underappreciated storm
+          season from April through June. Jefferson County (Louisville) and Fayette County
+          (Lexington) both see hail events most years, and the housing stock in both metros has
+          a high proportion of 1980s-era construction.
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Illinois</strong> is dominated by Cook County
+          (Chicago) and the collar counties. Chicago doesn&apos;t see hail as frequently as the Ohio
+          markets, but when it does, the density of the suburbs means thousands of homes are
+          affected simultaneously. Will, DuPage, and Kane counties see more frequent activity
+          than the city itself.
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Pennsylvania</strong> gets significant hail in
+          the western part of the state — Allegheny (Pittsburgh), Westmoreland, and Butler
+          counties — and sees wind damage across the mountainous central counties. Philadelphia
+          and its suburbs see less hail but benefit from contractor access to property records.
+        </p>
+
+        <h2>What makes a "hot" lead vs a "warm" lead</h2>
+        <p>
+          Not every storm event is worth the same canvass effort. The most important variable is
+          hailstone size, measured in inches by NOAA storm spotters and National Weather Service
+          field offices:
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Hot leads</strong> are counties that received
+          1.0 inch or larger hail (quarter-sized or bigger). At this size, asphalt shingles
+          sustain reliable, documentable damage — granule loss, bruising, cracked tabs, and
+          compromised seals. Insurance carriers approve claims on 1-inch events at high rates,
+          especially on roofs over 15 years old. A hot lead is a county where a skilled
+          canvasser should expect significant homeowner interest.
+        </p>
+        <p>
+          <strong style={{ color: "#EAB308" }}>Warm leads</strong> are counties that saw
+          sub-1-inch hail or significant wind events. Damage exists but is less uniform.
+          Close rates run lower, but warm leads are still worth canvassing — especially in
+          counties where you already have relationships or where the housing stock is particularly
+          old. Wind damage leads often convert at similar rates to hail leads on 30+ year old
+          roofs because the underlying vulnerability is the same.
+        </p>
+
+        <h2>Why timing after a storm matters more than anything</h2>
+        <p>
+          The 72-hour window is real and it&apos;s consistent across every Midwest market. After a
+          hail event, homeowners go through a predictable sequence: they notice something on the
+          news (day one), they look at their roof or yard for visible signs (day two), they start
+          asking neighbors if they saw damage (day two or three), and then they either call their
+          insurance company or they get called by a contractor first.
+        </p>
+        <p>
+          The contractor who shows up at the door on day two — before the homeowner has called
+          their insurance company — can guide the entire process. They can walk the roof, document
+          the damage with photos, explain the claim process, and position themselves as the obvious
+          choice for the repair. That&apos;s an almost unfair advantage over contractors who show up
+          a week later competing against three others for the same job.
+        </p>
+
+        <h2>Data-driven canvassing: the system that scales</h2>
+        <p>
+          The contractors dominating Midwest roofing markets in 2025 and 2026 aren&apos;t running
+          bigger crews or spending more on ads. They&apos;re running a weekly data review. Every Monday,
+          they check which counties got hit last week, rank them by hail size and housing age, and
+          assign canvass territories to their team. It takes under an hour with the right data source.
+        </p>
+        <p>
+          ClearedNo covers OH, IN, MI, KY, IL, and PA — pulling NOAA storm data weekly and scoring
+          every event. Hot leads get flagged at 1-inch+. Warm leads at under 1 inch. Canvassing
+          sheets are downloadable. See what&apos;s available across all six states at{" "}
+          <a
+            href="https://clearedno.com/leads"
+            className="text-[#FF6B00] hover:underline"
+          >
+            clearedno.com/leads
+          </a>.
+        </p>
+      </>
+    ),
+  },
+  // ── NEW POST 9 ────────────────────────────────────────────────────────────
+  {
+    title: "7 Roofing Lead Generation Tips That Actually Work in 2025",
+    slug: "roofing-contractor-lead-generation-tips",
+    date: "April 14, 2026",
+    description:
+      "Practical lead generation tips for roofing contractors in 2025: storm tracking, door knocking with data, direct mail from assessor records, and more.",
+    body: (
+      <>
+        <p>
+          Most roofing lead generation advice falls into one of two useless categories: either
+          it&apos;s vague (&quot;build relationships with your customers&quot;) or it&apos;s
+          expensive and generic (&quot;run Google ads&quot;). Neither helps a contractor close
+          more jobs this week. These seven tips are specific, practical, and drawn from what
+          contractors actually doing high volumes of storm damage work have figured out.
+        </p>
+
+        <h2>1. Set up storm tracking before the season starts</h2>
+        <p>
+          The biggest mistake roofing contractors make is scrambling to find leads after a storm
+          instead of having a system already in place. By the time you hear about a storm from a
+          homeowner or a news alert, the best opportunities are already 48 hours old.
+        </p>
+        <p>
+          Set up a weekly NOAA data pull before spring. Know which counties you cover. Know your
+          thresholds — 1-inch hail is your trigger for a full canvass, sub-1-inch for a lighter
+          outreach. When storm season hits in April, you&apos;re not reacting. You&apos;re executing a
+          plan you already built.
+        </p>
+
+        <h2>2. Door knock with data, not with hope</h2>
+        <p>
+          Random door knocking is inefficient. Door knocking with a prioritized list of addresses
+          in a confirmed hail impact zone — filtered by year built, organized by street — is a
+          different activity entirely. The difference in doors-per-hour and conversion rate is
+          significant.
+        </p>
+        <p>
+          Before your crew loads the truck, know the street names, know the approximate year the
+          homes were built, and have a script that references the specific storm that hit the area.
+          "We&apos;re following up on the June 12 hail event" is dramatically more credible than a
+          generic "we&apos;re checking roofs in the area." Homeowners know a storm hit. The specific date
+          reference tells them you have data, not just a van.
+        </p>
+
+        <h2>3. Use direct mail from county assessor records</h2>
+        <p>
+          County assessor databases are public record in most states, and they include owner name,
+          mailing address, property address, and year built for every residential parcel. After a
+          storm event, pulling the property list for affected neighborhoods and mailing a targeted
+          postcard within five to seven days is one of the highest-ROI marketing moves a roofing
+          contractor can make.
+        </p>
+        <p>
+          The key is specificity: reference the storm date, the area, and offer something concrete
+          (a free roof inspection). Generic storm mailers get recycled. A mailer that says "Your
+          neighborhood received 1.25-inch hail on June 12 — here&apos;s how to check if your roof
+          needs inspection" gets read. Aim for 500–1,000 targeted properties per storm event,
+          not a county-wide blast.
+        </p>
+
+        <h2>4. Monitor county alert systems for new event data</h2>
+        <p>
+          Many counties and NWS field offices publish storm damage reports before the federal NOAA
+          database is updated. County emergency management offices, local NWS Twitter/X accounts,
+          and state agricultural extension services all log hail reports quickly. Monitoring these
+          sources alongside NOAA gives you a 12–24 hour head start on the federal data.
+        </p>
+        <p>
+          This kind of early-warning system is most valuable for your home county and two or three
+          surrounding counties where you can mobilize a crew quickly. Set up Google alerts for
+          "[County Name] hail damage" and follow your local NWS office on social media. Speed
+          compounds.
+        </p>
+
+        <h2>5. Prioritize speed to contact after events</h2>
+        <p>
+          The data on speed-to-contact in home services is consistent: contractors who contact
+          a homeowner within 24 hours of a storm close at significantly higher rates than those
+          who contact them after 72 hours. After one week, the marginal value of a lead decays
+          sharply as the homeowner has either committed to another contractor, decided not to file,
+          or moved into the slower insurance-claims process where they&apos;ll wait for an adjuster.
+        </p>
+        <p>
+          Build your system around the 24-hour goal. If a storm hits on a Saturday, your canvass
+          team should be in the neighborhood Monday morning — not next weekend. Smaller canvass crews
+          deployed faster consistently outperform larger crews deployed slower.
+        </p>
+
+        <h2>6. Use canvassing sheets to run like a pipeline</h2>
+        <p>
+          A canvassing sheet isn&apos;t just a list of addresses. It&apos;s a sales pipeline. Every door
+          on the sheet should have a status: interested, not home, declined, signed. Not-home entries
+          get follow-up visits. Interested-but-not-signed entries get a callback within 48 hours.
+          Declined entries get noted so you don&apos;t re-knock next week and annoy someone who already
+          said no.
+        </p>
+        <p>
+          The contractors closing the most storm damage jobs treat their canvass sheets the same
+          way a sales team treats a CRM. Organized, tracked, and followed up systematically.
+          The difference between 10 signed jobs and 25 signed jobs from the same storm event is
+          usually how well the follow-up process worked, not how many doors got knocked.
+        </p>
+
+        <h2>7. Do a weekly data review every Monday</h2>
+        <p>
+          The weekly data review is the habit that separates contractors who have a lead generation
+          system from those who react to storms ad hoc. Every Monday morning, before crew
+          assignments go out, spend 30 minutes reviewing last week&apos;s NOAA storm data for your
+          coverage area. Rank events by hail size. Flag the top two or three counties. Assign
+          canvass territory. Review open callbacks from the previous week&apos;s sheet.
+        </p>
+        <p>
+          This process takes under an hour when your data source is already organized. It keeps
+          your pipeline from going cold between major events and ensures you never miss a
+          smaller-magnitude storm that&apos;s still worth a targeted outreach.
+        </p>
+        <p>
+          ClearedNo delivers a pre-sorted weekly lead list every Monday — NOAA events scored by
+          severity, filtered to your states, with canvassing sheet downloads. See what&apos;s in
+          your area at{" "}
+          <a
+            href="https://clearedno.com/leads"
+            className="text-[#FF6B00] hover:underline"
+          >
+            clearedno.com/leads
+          </a>.
+        </p>
+      </>
+    ),
+  },
+  // ── NEW POST 10 ───────────────────────────────────────────────────────────
+  {
+    title: "How Roofing Contractors Use Hail Storm Trackers to Find New Jobs",
+    slug: "hail-storm-tracker-roofing-contractors",
+    date: "April 14, 2026",
+    description:
+      "NOAA storm data tells you where hail hit, how big, and when. Here's how roofing contractors turn that data into a canvassing plan that beats the competition to every door.",
+    body: (
+      <>
+        <p>
+          Every roofing contractor knows the moment a big hail storm hits their market — cars get
+          dented, windows crack, and phones start ringing with homeowners asking if their roof
+          is okay. But the contractors closing the most jobs after a storm aren&apos;t the ones who
+          waited for the phone to ring. They already knew the storm was coming, they knew exactly
+          which counties it hit, and they had a canvass plan ready before the hail finished falling.
+        </p>
+        <p>
+          That&apos;s what hail storm tracking means in practice: using real-time and historical weather
+          data to identify roofing opportunities before your competitors do.
+        </p>
+
+        <h2>What NOAA storm events data actually is</h2>
+        <p>
+          NOAA&apos;s Storm Events Database is the federal government&apos;s official record of significant
+          weather events across the United States. It&apos;s maintained by the National Centers for
+          Environmental Information (NCEI) and updated within days of events being logged by NWS
+          field offices and trained storm spotters across the country.
+        </p>
+        <p>
+          For roofing contractors, the most important fields in each event record are:
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Event type</strong> — hail, thunderstorm wind,
+          tornado. Hail and high-wind events are the primary roofing damage sources.
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>County and state</strong> — the geographic scope
+          of the event. One record typically covers an entire county, though larger storms may
+          span multiple counties.
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Event date</strong> — when the storm occurred.
+          This is the most important field for timing your canvass.
+        </p>
+        <p>
+          <strong style={{ color: "#FF6B00" }}>Magnitude</strong> — for hail events, the
+          hailstone size in inches as measured by storm spotters. This is the single most
+          predictive variable for roof damage likelihood.
+        </p>
+
+        <h2>How hail size correlates to roof damage likelihood</h2>
+        <p>
+          Not all hail is equal. The relationship between hailstone size and roof damage follows
+          a predictable pattern that experienced roofing contractors and insurance adjusters both
+          understand:
+        </p>
+        <p>
+          <strong>0.75 inches (penny-sized):</strong> Causes marginal granule loss on older
+          shingles. Claims are possible on roofs over 20 years old, but adjusters are selective.
+          Worth a canvass in neighborhoods with very old housing stock.
+        </p>
+        <p>
+          <strong>1.0 inch (quarter-sized):</strong> The standard threshold for reliable roof
+          damage. Asphalt shingles sustain measurable bruising, granule loss, and seal damage.
+          Insurance carriers approve claims at high rates for 1-inch events, especially on roofs
+          over 15 years old. This is the minimum threshold for a full canvass effort.
+        </p>
+        <p>
+          <strong>1.5 inches (golf ball-sized):</strong> Near-certain replacement territory.
+          Shingles crack, tabs break, and underlayment is often compromised. Claims are approved
+          on virtually all residential properties regardless of roof age. These events justify
+          deploying your full canvass crew immediately.
+        </p>
+        <p>
+          <strong>2.0+ inches (hen egg-sized and above):</strong> Catastrophic events. Metal
+          is dented, skylights crack, fascia is damaged, and wood decking can be exposed. These
+          events create more work than most individual contractors can handle — the key is showing
+          up fast and signing jobs before the demand gets saturated.
+        </p>
+
+        <h2>Why speed matters — first contractor on the block wins</h2>
+        <p>
+          The economics of storm chasing come down to one variable: time. The window between
+          "hail hit the ground" and "the best homeowners have already committed to a contractor"
+          is 48 to 72 hours in most Midwest markets. That window exists because homeowners move
+          slowly — they notice damage, they mention it to a neighbor, they think about calling
+          their insurance company, and then a contractor knocks on the door and accelerates the
+          whole process.
+        </p>
+        <p>
+          The contractor who knocks on day one or two gets to define the homeowner&apos;s understanding
+          of the situation. They walk the roof, point out the specific damage, explain how the
+          insurance claim works, and position themselves as the logical choice. The contractor
+          who shows up on day five is just another bidder on a job that&apos;s probably already
+          mentally committed to someone else.
+        </p>
+        <p>
+          Fast-moving contractors in good markets close 60–70% of the doors they knock on inside
+          24 hours of a major hail event. That rate drops to 30–40% by day three and falls below
+          20% by day seven. Speed is the only real differentiator in storm canvassing.
+        </p>
+
+        <h2>Combining storm data and property records for targeted outreach</h2>
+        <p>
+          Raw NOAA data tells you which county got hit and how hard. County assessor data tells
+          you which homes in that county are the highest-value targets based on age and ownership.
+          Combining both turns a county-level storm record into a street-level canvass list sorted
+          by probability.
+        </p>
+        <p>
+          The combination works like this: a 1.25-inch hail event hits Franklin County, Ohio on
+          a Tuesday. You pull NOAA to confirm the event. You cross-reference county assessor
+          data to identify neighborhoods built before 2000. You generate a list of streets in
+          the impact zone, filtered by housing age, sorted for efficient canvassing. You&apos;re in
+          the neighborhood Thursday with a list of the highest-probability homes — not driving
+          around hoping to find damage.
+        </p>
+        <p>
+          This is exactly what ClearedNo does for roofing contractors across six Midwest states:
+          weekly NOAA data pulls, scored by hail size, paired with property data, delivered as a
+          ready-to-use lead list every Monday. See what hit your counties last week at{" "}
+          <a
+            href="https://clearedno.com/leads"
+            className="text-[#FF6B00] hover:underline"
+          >
+            clearedno.com/leads
+          </a>.
         </p>
       </>
     ),
