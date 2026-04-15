@@ -44,6 +44,12 @@ const LEADS_BLOG_SLUGS = [
   "roofing-lead-sources-2026",
   "ohio-hail-season-2025",
   "storm-data-roofing-leads",
+  "how-to-find-storm-damage-leads-ohio",
+  "hail-damage-roof-leads-columbus-ohio",
+  "roofing-leads-cleveland-ohio",
+  "best-roofing-leads-midwest",
+  "roofing-contractor-lead-generation-tips",
+  "hail-storm-tracker-roofing-contractors",
 ];
 
 const BLOG_SLUGS = [
@@ -207,6 +213,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.8,
+    },
+    {
+      url: `${BASE}/leads/roi-calculator`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
     },
     {
       url: `${BASE}/blog`,
