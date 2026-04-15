@@ -465,9 +465,19 @@ const ARTICLES: Article[] = [
         <h2>Start with the data, not the street</h2>
         <p>
           Ohio produces more roofing leads than most contractors have the capacity to work. The
-          constraint isn&apos;t opportunity — it&apos;s organization. The contractors scaling their storm
-          damage revenue in 2025 and 2026 are the ones who stopped driving neighborhoods blind and
-          started running a weekly data review to prioritize exactly where to go.
+          two largest county markets —{" "}
+          <Link href="/blog/hail-damage-roof-leads-columbus-ohio" className="text-[#FF6B00] hover:underline">
+            hail damage roof leads in Columbus, Ohio
+          </Link>{" "}
+          and{" "}
+          <Link href="/blog/roofing-leads-cleveland-ohio" className="text-[#FF6B00] hover:underline">
+            roofing leads in Cleveland, Ohio
+          </Link>{" "}
+          — each have distinct storm patterns and housing stock profiles worth understanding
+          before you start canvassing. The constraint isn&apos;t opportunity — it&apos;s organization.
+          The contractors scaling their storm damage revenue in 2025 and 2026 are the ones who
+          stopped driving neighborhoods blind and started running a weekly data review to
+          prioritize exactly where to go.
         </p>
         <p>
           ClearedNo pulls NOAA storm data weekly across Ohio and five other Midwest states, scores
@@ -575,7 +585,11 @@ const ARTICLES: Article[] = [
           review. They check the previous week&apos;s NOAA events for Franklin County, identify the
           highest-severity events, cross-reference with roof age data, and have a canvass plan
           ready before lunch. That process takes 30–45 minutes when the data is already organized
-          and scored for you.
+          and scored for you. The full system behind that Monday review — from storm tracking to
+          direct mail to canvassing sheet management — is covered in these{" "}
+          <Link href="/blog/roofing-contractor-lead-generation-tips" className="text-[#FF6B00] hover:underline">
+            roofing lead generation tips that actually work
+          </Link>.
         </p>
 
         <h2>The Columbus market opportunity</h2>
@@ -584,7 +598,12 @@ const ARTICLES: Article[] = [
           The city&apos;s rapid population growth has attracted more attention to new construction than
           to storm repair, and many of the major lead gen platforms don&apos;t have strong coverage of
           Franklin County&apos;s secondary suburbs. That means contractors working the data have a
-          real first-mover advantage — less competition on the same doors.
+          real first-mover advantage — less competition on the same doors. Columbus is also part
+          of a much larger statewide pattern; understanding how to{" "}
+          <Link href="/blog/how-to-find-storm-damage-leads-ohio" className="text-[#FF6B00] hover:underline">
+            find storm damage leads across Ohio
+          </Link>{" "}
+          opens up a dozen additional counties with similar aging-roof and storm-frequency profiles.
         </p>
         <p>
           ClearedNo tracks every NOAA storm event in Franklin County and surrounding counties
@@ -674,6 +693,12 @@ const ARTICLES: Article[] = [
           Garfield Heights, for example, is almost entirely housing stock from the 1950s and 60s.
           A 1.0-inch hail event there is a very different opportunity than the same event hitting
           a Solon or Strongsville subdivision built in 2005. Age of construction is the multiplier.
+          The same prioritization logic that applies to{" "}
+          <Link href="/blog/how-to-find-storm-damage-leads-ohio" className="text-[#FF6B00] hover:underline">
+            finding storm damage leads across Ohio
+          </Link>{" "}
+          works at the Cuyahoga County level: newest event date plus oldest homes equals highest
+          close rate.
         </p>
 
         <h2>Building a Cleveland canvassing strategy</h2>
@@ -687,7 +712,12 @@ const ARTICLES: Article[] = [
           The contractors winning the most jobs in Cuyahoga County are running a simple system:
           weekly NOAA data review on Mondays, prioritized by hail size and housing age, with a
           canvass plan for the top two or three neighborhoods by Wednesday. They&apos;re not canvassing
-          the whole county — they&apos;re targeting the highest-probability blocks.
+          the whole county — they&apos;re targeting the highest-probability blocks. The specific tactics
+          that make that system work — direct mail, door knocking scripts, canvassing sheet
+          management — are laid out in these{" "}
+          <Link href="/blog/roofing-contractor-lead-generation-tips" className="text-[#FF6B00] hover:underline">
+            roofing lead generation tips
+          </Link>.
         </p>
         <p>
           ClearedNo tracks Cuyahoga County storm events weekly and scores them by severity and
@@ -730,7 +760,17 @@ const ARTICLES: Article[] = [
           through August, with the southwest (Hamilton County) getting hit earlier in the season
           and the northeast (Cuyahoga, Trumbull) staying active into September due to Lake Erie
           moisture. Ohio logged 117 significant hail events in 2025 — the most of any state in
-          the ClearedNo coverage area.
+          the ClearedNo coverage area. Franklin County is the highest-volume single market, with
+          a detailed breakdown of{" "}
+          <Link href="/blog/hail-damage-roof-leads-columbus-ohio" className="text-[#FF6B00] hover:underline">
+            hail damage roof leads in Columbus, Ohio
+          </Link>{" "}
+          available separately. Cuyahoga County follows closely with Lake Erie-driven patterns
+          that extend the damage season — the full picture of{" "}
+          <Link href="/blog/roofing-leads-cleveland-ohio" className="text-[#FF6B00] hover:underline">
+            roofing leads in Cleveland, Ohio
+          </Link>{" "}
+          is worth reading before you canvass that market.
         </p>
         <p>
           <strong style={{ color: "#FF6B00" }}>Indiana</strong> peaks from May through July.
@@ -851,7 +891,12 @@ const ARTICLES: Article[] = [
           Set up a weekly NOAA data pull before spring. Know which counties you cover. Know your
           thresholds — 1-inch hail is your trigger for a full canvass, sub-1-inch for a lighter
           outreach. When storm season hits in April, you&apos;re not reacting. You&apos;re executing a
-          plan you already built.
+          plan you already built. Storm season timing varies by state — Ohio peaks in spring,
+          the Lake Michigan counties peak in summer, Pennsylvania runs later into fall. The
+          state-by-state breakdown is in the guide to the{" "}
+          <Link href="/blog/best-roofing-leads-midwest" className="text-[#FF6B00] hover:underline">
+            best roofing leads in the Midwest
+          </Link>.
         </p>
 
         <h2>2. Door knock with data, not with hope</h2>
@@ -890,7 +935,12 @@ const ARTICLES: Article[] = [
           Many counties and NWS field offices publish storm damage reports before the federal NOAA
           database is updated. County emergency management offices, local NWS Twitter/X accounts,
           and state agricultural extension services all log hail reports quickly. Monitoring these
-          sources alongside NOAA gives you a 12–24 hour head start on the federal data.
+          sources alongside NOAA gives you a 12–24 hour head start on the federal data. Understanding
+          what NOAA tracks — hail size, wind speed, event date, county — and how each field
+          predicts damage severity is covered in depth in the guide to{" "}
+          <Link href="/blog/hail-storm-tracker-roofing-contractors" className="text-[#FF6B00] hover:underline">
+            how roofing contractors use hail storm trackers
+          </Link>.
         </p>
         <p>
           This kind of early-warning system is most valuable for your home county and two or three
@@ -1054,7 +1104,12 @@ const ARTICLES: Article[] = [
         <p>
           Fast-moving contractors in good markets close 60–70% of the doors they knock on inside
           24 hours of a major hail event. That rate drops to 30–40% by day three and falls below
-          20% by day seven. Speed is the only real differentiator in storm canvassing.
+          20% by day seven. Speed is the only real differentiator in storm canvassing. Translating
+          that speed advantage into a repeatable system — from direct mail to door knocking scripts
+          to weekly data review — is covered in these practical{" "}
+          <Link href="/blog/roofing-contractor-lead-generation-tips" className="text-[#FF6B00] hover:underline">
+            roofing lead generation tips
+          </Link>.
         </p>
 
         <h2>Combining storm data and property records for targeted outreach</h2>
@@ -1062,7 +1117,12 @@ const ARTICLES: Article[] = [
           Raw NOAA data tells you which county got hit and how hard. County assessor data tells
           you which homes in that county are the highest-value targets based on age and ownership.
           Combining both turns a county-level storm record into a street-level canvass list sorted
-          by probability.
+          by probability. This approach works across the entire Midwest — and for a state-by-state
+          breakdown of where the{" "}
+          <Link href="/blog/best-roofing-leads-midwest" className="text-[#FF6B00] hover:underline">
+            best roofing leads in the Midwest
+          </Link>{" "}
+          appear and when, the regional guide covers the full picture.
         </p>
         <p>
           The combination works like this: a 1.25-inch hail event hits Franklin County, Ohio on
