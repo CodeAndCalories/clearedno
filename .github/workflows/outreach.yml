@@ -13,11 +13,10 @@ jobs:
     steps:
       - name: Send outreach emails
         run: |
-          curl -X POST ${{ secrets.NEXT_PUBLIC_SITE_URL }}/api/outreach-send \
+          curl -v -X POST https://clearedno.com/api/outreach-send \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             --fail \
-            --silent \
             --show-error
 
   outreach-followup:
@@ -26,9 +25,8 @@ jobs:
     steps:
       - name: Send follow-up emails
         run: |
-          curl -X POST ${{ secrets.NEXT_PUBLIC_SITE_URL }}/api/outreach-followup \
+          curl -v -X POST https://clearedno.com/api/outreach-followup \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
             --fail \
-            --silent \
             --show-error
