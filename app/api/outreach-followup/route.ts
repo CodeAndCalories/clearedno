@@ -27,7 +27,10 @@ clearedno.com`;
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
-  if (!CRON_SECRET || authHeader !== `Bearer ${CRON_SECRET}`) {
+  const querySecret = req.nextUrl.searchParams.get("secret");
+  const authed =
+    authHeader === `Bearer ${CRON_SECRET}` || querySecret === CRON_SECRET;
+  if (!authed) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

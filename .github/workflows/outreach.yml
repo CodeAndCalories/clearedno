@@ -13,11 +13,13 @@ jobs:
     steps:
       - name: Send outreach emails
         run: |
-          curl -v -X POST https://clearedno.com/api/outreach-send \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          curl -v -X POST "https://clearedno.com/api/outreach-send?secret=${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
+            -H "User-Agent: Mozilla/5.0 (compatible; ClearedNo-Cron/1.0)" \
             --fail \
-            --show-error
+            --show-error \
+            --retry 3 \
+            --retry-delay 5
 
   outreach-followup:
     if: github.event.schedule == '5 14 * * 1-5' || github.event_name == 'workflow_dispatch'
@@ -25,8 +27,10 @@ jobs:
     steps:
       - name: Send follow-up emails
         run: |
-          curl -v -X POST https://clearedno.com/api/outreach-followup \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+          curl -v -X POST "https://clearedno.com/api/outreach-followup?secret=${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json" \
+            -H "User-Agent: Mozilla/5.0 (compatible; ClearedNo-Cron/1.0)" \
             --fail \
-            --show-error
+            --show-error \
+            --retry 3 \
+            --retry-delay 5
