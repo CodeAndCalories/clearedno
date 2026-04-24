@@ -49,6 +49,7 @@ export async function POST(req: NextRequest) {
       .eq("outreach_sent", false)
       .eq("unsubscribed", false)
       .not("email", "is", null)
+      .neq("state", "TX")
       .limit(25);
 
     if (error) throw error;

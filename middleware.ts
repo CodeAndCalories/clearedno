@@ -2,6 +2,13 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// Cron/internal API routes that must bypass all auth middleware
+const CRON_API_ROUTES = [
+  "/api/leads-digest",
+  "/api/outreach-send",
+  "/api/outreach-followup",
+];
+
 // Routes that require a valid session → redirect to /login
 const PROTECTED_PREFIXES = ["/dashboard"];
 
@@ -11,6 +18,13 @@ const LEADS_PREFIX = "/leads";
 const LEADS_PUBLIC_PREFIXES = ["/leads/landing", "/leads/roofing"];
 
 export async function middleware(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // Cron API routes bypass all session/auth logic
+  if (CRON_API_ROUTES.some((r) => pathname.startsWith(r))) {
+    return NextResponse.next();
+  }
+
   let supabaseResponse = NextResponse.next({ request });
 
   const supabase = createServerClient(
@@ -38,8 +52,6 @@ export async function middleware(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const { pathname } = request.nextUrl;
 
   // Dashboard routes → /login
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));

@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
       .eq("outreach_followup_sent", false)
       .eq("unsubscribed", false)
       .not("email", "is", null)
+      .neq("state", "TX")
       .lt("outreach_sent_at", fiveDaysAgo)
       .limit(25);
 
