@@ -1146,6 +1146,185 @@ const ARTICLES: Article[] = [
       </>
     ),
   },
+  // ── NEW POST 11 ───────────────────────────────────────────────────────────
+  {
+    title: "Ohio Hail Season 2026: How Roofing Contractors Are Finding Storm Damage Leads Before Everyone Else",
+    slug: "ohio-hail-season-roofing-leads",
+    date: "April 24, 2026",
+    description:
+      "Ohio hail season peaks April–September. Franklin County has 271,000+ storm event records. Here's how roofing contractors find hail damage leads before the competition using weekly NOAA data.",
+    body: (
+      <>
+        <p>
+          Ohio&apos;s 2026 hail season is already off to an active start. NOAA storm spotters logged
+          significant hail events across multiple counties in April alone — and the peak window,
+          May through August, hasn&apos;t arrived yet. For roofing contractors working Ohio, the next
+          five months represent the highest-density lead opportunity of the year. The question isn&apos;t
+          whether storms will hit. It&apos;s whether you&apos;ll have a system ready to capture the jobs
+          before your competitors do.
+        </p>
+        <p>
+          The contractors closing the most storm damage work in Ohio aren&apos;t better salespeople or
+          faster drivers. They have better data, and they move on it faster. This is how they do it.
+        </p>
+
+        <h2>Ohio hail season: April through September is the window</h2>
+        <p>
+          Ohio sits at the intersection of three major storm-producing systems: Gulf moisture pushing
+          northeast, Arctic air dropping south from Canada, and Great Lakes cold air creating
+          convergence zones along the north coast. The result is an extended severe weather season
+          that produces hail from early April through late September — with the most dangerous
+          events typically falling in May, June, and July.
+        </p>
+        <p>
+          April is the warm-up month. Hail events in April tend to be smaller magnitude — mostly
+          under 1 inch — but they&apos;re still worth tracking because they hit roofing stock that
+          hasn&apos;t been touched since the previous season. Homeowners who deferred an inspection last
+          fall are now sitting on marginal shingles that a spring hail event can push over the
+          threshold into an insurance claim.
+        </p>
+        <p>
+          May through July is peak season. The strongest events of the year land in this window —
+          storms capable of producing 1.5 to 2-inch hailstones across multiple counties simultaneously.
+          A single June storm can generate actionable leads in five or six counties at once, and the
+          contractors who have a canvass plan built before the storm hits will be in those neighborhoods
+          Tuesday morning before anyone else shows up.
+        </p>
+        <p>
+          August and September are the trailing edge. Volume drops, but severity can still be high.
+          Late-season storms often produce smaller hail but higher wind speeds as cold fronts push
+          through faster. Wind damage leads in August and September deserve the same urgency as
+          hail leads in June.
+        </p>
+
+        <h2>Why most contractors miss the 72-hour window</h2>
+        <p>
+          The 72-hour contact window after a hail event is the most critical variable in storm lead
+          conversion — and most Ohio roofing contractors miss it entirely. Not because they don&apos;t
+          know about it, but because by the time they&apos;ve confirmed a storm hit, found an address list,
+          and organized a canvass, three or four days have already passed.
+        </p>
+        <p>
+          The typical contractor workflow looks like this: hear about a storm from a customer call or
+          news alert (day two or three), manually check NOAA or local news to confirm the area (day
+          three), pull addresses somehow (day four or five), deploy crew (day five or six). By that
+          point, the best homeowners — the ones in the highest-damage neighborhoods with the oldest
+          roofs and the best insurance — have already signed with whoever showed up first.
+        </p>
+        <p>
+          The contractors who consistently hit the 72-hour window have automated the first three
+          steps. They get a pre-sorted lead list every Monday with last week&apos;s NOAA events already
+          scored by severity. The canvass decision is already made. The only variable left is
+          execution speed. That&apos;s a much easier race to win.
+        </p>
+
+        <h2>Franklin County: 271,000+ storm event records, Ohio's highest-volume market</h2>
+        <p>
+          Franklin County is the single best roofing lead market in Ohio — and it&apos;s not close.
+          The ClearedNo database holds over 271,000 storm event records tied to Franklin County,
+          accumulated across multiple years of NOAA data ingestion. That volume reflects both the
+          county&apos;s storm frequency and the density of its residential housing stock — 1.3 million
+          residents, hundreds of thousands of aging homes across Columbus and its inner-ring suburbs.
+        </p>
+        <p>
+          In 2025 alone, Franklin County logged 14 significant hail events, including two June storms
+          with 1.5 to 1.75-inch hailstones. At that size, asphalt shingles sustain visible impact
+          craters, cracked tabs, and compromised underlayment. Insurance carriers approve replacement
+          claims on 1.5-inch events at high rates regardless of roof age. The two June 2025 storms
+          alone created thousands of legitimate replacement jobs in Westerville, Gahanna, Dublin,
+          Hilliard, and Grove City.
+        </p>
+        <p>
+          The highest-value Franklin County targets are neighborhoods built between 1975 and 1995 —
+          housing stock that&apos;s at or past the 25–30 year shingle replacement window. A hail event
+          hitting a 1985-vintage neighborhood in Whitehall or Reynoldsburg is a near-certain
+          replacement scenario. The homes are owner-occupied, the roofs are old, and the hail damage
+          is visible. That&apos;s the combination that produces the highest canvass conversion rates.
+          See the current{" "}
+          <Link href="/leads/roofing/oh/franklin" className="text-[#FF6B00] hover:underline">
+            Franklin County roofing leads
+          </Link>{" "}
+          in our database for this week&apos;s events.
+        </p>
+
+        <h2>Cuyahoga County: 14,000+ records and a different kind of storm season</h2>
+        <p>
+          Cuyahoga County (Cleveland) plays differently than Franklin County, and contractors who
+          understand the difference close significantly more jobs there. ClearedNo&apos;s database
+          contains over 14,000 storm event records for Cuyahoga County — fewer raw events than
+          Franklin, but the damage profile per event runs higher due to Lake Erie&apos;s influence.
+        </p>
+        <p>
+          Lake Erie creates a two-part damage season in Cuyahoga County. In spring and early summer,
+          warm Gulf air hitting the colder lake surface produces hail-generating thunderstorms that
+          come ashore along the I-90 corridor and move south through Cleveland, Parma, Garfield
+          Heights, and the eastern suburbs. These storms are often compact and intense — hitting a
+          5-10 mile swath with 1-inch+ hail while surrounding areas see nothing.
+        </p>
+        <p>
+          In late summer and fall, the wind damage season picks up. Lake Erie storms push 60–75 mph
+          gusts through the lakefront communities and inner suburbs, lifting shingle tabs, breaking
+          seals, and creating the kind of edge and ridge damage that leads to leaks within one or
+          two winters. Wind damage leads in Cuyahoga County convert at similar rates to hail leads
+          because the housing stock is genuinely old — much of Garfield Heights, Maple Heights, and
+          Lyndhurst was built in the 1940s and 50s. A wind event hitting a 70-year-old roof isn&apos;t
+          a borderline claim. Check the current{" "}
+          <Link href="/leads/roofing/oh/cuyahoga" className="text-[#FF6B00] hover:underline">
+            Cuyahoga County roofing leads
+          </Link>{" "}
+          to see what&apos;s hit this week.
+        </p>
+
+        <h2>How ClearedNo pulls NOAA data weekly across OH, IN, MI, KY, IL, and PA</h2>
+        <p>
+          NOAA&apos;s Storm Events Database is the federal record of every significant hail and wind
+          event in the United States — updated within days of each event by NWS field offices and
+          trained storm spotters. The data is publicly available, but pulling it, cleaning it, and
+          turning it into a usable lead list is a significant technical undertaking that most roofing
+          contractors don&apos;t have the time or infrastructure to run themselves.
+        </p>
+        <p>
+          ClearedNo ingests NOAA data every Monday for all six states in its coverage area: Ohio,
+          Indiana, Michigan, Kentucky, Illinois, and Pennsylvania. Every new event is scored
+          automatically — hot leads at 1-inch+ hail, warm leads under 1 inch — and added to the
+          database alongside all prior event history. Subscribers see what hit last week, but they
+          also see the full historical pattern for every county in their territory. That history is
+          what makes the data genuinely valuable for contractors building a long-term canvassing
+          system rather than just reacting to individual storms.
+        </p>
+        <p>
+          Across all six states, the database now contains hundreds of thousands of storm event
+          records. Ohio alone — with its combination of active storm season, dense housing stock,
+          and aging roofing inventory — accounts for a disproportionate share. Franklin County&apos;s
+          271,000+ records and Cuyahoga&apos;s 14,000+ reflect the cumulative event history those
+          counties have generated. For a contractor based in Columbus or Cleveland, that depth of
+          data means they can prioritize not just which neighborhoods to canvass this week, but
+          which neighborhoods have been hit repeatedly and where homeowners are most likely to have
+          deferred-damage situations from multiple seasons of storms.
+        </p>
+
+        <h2>The 2026 opportunity: build the system before the peak</h2>
+        <p>
+          The contractors who close the most storm damage jobs in Ohio in 2026 are setting up their
+          lead system right now — in April, before the May–July peak. That means a weekly NOAA data
+          review built into the Monday morning routine, a canvassing crew that knows the priority
+          tiers (1.5-inch hail beats 1-inch beats under 1-inch, older neighborhoods beat newer
+          construction), and a follow-up process that turns not-home entries into callbacks.
+        </p>
+        <p>
+          The window between storm and signed job is narrow and it gets narrower every year as more
+          contractors discover storm data as a lead source. The contractors who build the process
+          now — before the storm hits — are the ones who will be in the neighborhood Tuesday morning
+          with a sorted street list while everyone else is still figuring out where the hail fell.
+        </p>
+        <p>
+          ClearedNo delivers pre-scored Ohio roofing leads every Monday — NOAA storm events by
+          county, ranked by hail size, with historical event context. Hot leads at 1-inch+, warm
+          leads under 1 inch, all six Midwest states covered.
+        </p>
+      </>
+    ),
+  },
 ];
 
 // ---------------------------------------------------------------------------

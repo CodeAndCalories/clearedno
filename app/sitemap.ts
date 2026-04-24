@@ -50,6 +50,7 @@ const LEADS_BLOG_SLUGS = [
   "best-roofing-leads-midwest",
   "roofing-contractor-lead-generation-tips",
   "hail-storm-tracker-roofing-contractors",
+  "ohio-hail-season-roofing-leads",
 ];
 
 const BLOG_SLUGS = [
