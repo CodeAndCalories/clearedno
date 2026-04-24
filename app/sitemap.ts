@@ -150,7 +150,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // Permit Encyclopedia: 1 index + 7 city hubs + 49 project-type pages = 57 entries
+  // Permit Encyclopedia: state hubs
+  const permitStateEntries: MetadataRoute.Sitemap = ["texas", "ohio", "pennsylvania", "michigan"].map((state) => ({
+    url: `${BASE}/permits/${state}`,
+    lastModified: new Date(),
+    changeFrequency: "monthly" as const,
+    priority: 0.75,
+  }));
+
+  // Permit Encyclopedia: 1 index + state hubs + city hubs + project-type pages
   const permitIndexEntry: MetadataRoute.Sitemap = [
     {
       url: `${BASE}/permits`,
@@ -260,6 +268,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...blogEntries,
     ...leadsBlogEntries,
     ...permitIndexEntry,
+    ...permitStateEntries,
     ...permitCityEntries,
     ...permitProjectEntries,
     ...contractorIndexEntry,
