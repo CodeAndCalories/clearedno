@@ -184,6 +184,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   );
 
+  const TOP_PERMIT_TYPES = [
+    "deck-permit",
+    "roof-permit",
+    "fence-permit",
+    "addition-permit",
+    "electrical-permit",
+  ];
+
+  const permitCostEntries: MetadataRoute.Sitemap = PERMIT_CITIES.flatMap((city) =>
+    TOP_PERMIT_TYPES.map((pt) => ({
+      url: `${BASE}/permits/${city}/${pt}/cost`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.65,
+    }))
+  );
+
   // Contractors: 1 index + 6 trades × 11 cities = 67 entries
   const contractorIndexEntry: MetadataRoute.Sitemap = [
     {
@@ -271,6 +288,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...permitStateEntries,
     ...permitCityEntries,
     ...permitProjectEntries,
+    ...permitCostEntries,
     ...contractorIndexEntry,
     ...contractorPageEntries,
     ...leadsStateEntries,
