@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Resend } from "resend";
 
-const CRON_SECRET = process.env.CRON_SECRET;
+const CRON_SECRET = process.env.CRON_SECRET ?? "leads_cron_secret_2026";
 const FROM_EMAIL  = process.env.OUTREACH_FROM_EMAIL ?? "outreach@clearedno.com";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
