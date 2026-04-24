@@ -103,6 +103,24 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
+  // ── Roofing leads: city pages ─────────────────────────────────────────────
+  const LEADS_CITIES: { state: string; city: string }[] = [
+    { state: "oh", city: "columbus" }, { state: "oh", city: "cleveland" },
+    { state: "oh", city: "cincinnati" }, { state: "oh", city: "akron" },
+    { state: "oh", city: "toledo" }, { state: "oh", city: "dayton" },
+    { state: "in", city: "indianapolis" }, { state: "in", city: "fort-wayne" },
+    { state: "mi", city: "detroit" }, { state: "mi", city: "grand-rapids" },
+    { state: "ky", city: "louisville" }, { state: "ky", city: "lexington" },
+    { state: "il", city: "chicago" }, { state: "il", city: "rockford" },
+    { state: "pa", city: "philadelphia" }, { state: "pa", city: "pittsburgh" },
+  ];
+  const leadsCityEntries: MetadataRoute.Sitemap = LEADS_CITIES.map(({ state, city }) => ({
+    url: `${BASE}/leads/roofing/${state}/${city}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
+  }));
+
   // ── Roofing leads: county pages (capped at 500) ────────────────────────────
   const { data: countyRows } = await supabaseAdmin
     .from("roofing_leads")
@@ -302,6 +320,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...contractorIndexEntry,
     ...contractorPageEntries,
     ...leadsStateEntries,
+    ...leadsCityEntries,
     ...leadsCountyEntries,
   ];
 }
