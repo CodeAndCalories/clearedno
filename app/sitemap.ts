@@ -51,6 +51,7 @@ const LEADS_BLOG_SLUGS = [
   "roofing-contractor-lead-generation-tips",
   "hail-storm-tracker-roofing-contractors",
   "ohio-hail-season-roofing-leads",
+  "ohio-building-permit-delays-2026",
 ];
 
 const BLOG_SLUGS = [
