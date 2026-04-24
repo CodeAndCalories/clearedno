@@ -201,6 +201,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }))
   );
 
+  const permitTimelineEntries: MetadataRoute.Sitemap = PERMIT_CITIES.flatMap((city) =>
+    TOP_PERMIT_TYPES.map((pt) => ({
+      url: `${BASE}/permits/${city}/${pt}/timeline`,
+      lastModified: new Date(),
+      changeFrequency: "monthly" as const,
+      priority: 0.65,
+    }))
+  );
+
   // Contractors: 1 index + 6 trades × 11 cities = 67 entries
   const contractorIndexEntry: MetadataRoute.Sitemap = [
     {
@@ -289,6 +298,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...permitCityEntries,
     ...permitProjectEntries,
     ...permitCostEntries,
+    ...permitTimelineEntries,
     ...contractorIndexEntry,
     ...contractorPageEntries,
     ...leadsStateEntries,
