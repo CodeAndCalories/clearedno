@@ -1,5 +1,16 @@
 name: Outreach Email Sender
 
+# Sends cold outreach emails directly via Gmail SMTP (nodemailer + App Password).
+# No HTTP call to clearedno.com — bypasses Cloudflare entirely.
+#
+# Required GitHub Secrets (Settings → Secrets and variables → Actions):
+#
+#   NEXT_PUBLIC_SUPABASE_URL  — Supabase Dashboard → Settings → API → Project URL
+#   SUPABASE_SERVICE_ROLE_KEY — Supabase Dashboard → Settings → API → service_role key
+#   FROM_EMAIL                — Gmail / Google Workspace address used to send
+#   FROM_NAME                 — sender display name (e.g. "Alex at ClearedNo")
+#   GMAIL_APP_PASSWORD        — myaccount.google.com/apppasswords
+
 on:
   schedule:
     - cron: '0 14 * * 1-5'   # Mon-Fri 9:00am EST (UTC-5 → 14:00 UTC)
@@ -10,27 +21,262 @@ jobs:
   outreach-send:
     if: github.event.schedule == '0 14 * * 1-5' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL:  ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      FROM_EMAIL:                ${{ secrets.FROM_EMAIL }}
+      FROM_NAME:                 ${{ secrets.FROM_NAME }}
+      GMAIL_APP_PASSWORD:        ${{ secrets.GMAIL_APP_PASSWORD }}
     steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-save nodemailer @supabase/supabase-js
+
       - name: Send outreach emails
         run: |
-          curl -v -X POST "https://clearedno.com/api/outreach-send?secret=${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json" \
-            -H "User-Agent: Mozilla/5.0 (compatible; ClearedNo-Cron/1.0)" \
-            --fail \
-            --show-error \
-            --retry 3 \
-            --retry-delay 5
+          node << 'SCRIPT'
+          const nodemailer = require('nodemailer');
+          const { createClient } = require('@supabase/supabase-js');
+
+          const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+          );
+
+          const transporter = nodemailer.createTransport({
+            host:   'smtp.gmail.com',
+            port:   587,
+            secure: false,
+            auth: {
+              user: process.env.FROM_EMAIL,
+              pass: process.env.GMAIL_APP_PASSWORD,
+            },
+          });
+
+          function buildOutreachText(city) {
+            return [
+              'Hi there,',
+              '',
+              'I run a data service called ClearedNo that pulls weekly hail and wind damage leads for roofing contractors in the Midwest.',
+              '',
+              "Here's what's in the dashboard:",
+              '',
+              "- Weekly NOAA updates so you're the first on the doorstep after a storm hits",
+              '- 285,000+ property records with owner name, mailing address, and year built — so you know exactly who to call or mail',
+              '- Hot/warm lead scoring, CSV export, and print-ready canvassing sheets covering OH, IN, MI, KY, IL, and PA',
+              '',
+              'I attached a sample CSV of 50 real Franklin County, Ohio properties — owner names, addresses, year built. This is exactly what you\'d get every week.',
+              '',
+              'Flat $300/month. No per-lead fees. No competing bids.',
+              '30-day money-back guarantee.',
+              '',
+              'See the full dashboard at clearedno.com/leads — or just reply here if you want me to pull a specific county for you to check out.',
+              '',
+              'ClearedNo',
+              '',
+              '---',
+              "You're receiving this email because your business was found via public business listings as a roofing contractor serving the Midwest.",
+              '',
+              'To unsubscribe, reply with "unsubscribe" in the subject line and you will be removed within 10 business days.',
+              '',
+              'ClearedNo | 1179 W Miner Rd, Cleveland, OH 44109',
+              'clearedno.com',
+            ].join('\n');
+          }
+
+          async function main() {
+            const { data: leads, error } = await supabase
+              .from('outreach_leads')
+              .select('id, email, city, state')
+              .eq('outreach_sent', false)
+              .eq('unsubscribed', false)
+              .not('email', 'is', null)
+              .neq('state', 'TX')
+              .limit(25);
+
+            if (error) throw new Error(error.message);
+            if (!leads || leads.length === 0) {
+              console.log('[outreach-send] No unsent leads found');
+              return;
+            }
+
+            const fromName  = process.env.FROM_NAME  || 'ClearedNo';
+            const fromEmail = process.env.FROM_EMAIL;
+            let sent = 0;
+
+            for (const lead of leads) {
+              if (!lead.email) continue;
+
+              const city    = lead.city || 'your area';
+              const subject = 'Updated: ' + city + ' Hail Event Data + 50 Lead Sample';
+
+              try {
+                await transporter.sendMail({
+                  from:    '"' + fromName + '" <' + fromEmail + '>',
+                  to:      lead.email,
+                  subject: subject,
+                  text:    buildOutreachText(city),
+                });
+              } catch (err) {
+                console.error('[outreach-send] Failed to send to ' + lead.email + ':', err.message);
+                continue;
+              }
+
+              const { error: updateError } = await supabase
+                .from('outreach_leads')
+                .update({ outreach_sent: true, outreach_sent_at: new Date().toISOString() })
+                .eq('id', lead.id);
+
+              if (updateError) {
+                console.error('[outreach-send] Failed to mark sent for ' + lead.id + ':', updateError.message);
+              } else {
+                console.log('[outreach-send] Sent to ' + lead.email + ' (' + city + ')');
+                sent++;
+              }
+
+              await new Promise(r => setTimeout(r, 1200));
+            }
+
+            console.log('[outreach-send] Done — sent ' + sent + ' / ' + leads.length);
+          }
+
+          main().catch(err => {
+            console.error('[outreach-send] Fatal:', err.message);
+            process.exit(1);
+          });
+          SCRIPT
 
   outreach-followup:
     if: github.event.schedule == '5 14 * * 1-5' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SUPABASE_URL:  ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      FROM_EMAIL:                ${{ secrets.FROM_EMAIL }}
+      FROM_NAME:                 ${{ secrets.FROM_NAME }}
+      GMAIL_APP_PASSWORD:        ${{ secrets.GMAIL_APP_PASSWORD }}
     steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install --no-save nodemailer @supabase/supabase-js
+
       - name: Send follow-up emails
         run: |
-          curl -v -X POST "https://clearedno.com/api/outreach-followup?secret=${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json" \
-            -H "User-Agent: Mozilla/5.0 (compatible; ClearedNo-Cron/1.0)" \
-            --fail \
-            --show-error \
-            --retry 3 \
-            --retry-delay 5
+          node << 'SCRIPT'
+          const nodemailer = require('nodemailer');
+          const { createClient } = require('@supabase/supabase-js');
+
+          const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL,
+            process.env.SUPABASE_SERVICE_ROLE_KEY
+          );
+
+          const transporter = nodemailer.createTransport({
+            host:   'smtp.gmail.com',
+            port:   587,
+            secure: false,
+            auth: {
+              user: process.env.FROM_EMAIL,
+              pass: process.env.GMAIL_APP_PASSWORD,
+            },
+          });
+
+          function buildFollowupText(city, state) {
+            return [
+              'Hi there,',
+              '',
+              'Just following up on the note I sent last week about storm damage leads in ' + city + ', ' + state + '.',
+              '',
+              "If you're hitting storm season and want to see which streets got hit and who owns the houses — happy to pull a specific county sample for you.",
+              '',
+              'Just reply and let me know which county.',
+              '',
+              'ClearedNo',
+              '',
+              '---',
+              'To unsubscribe, reply with "unsubscribe" in the subject line and you will be removed within 10 business days.',
+              '',
+              'ClearedNo | 1179 W Miner Rd, Cleveland, OH 44109',
+              'clearedno.com',
+            ].join('\n');
+          }
+
+          async function main() {
+            const fiveDaysAgo = new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString();
+
+            const { data: leads, error } = await supabase
+              .from('outreach_leads')
+              .select('id, email, city, state')
+              .eq('outreach_sent', true)
+              .eq('outreach_followup_sent', false)
+              .eq('unsubscribed', false)
+              .not('email', 'is', null)
+              .neq('state', 'TX')
+              .lt('outreach_sent_at', fiveDaysAgo)
+              .limit(25);
+
+            if (error) throw new Error(error.message);
+            if (!leads || leads.length === 0) {
+              console.log('[outreach-followup] No follow-up candidates found');
+              return;
+            }
+
+            const fromName  = process.env.FROM_NAME  || 'ClearedNo';
+            const fromEmail = process.env.FROM_EMAIL;
+            let sent = 0;
+
+            for (const lead of leads) {
+              if (!lead.email) continue;
+
+              const city    = lead.city  || 'your area';
+              const state   = lead.state || '';
+              const subject = 'Re: ' + city + ' roofing leads — quick follow up';
+
+              try {
+                await transporter.sendMail({
+                  from:    '"' + fromName + '" <' + fromEmail + '>',
+                  to:      lead.email,
+                  subject: subject,
+                  text:    buildFollowupText(city, state),
+                });
+              } catch (err) {
+                console.error('[outreach-followup] Failed to send to ' + lead.email + ':', err.message);
+                continue;
+              }
+
+              const { error: updateError } = await supabase
+                .from('outreach_leads')
+                .update({
+                  outreach_followup_sent:    true,
+                  outreach_followup_sent_at: new Date().toISOString(),
+                })
+                .eq('id', lead.id);
+
+              if (updateError) {
+                console.error('[outreach-followup] Failed to mark followup sent for ' + lead.id + ':', updateError.message);
+              } else {
+                console.log('[outreach-followup] Sent to ' + lead.email + ' (' + city + ', ' + state + ')');
+                sent++;
+              }
+
+              await new Promise(r => setTimeout(r, 1200));
+            }
+
+            console.log('[outreach-followup] Done — sent ' + sent + ' / ' + leads.length);
+          }
+
+          main().catch(err => {
+            console.error('[outreach-followup] Fatal:', err.message);
+            process.exit(1);
+          });
+          SCRIPT
