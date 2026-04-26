@@ -129,6 +129,8 @@ jobs:
                 continue;
               }
 
+              await new Promise(resolve => setTimeout(resolve, 300));
+
               const { error: updateError } = await supabase
                 .from('outreach_leads')
                 .update({ outreach_sent: true, outreach_sent_at: new Date().toISOString() })
@@ -258,6 +260,8 @@ jobs:
                 console.error('[outreach-followup] Failed to send to ' + lead.email + ':', err.message);
                 continue;
               }
+
+              await new Promise(resolve => setTimeout(resolve, 300));
 
               const { error: updateError } = await supabase
                 .from('outreach_leads')
