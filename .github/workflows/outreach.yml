@@ -1,15 +1,14 @@
 name: Outreach Email Sender
 
-# Sends cold outreach emails directly via Gmail SMTP (nodemailer + App Password).
-# No HTTP call to clearedno.com — bypasses Cloudflare entirely.
+# Sends cold outreach emails via Resend API.
 #
 # Required GitHub Secrets (Settings → Secrets and variables → Actions):
 #
 #   NEXT_PUBLIC_SUPABASE_URL  — Supabase Dashboard → Settings → API → Project URL
 #   SUPABASE_SERVICE_ROLE_KEY — Supabase Dashboard → Settings → API → service_role key
-#   FROM_EMAIL                — Gmail / Google Workspace address used to send
+#   RESEND_API_KEY            — Resend Dashboard → API Keys
+#   FROM_EMAIL                — verified sender address in Resend
 #   FROM_NAME                 — sender display name (e.g. "Alex at ClearedNo")
-#   GMAIL_APP_PASSWORD        — myaccount.google.com/apppasswords
 
 on:
   schedule:
@@ -25,9 +24,9 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL:  ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY:            ${{ secrets.RESEND_API_KEY }}
       FROM_EMAIL:                ${{ secrets.FROM_EMAIL }}
       FROM_NAME:                 ${{ secrets.FROM_NAME }}
-      GMAIL_APP_PASSWORD:        ${{ secrets.GMAIL_APP_PASSWORD }}
     steps:
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -35,12 +34,11 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install --no-save nodemailer @supabase/supabase-js
+        run: npm install --no-save @supabase/supabase-js
 
       - name: Send outreach emails
         run: |
           node << 'SCRIPT'
-          const nodemailer = require('nodemailer');
           const { createClient } = require('@supabase/supabase-js');
 
           const supabase = createClient(
@@ -48,17 +46,7 @@ jobs:
             process.env.SUPABASE_SERVICE_ROLE_KEY
           );
 
-          const transporter = nodemailer.createTransport({
-            host:   'smtp.gmail.com',
-            port:   587,
-            secure: false,
-            auth: {
-              user: process.env.FROM_EMAIL,
-              pass: process.env.GMAIL_APP_PASSWORD,
-            },
-          });
-
-          function buildOutreachText(city) {
+          function buildOutreachHtml(city) {
             return [
               'Hi there,',
               '',
@@ -86,7 +74,7 @@ jobs:
               '',
               'ClearedNo | 1179 W Miner Rd, Cleveland, OH 44109',
               'clearedno.com',
-            ].join('\n');
+            ].join('<br>');
           }
 
           async function main() {
@@ -107,22 +95,35 @@ jobs:
             }
 
             const fromName  = process.env.FROM_NAME  || 'ClearedNo';
-            const fromEmail = process.env.FROM_EMAIL;
             let sent = 0;
 
             for (const lead of leads) {
               if (!lead.email) continue;
 
-              const city    = lead.city || 'your area';
-              const subject = 'Updated: ' + city + ' Hail Event Data + 50 Lead Sample';
+              const city         = lead.city || 'your area';
+              const emailSubject = 'Updated: ' + city + ' Hail Event Data + 50 Lead Sample';
+              const emailBody    = buildOutreachHtml(city);
 
               try {
-                await transporter.sendMail({
-                  from:    '"' + fromName + '" <' + fromEmail + '>',
-                  to:      lead.email,
-                  subject: subject,
-                  text:    buildOutreachText(city),
+                const res = await fetch('https://api.resend.com/emails', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    from: fromName + ' <' + process.env.FROM_EMAIL + '>',
+                    to: lead.email,
+                    subject: emailSubject,
+                    html: emailBody
+                  })
                 });
+
+                if (!res.ok) {
+                  const body = await res.text();
+                  console.error('[outreach-send] Resend error for ' + lead.email + ':', res.status, body);
+                  continue;
+                }
               } catch (err) {
                 console.error('[outreach-send] Failed to send to ' + lead.email + ':', err.message);
                 continue;
@@ -159,9 +160,9 @@ jobs:
     env:
       NEXT_PUBLIC_SUPABASE_URL:  ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      RESEND_API_KEY:            ${{ secrets.RESEND_API_KEY }}
       FROM_EMAIL:                ${{ secrets.FROM_EMAIL }}
       FROM_NAME:                 ${{ secrets.FROM_NAME }}
-      GMAIL_APP_PASSWORD:        ${{ secrets.GMAIL_APP_PASSWORD }}
     steps:
       - name: Set up Node.js
         uses: actions/setup-node@v4
@@ -169,12 +170,11 @@ jobs:
           node-version: '20'
 
       - name: Install dependencies
-        run: npm install --no-save nodemailer @supabase/supabase-js
+        run: npm install --no-save @supabase/supabase-js
 
       - name: Send follow-up emails
         run: |
           node << 'SCRIPT'
-          const nodemailer = require('nodemailer');
           const { createClient } = require('@supabase/supabase-js');
 
           const supabase = createClient(
@@ -182,17 +182,7 @@ jobs:
             process.env.SUPABASE_SERVICE_ROLE_KEY
           );
 
-          const transporter = nodemailer.createTransport({
-            host:   'smtp.gmail.com',
-            port:   587,
-            secure: false,
-            auth: {
-              user: process.env.FROM_EMAIL,
-              pass: process.env.GMAIL_APP_PASSWORD,
-            },
-          });
-
-          function buildFollowupText(city, state) {
+          function buildFollowupHtml(city, state) {
             return [
               'Hi there,',
               '',
@@ -209,7 +199,7 @@ jobs:
               '',
               'ClearedNo | 1179 W Miner Rd, Cleveland, OH 44109',
               'clearedno.com',
-            ].join('\n');
+            ].join('<br>');
           }
 
           async function main() {
@@ -234,23 +224,36 @@ jobs:
             }
 
             const fromName  = process.env.FROM_NAME  || 'ClearedNo';
-            const fromEmail = process.env.FROM_EMAIL;
             let sent = 0;
 
             for (const lead of leads) {
               if (!lead.email) continue;
 
-              const city    = lead.city  || 'your area';
-              const state   = lead.state || '';
-              const subject = 'Re: ' + city + ' roofing leads — quick follow up';
+              const city         = lead.city  || 'your area';
+              const state        = lead.state || '';
+              const emailSubject = 'Re: ' + city + ' roofing leads — quick follow up';
+              const emailBody    = buildFollowupHtml(city, state);
 
               try {
-                await transporter.sendMail({
-                  from:    '"' + fromName + '" <' + fromEmail + '>',
-                  to:      lead.email,
-                  subject: subject,
-                  text:    buildFollowupText(city, state),
+                const res = await fetch('https://api.resend.com/emails', {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${process.env.RESEND_API_KEY}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    from: fromName + ' <' + process.env.FROM_EMAIL + '>',
+                    to: lead.email,
+                    subject: emailSubject,
+                    html: emailBody
+                  })
                 });
+
+                if (!res.ok) {
+                  const body = await res.text();
+                  console.error('[outreach-followup] Resend error for ' + lead.email + ':', res.status, body);
+                  continue;
+                }
               } catch (err) {
                 console.error('[outreach-followup] Failed to send to ' + lead.email + ':', err.message);
                 continue;
