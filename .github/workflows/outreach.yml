@@ -93,13 +93,14 @@ jobs:
             const { data: leads, error } = await supabase
               .from('outreach_leads')
               .select('id, email, city, state')
-              .eq('outreach_sent', false)
-              .eq('unsubscribed', false)
+              .or('outreach_sent.is.null,outreach_sent.eq.false')
+              .or('unsubscribed.is.null,unsubscribed.eq.false')
               .not('email', 'is', null)
               .neq('state', 'TX')
               .limit(25);
 
             if (error) throw new Error(error.message);
+            console.log('[outreach-send] Found ' + (leads ? leads.length : 0) + ' unsent leads');
             if (!leads || leads.length === 0) {
               console.log('[outreach-send] No unsent leads found');
               return;
@@ -218,14 +219,15 @@ jobs:
               .from('outreach_leads')
               .select('id, email, city, state')
               .eq('outreach_sent', true)
-              .eq('outreach_followup_sent', false)
-              .eq('unsubscribed', false)
+              .or('outreach_followup_sent.is.null,outreach_followup_sent.eq.false')
+              .or('unsubscribed.is.null,unsubscribed.eq.false')
               .not('email', 'is', null)
               .neq('state', 'TX')
               .lt('outreach_sent_at', fiveDaysAgo)
               .limit(25);
 
             if (error) throw new Error(error.message);
+            console.log('[outreach-followup] Found ' + (leads ? leads.length : 0) + ' follow-up candidates');
             if (!leads || leads.length === 0) {
               console.log('[outreach-followup] No follow-up candidates found');
               return;
