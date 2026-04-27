@@ -40,6 +40,7 @@ interface Props {
   totalStormCount: number;
   totalPropertyCount: number;
   distinctCountyCount: number;
+  pre1990Count: number;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -243,7 +244,7 @@ function SortArrow({ active, direction }: { active: boolean; direction: "asc" | 
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, totalStormCount, totalPropertyCount, distinctCountyCount }: Props) {
+export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, totalStormCount, totalPropertyCount, distinctCountyCount, pre1990Count }: Props) {
   // ── Tab state ─────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<Tab>("storm");
 
@@ -458,9 +459,9 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, t
             <StatCard label="Hot Leads"    value={hotLeads}   subtitle='1"+ hailstone'    accent="#FF6B00" />
             <StatCard label="Warm Leads"   value={warmLeads}  subtitle='under 1" hail'    accent="#EAB308" />
             <StatCard
-              label="Newest Event"
+              label="Last NOAA Update"
               value={newestDate}
-              subtitle="last event date"
+              subtitle="NOAA reports 60–90 days behind"
               showPulse={hasNewThisWeek}
             />
           </div>
@@ -787,7 +788,7 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, t
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <StatCard label="Total Properties" value={totalPropertyCount} subtitle="property records"   />
             <StatCard label="Avg Year Built"   value={avgYearBuilt}      subtitle="median build year"  accent="#FF6B00" />
-            <StatCard label="Pre-1990 Roofs"   value={pre1990}           subtitle="highest priority"   accent="#FF6B00" />
+            <StatCard label="Pre-1990 Roofs"   value={pre1990Count}      subtitle="highest priority"   accent="#FF6B00" />
             <StatCard label="County Coverage"  value={distinctCountyCount} subtitle="counties tracked"   />
           </div>
 

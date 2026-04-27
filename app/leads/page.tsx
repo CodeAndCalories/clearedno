@@ -21,10 +21,13 @@ export default async function LeadsPage() {
         .single()
     : { data: null };
 
+  const PROPERTY_SOURCES = ["franklin-arcgis", "cuyahoga-arcgis"];
+
   const [
     { data: stormLeads, error: stormError, count: stormCount },
     { data: propertyLeads, error: propertyError, count: propertyCount },
     { data: propCountyRows },
+    { count: pre1990Count },
   ] = await Promise.all([
     supabase
       .from("roofing_leads")
@@ -37,12 +40,19 @@ export default async function LeadsPage() {
       .eq("source", "franklin-arcgis")
       .order("year_built", { ascending: true })
       .limit(1000),
-    // Lightweight county-only fetch (no limit) to count distinct counties accurately.
+    // County names across all property sources — no limit — for distinct county count.
     supabase
       .from("roofing_leads")
       .select("county")
-      .eq("source", "franklin-arcgis")
+      .in("source", PROPERTY_SOURCES)
       .not("county", "is", null),
+    // HEAD-only count of pre-1990 properties across all property sources.
+    supabase
+      .from("roofing_leads")
+      .select("*", { count: "exact", head: true })
+      .in("source", PROPERTY_SOURCES)
+      .not("year_built", "is", null)
+      .lt("year_built", 1990),
   ]);
 
   const distinctCountyCount = new Set(propCountyRows?.map((r) => r.county) ?? []).size;
@@ -88,6 +98,7 @@ export default async function LeadsPage() {
           totalStormCount={stormCount ?? (stormLeads?.length ?? 0)}
           totalPropertyCount={propertyCount ?? (propertyLeads?.length ?? 0)}
           distinctCountyCount={distinctCountyCount}
+          pre1990Count={pre1990Count ?? 0}
         />
       </div>
     </main>
