@@ -46,7 +46,8 @@ jobs:
             process.env.SUPABASE_SERVICE_ROLE_KEY
           );
 
-          function buildOutreachHtml(city) {
+          function buildOutreachHtml(city, email) {
+            const unsubUrl = 'https://clearedno.com/api/unsubscribe?email=' + encodeURIComponent(email);
             return [
               'Hi there,',
               '',
@@ -63,14 +64,14 @@ jobs:
               'Flat $300/month. No per-lead fees. No competing bids.',
               '30-day money-back guarantee.',
               '',
-              'See the full dashboard at clearedno.com/leads — or just reply here if you want me to pull a specific county for you to check out.',
+              'See the full dashboard at <a href="https://clearedno.com/leads/landing">clearedno.com/leads/landing</a> — or just reply here if you want me to pull a specific county for you to check out.',
               '',
               'ClearedNo',
               '',
               '---',
               "You're receiving this email because your business was found via public business listings as a roofing contractor serving the Midwest.",
               '',
-              'To unsubscribe, reply with "unsubscribe" in the subject line and you will be removed within 10 business days.',
+              'To unsubscribe: <a href="' + unsubUrl + '">' + unsubUrl + '</a>',
               '',
               'ClearedNo | 1179 W Miner Rd, Cleveland, OH 44109',
               'clearedno.com',
@@ -102,7 +103,7 @@ jobs:
 
               const city         = lead.city || 'your area';
               const emailSubject = 'Updated: ' + city + ' Hail Event Data + 50 Lead Sample';
-              const emailBody    = buildOutreachHtml(city);
+              const emailBody    = buildOutreachHtml(city, lead.email);
 
               try {
                 const res = await fetch('https://api.resend.com/emails', {
@@ -184,7 +185,8 @@ jobs:
             process.env.SUPABASE_SERVICE_ROLE_KEY
           );
 
-          function buildFollowupHtml(city, state) {
+          function buildFollowupHtml(city, state, email) {
+            const unsubUrl = 'https://clearedno.com/api/unsubscribe?email=' + encodeURIComponent(email);
             return [
               'Hi there,',
               '',
@@ -197,7 +199,7 @@ jobs:
               'ClearedNo',
               '',
               '---',
-              'To unsubscribe, reply with "unsubscribe" in the subject line and you will be removed within 10 business days.',
+              'To unsubscribe: <a href="' + unsubUrl + '">' + unsubUrl + '</a>',
               '',
               'ClearedNo | 1179 W Miner Rd, Cleveland, OH 44109',
               'clearedno.com',
@@ -234,7 +236,7 @@ jobs:
               const city         = lead.city  || 'your area';
               const state        = lead.state || '';
               const emailSubject = 'Re: ' + city + ' roofing leads — quick follow up';
-              const emailBody    = buildFollowupHtml(city, state);
+              const emailBody    = buildFollowupHtml(city, state, lead.email);
 
               try {
                 const res = await fetch('https://api.resend.com/emails', {

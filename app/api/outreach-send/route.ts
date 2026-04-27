@@ -7,7 +7,7 @@ const FROM_EMAIL  = process.env.OUTREACH_FROM_EMAIL ?? "outreach@clearedno.com";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-function buildOutreachText(city: string): string {
+function buildOutreachText(city: string, email: string): string {
   return `Hi there,
 
 I run a data service called ClearedNo that pulls weekly hail and wind damage leads for roofing contractors in the Midwest.
@@ -23,14 +23,14 @@ I attached a sample CSV of 50 real Franklin County, Ohio properties — owner na
 Flat $300/month. No per-lead fees. No competing bids.
 30-day money-back guarantee.
 
-See the full dashboard at clearedno.com/leads — or just reply here if you want me to pull a specific county for you to check out.
+See the full dashboard at clearedno.com/leads/landing — or just reply here if you want me to pull a specific county for you to check out.
 
 ClearedNo
 
 ---
 You're receiving this email because your business was found via public business listings as a roofing contractor serving the Midwest.
 
-To unsubscribe, reply with "unsubscribe" in the subject line and you will be removed within 10 business days.
+To unsubscribe: https://clearedno.com/api/unsubscribe?email=${encodeURIComponent(email)}
 
 ClearedNo | 1179 W Miner Rd, Cleveland, OH 44109
 clearedno.com`;
@@ -72,7 +72,7 @@ export async function POST(req: NextRequest) {
         from:    FROM_EMAIL,
         to:      lead.email,
         subject,
-        text:    buildOutreachText(city),
+        text:    buildOutreachText(city, lead.email),
       });
 
       if (sendError) {

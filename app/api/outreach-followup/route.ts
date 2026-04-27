@@ -7,7 +7,7 @@ const FROM_EMAIL  = process.env.OUTREACH_FROM_EMAIL ?? "outreach@clearedno.com";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-function buildFollowupText(city: string, state: string): string {
+function buildFollowupText(city: string, state: string, email: string): string {
   return `Hi there,
 
 Just following up on the note I sent last week about storm damage leads in ${city}, ${state}.
@@ -19,7 +19,7 @@ Just reply and let me know which county.
 ClearedNo
 
 ---
-To unsubscribe, reply with "unsubscribe" in the subject line and you will be removed within 10 business days.
+To unsubscribe: https://clearedno.com/api/unsubscribe?email=${encodeURIComponent(email)}
 
 ClearedNo | 1179 W Miner Rd, Cleveland, OH 44109
 clearedno.com`;
@@ -66,7 +66,7 @@ export async function POST(req: NextRequest) {
         from:    FROM_EMAIL,
         to:      lead.email,
         subject,
-        text:    buildFollowupText(city, state),
+        text:    buildFollowupText(city, state, lead.email),
       });
 
       if (sendError) {
