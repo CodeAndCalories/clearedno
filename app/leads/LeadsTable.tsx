@@ -730,7 +730,7 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, t
                         </td>
                         <td className="px-5 py-3 whitespace-nowrap">
                           {isContacted ? (
-                            <span className="text-[#22C55E] text-sm">✓</span>
+                            <span className="text-[9px] tracking-widest uppercase font-mono text-[#FF6B00] border border-[#FF6B00]/40 px-2 py-1">Marked</span>
                           ) : (
                             <button
                               onClick={() => markContacted(lead.id)}
@@ -922,7 +922,7 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, t
                         </td>
                         <td className="px-5 py-3 whitespace-nowrap">
                           {isContacted ? (
-                            <span className="text-[#22C55E] text-sm">✓</span>
+                            <span className="text-[9px] tracking-widest uppercase font-mono text-[#FF6B00] border border-[#FF6B00]/40 px-2 py-1">Marked</span>
                           ) : (
                             <button
                               onClick={() => markContacted(prop.id)}

@@ -33,11 +33,14 @@ function formatDate(iso: string): string {
 // ---------------------------------------------------------------------------
 
 export default function LeadsLandingPage() {
-  const [loading, setLoading]         = useState(false);
-  const [error, setError]             = useState<string | null>(null);
-  const [sampleLeads, setSampleLeads] = useState<SampleLead[]>([]);
-  const [totalCount, setTotalCount]   = useState<number | null>(null);
-  const [openFaq, setOpenFaq]         = useState<number | null>(null);
+  const [loading, setLoading]                 = useState(false);
+  const [error, setError]                     = useState<string | null>(null);
+  const [sampleLeads, setSampleLeads]         = useState<SampleLead[]>([]);
+  const [totalCount, setTotalCount]           = useState<number | null>(null);
+  const [openFaq, setOpenFaq]                 = useState<number | null>(null);
+  const [sampleLoading, setSampleLoading]     = useState(false);
+  const [sampleError, setSampleError]         = useState<string | null>(null);
+  const [sampleDownloaded, setSampleDownloaded] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -60,6 +63,31 @@ export default function LeadsLandingPage() {
 
     loadSample();
   }, []);
+
+  async function handleSampleDownload() {
+    setSampleLoading(true);
+    setSampleError(null);
+    try {
+      const res = await fetch("/api/sample-download");
+      if (!res.ok) {
+        const json = await res.json();
+        setSampleError(json.error ?? "Download failed. Please try again.");
+        return;
+      }
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = "clearedno-sample-franklin-county.csv";
+      a.click();
+      URL.revokeObjectURL(url);
+      setSampleDownloaded(true);
+    } catch {
+      setSampleError("Network error. Please try again.");
+    } finally {
+      setSampleLoading(false);
+    }
+  }
 
   async function handleCheckout() {
     setLoading(true);
@@ -120,10 +148,35 @@ export default function LeadsLandingPage() {
         <button
           onClick={handleCheckout}
           disabled={loading}
-          className="w-full max-w-sm bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-6 py-4 mb-10 hover:bg-[#F5F0E8] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+          className="w-full max-w-sm bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-6 py-4 mb-3 hover:bg-[#F5F0E8] transition-all hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
         >
           {loading ? "Redirecting…" : "Get Access — $300/mo"}
         </button>
+
+        {/* Sample CSV download */}
+        <div className="w-full max-w-sm mb-10">
+          <button
+            onClick={handleSampleDownload}
+            disabled={sampleLoading || sampleDownloaded}
+            className="w-full border border-[#FF6B00]/40 text-[#FF6B00] font-mono text-xs tracking-widest uppercase px-6 py-3 hover:border-[#FF6B00] hover:bg-[#FF6B00]/5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {sampleLoading
+              ? "Preparing…"
+              : sampleDownloaded
+              ? "✓ Sample Downloaded"
+              : "Download Free Sample (10 leads)"}
+          </button>
+          {sampleError && (
+            <p className="text-[10px] tracking-[0.15em] text-[#DC2626] uppercase mt-2 text-center">
+              {sampleError}
+            </p>
+          )}
+          {!sampleError && (
+            <p className="text-[9px] tracking-[0.15em] text-[#F5F0E8]/20 uppercase mt-2 text-center">
+              Franklin County OH · real owner names + addresses · no sign-up required
+            </p>
+          )}
+        </div>
 
         <p className="text-[#F5F0E8]/50 text-sm sm:text-base max-w-xl leading-relaxed mb-14">
           We pull NOAA hail events weekly. You get a verified list of
