@@ -57,7 +57,7 @@ export default function MarketingNav() {
         {/* Right — sign in */}
         <Link
           href="/login"
-          className="text-[10px] tracking-[0.25em] text-[#F5F0E8]/45 uppercase hover:text-[#FF6B00] transition-colors"
+          className="text-[10px] tracking-[0.25em] text-[#FF6B00] uppercase hover:text-[#FF6B00]/70 transition-colors"
         >
           Sign In
         </Link>

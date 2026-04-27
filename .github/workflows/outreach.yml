@@ -51,7 +51,7 @@ jobs:
             return [
               'Hi there,',
               '',
-              'I run a data service called ClearedNo that pulls weekly hail and wind damage leads for roofing contractors in the Midwest.',
+              'I run a data service called ClearedNo that pulls latest available NOAA storm data for roofing contractors in the Midwest.',
               '',
               "Here's what's in the dashboard:",
               '',

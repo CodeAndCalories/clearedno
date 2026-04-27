@@ -65,7 +65,7 @@ export default async function LeadsPage() {
             Roofing Leads — Midwest
           </h1>
           <p className="text-sm text-[#F5F0E8]/40 mt-2">
-            Sourced from NOAA Storm Events Database · hail + wind damage events · 6 states · updated weekly
+            Sourced from NOAA Storm Events Database · hail + wind damage events · 6 states · updated weekly · data reflects 60–90 day NOAA reporting lag
           </p>
         </div>
       </div>
