@@ -22,12 +22,12 @@ export default async function LeadsPage() {
     : { data: null };
 
   const [
-    { data: stormLeads, error: stormError },
+    { data: stormLeads, error: stormError, count: stormCount },
     { data: propertyLeads, error: propertyError },
   ] = await Promise.all([
     supabase
       .from("roofing_leads")
-      .select("id, address, county, state, event_type, event_date, source, magnitude, lead_score, lat, lng, created_at")
+      .select("id, address, county, state, event_type, event_date, source, magnitude, lead_score, lat, lng, created_at", { count: "exact" })
       .not("event_date", "is", null)
       .order("event_date", { ascending: false }),
     supabase
@@ -76,6 +76,7 @@ export default async function LeadsPage() {
           leads={stormLeads ?? []}
           propertyLeads={propertyLeads ?? []}
           subscriptionStatus={profile?.subscription_status ?? null}
+          totalStormCount={stormCount ?? (stormLeads?.length ?? 0)}
         />
       </div>
     </main>

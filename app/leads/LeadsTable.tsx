@@ -37,6 +37,7 @@ interface Props {
   leads: RoofingLead[];
   propertyLeads: PropertyLead[];
   subscriptionStatus: string | null;
+  totalStormCount: number;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -240,7 +241,7 @@ function SortArrow({ active, direction }: { active: boolean; direction: "asc" | 
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }: Props) {
+export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, totalStormCount }: Props) {
   // ── Tab state ─────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<Tab>("storm");
 
@@ -451,7 +452,7 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
         <>
           {/* ── Stat cards ─────────────────────────────────────────────── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Total Leads"  value={totalLeads} subtitle="across 6 states"  />
+            <StatCard label="Total Leads"  value={stateFilter === "all" ? totalStormCount : totalLeads} subtitle="across 6 states"  />
             <StatCard label="Hot Leads"    value={hotLeads}   subtitle='1"+ hailstone'    accent="#FF6B00" />
             <StatCard label="Warm Leads"   value={warmLeads}  subtitle='under 1" hail'    accent="#EAB308" />
             <StatCard
@@ -632,9 +633,6 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
                       />
                     </th>
                     <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
-                      Magnitude
-                    </th>
-                    <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
                       Score
                     </th>
                     <th className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal">
@@ -682,11 +680,6 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus }:
                         </td>
                         <td className="px-5 py-3 text-[#F5F0E8]/60 whitespace-nowrap">
                           {formatDate(lead.event_date)}
-                        </td>
-                        <td className="px-5 py-3 whitespace-nowrap tabular-nums">
-                          <span style={{ color: lead.magnitude ? "#FF6B00" : "rgba(245,240,232,0.3)" }}>
-                            {formatMagnitude(lead.magnitude)}
-                          </span>
                         </td>
                         <td className="px-5 py-3 whitespace-nowrap">
                           <span
