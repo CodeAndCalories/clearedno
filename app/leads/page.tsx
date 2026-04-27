@@ -23,7 +23,8 @@ export default async function LeadsPage() {
 
   const [
     { data: stormLeads, error: stormError, count: stormCount },
-    { data: propertyLeads, error: propertyError },
+    { data: propertyLeads, error: propertyError, count: propertyCount },
+    { data: propCountyRows },
   ] = await Promise.all([
     supabase
       .from("roofing_leads")
@@ -32,11 +33,19 @@ export default async function LeadsPage() {
       .order("event_date", { ascending: false }),
     supabase
       .from("roofing_leads")
-      .select("id, address, county, state, owner_name, owner_mailing_address, year_built, source, lat, lng")
+      .select("id, address, county, state, owner_name, owner_mailing_address, year_built, source, lat, lng", { count: "exact" })
       .eq("source", "franklin-arcgis")
       .order("year_built", { ascending: true })
       .limit(1000),
+    // Lightweight county-only fetch (no limit) to count distinct counties accurately.
+    supabase
+      .from("roofing_leads")
+      .select("county")
+      .eq("source", "franklin-arcgis")
+      .not("county", "is", null),
   ]);
+
+  const distinctCountyCount = new Set(propCountyRows?.map((r) => r.county) ?? []).size;
 
   const error = stormError ?? propertyError;
 
@@ -77,6 +86,8 @@ export default async function LeadsPage() {
           propertyLeads={propertyLeads ?? []}
           subscriptionStatus={profile?.subscription_status ?? null}
           totalStormCount={stormCount ?? (stormLeads?.length ?? 0)}
+          totalPropertyCount={propertyCount ?? (propertyLeads?.length ?? 0)}
+          distinctCountyCount={distinctCountyCount}
         />
       </div>
     </main>

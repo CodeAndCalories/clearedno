@@ -38,6 +38,8 @@ interface Props {
   propertyLeads: PropertyLead[];
   subscriptionStatus: string | null;
   totalStormCount: number;
+  totalPropertyCount: number;
+  distinctCountyCount: number;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -241,7 +243,7 @@ function SortArrow({ active, direction }: { active: boolean; direction: "asc" | 
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, totalStormCount }: Props) {
+export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, totalStormCount, totalPropertyCount, distinctCountyCount }: Props) {
   // ── Tab state ─────────────────────────────────────────────────────────────
   const [activeTab, setActiveTab] = useState<Tab>("storm");
 
@@ -783,10 +785,10 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, t
         <>
           {/* ── Stat cards ─────────────────────────────────────────────── */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-            <StatCard label="Total Properties" value={totalProps}      subtitle="property records"   />
-            <StatCard label="Avg Year Built"   value={avgYearBuilt}   subtitle="median build year"  accent="#FF6B00" />
-            <StatCard label="Pre-1990 Roofs"   value={pre1990}        subtitle="highest priority"   accent="#FF6B00" />
-            <StatCard label="County Coverage"  value={countyCoverage} subtitle="counties tracked"   />
+            <StatCard label="Total Properties" value={totalPropertyCount} subtitle="property records"   />
+            <StatCard label="Avg Year Built"   value={avgYearBuilt}      subtitle="median build year"  accent="#FF6B00" />
+            <StatCard label="Pre-1990 Roofs"   value={pre1990}           subtitle="highest priority"   accent="#FF6B00" />
+            <StatCard label="County Coverage"  value={distinctCountyCount} subtitle="counties tracked"   />
           </div>
 
           {/* ── Search + export ────────────────────────────────────────── */}
