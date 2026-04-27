@@ -361,12 +361,22 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, t
     });
   }, [propertyLeads, propSearch, propHideContacted, contactedIds]);
 
+  // Always display oldest roofs first (year_built ASC, nulls last).
+  const sortedProps = useMemo(() => {
+    return [...filteredProps].sort((a, b) => {
+      if (a.year_built === null && b.year_built === null) return 0;
+      if (a.year_built === null) return 1;
+      if (b.year_built === null) return -1;
+      return a.year_built - b.year_built;
+    });
+  }, [filteredProps]);
+
   const propTotalPages = Math.max(1, Math.ceil(filteredProps.length / PAGE_SIZE));
   const safePropPage   = Math.min(propPage, propTotalPages);
   const paginatedProps = useMemo(() => {
     const start = (safePropPage - 1) * PAGE_SIZE;
-    return filteredProps.slice(start, start + PAGE_SIZE);
-  }, [filteredProps, safePropPage]);
+    return sortedProps.slice(start, start + PAGE_SIZE);
+  }, [sortedProps, safePropPage]);
 
   // ── Property stat cards ───────────────────────────────────────────────────
 
@@ -412,8 +422,21 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, t
   const showingFrom = sorted.length === 0 ? 0 : (safePage - 1) * PAGE_SIZE + 1;
   const showingTo   = Math.min(safePage * PAGE_SIZE, sorted.length);
 
+  // Show the real DB total when no filters are active; filtered count otherwise.
+  const stormDisplayTotal =
+    stateFilter === "all" && scoreFilter === "all" && eventTypeFilter === "all" &&
+    !search.trim() && !hideContacted
+      ? totalStormCount
+      : sorted.length;
+
   const propShowingFrom = filteredProps.length === 0 ? 0 : (safePropPage - 1) * PAGE_SIZE + 1;
   const propShowingTo   = Math.min(safePropPage * PAGE_SIZE, filteredProps.length);
+
+  // Show the real DB total when no property filters are active.
+  const propDisplayTotal =
+    !propSearch.trim() && !propHideContacted
+      ? totalPropertyCount
+      : filteredProps.length;
 
   // ── Print canvassing sheet ────────────────────────────────────────────────
 
@@ -579,7 +602,7 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, t
           {/* ── Showing count + hide contacted toggle ──────────────────── */}
           <div className="flex items-center justify-between">
             <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
-              Showing {showingFrom}–{showingTo} of {sorted.length} leads
+              Showing {showingFrom}–{showingTo} of {stormDisplayTotal.toLocaleString()} leads
             </p>
             <div className="flex items-center gap-3">
               {stormContactedCount > 0 && (
@@ -825,7 +848,7 @@ export default function LeadsTable({ leads, propertyLeads, subscriptionStatus, t
           {/* ── Showing count + hide contacted toggle ──────────────────── */}
           <div className="flex items-center justify-between">
             <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase">
-              Showing {propShowingFrom}–{propShowingTo} of {filteredProps.length} properties
+              Showing {propShowingFrom}–{propShowingTo} of {propDisplayTotal.toLocaleString()} properties
             </p>
             <div className="flex items-center gap-3">
               {propContactedCount > 0 && (
