@@ -189,6 +189,7 @@ export default function LeadsLandingPage() {
             "1,700+ leads across 6 Midwest states",
             "County-level hail data from NOAA Storm Events",
             "Weekly updated list — new leads every Monday",
+            "Exclusive access — we limit contractors per county to protect lead quality",
           ].map((b) => (
             <div key={b} className="flex items-start gap-3">
               <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-[#FF6B00] flex-shrink-0" />
@@ -534,6 +535,10 @@ export default function LeadsLandingPage() {
           >
             {loading ? "Redirecting…" : "Get Access — $300/mo"}
           </button>
+
+          <p className="text-[9px] tracking-[0.15em] text-[#F5F0E8]/30 uppercase mt-4 text-center leading-relaxed">
+            Limited access per market — availability varies by region
+          </p>
         </div>
 
         <p className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/20 uppercase">
