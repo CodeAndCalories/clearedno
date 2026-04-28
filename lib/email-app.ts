@@ -51,14 +51,22 @@ export async function sendDigestEmail({
   weekOf: string;
   unsubscribeUrl: string;
 }) {
-  const html = await render(
-    DigestEmail({ userName, permits, changedCount, weekOf, unsubscribeUrl }) as React.ReactElement
-  );
+  const component = DigestEmail({ userName, permits, changedCount, weekOf, unsubscribeUrl }) as React.ReactElement;
+  const [html, text] = await Promise.all([
+    render(component),
+    render(component, { plainText: true }),
+  ]);
+
+  const displayName = userName && userName !== "there" ? userName : null;
+  const subject = displayName
+    ? `Permit update for ${displayName}`
+    : "Your permit update this week";
 
   return getResend().emails.send({
     from: FROM,
     to,
-    subject: "Your permits this week — ClearedNo Weekly Update",
+    subject,
     html,
+    text,
   });
 }

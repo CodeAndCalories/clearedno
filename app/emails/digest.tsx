@@ -110,7 +110,6 @@ export function DigestEmail({
                 fontSize: "10px",
                 letterSpacing: "0.25em",
                 color: "#FF6B00",
-                textTransform: "uppercase",
                 margin: "0 0 8px",
               }}
             >
@@ -126,7 +125,7 @@ export function DigestEmail({
                 margin: "0 0 16px",
               }}
             >
-              YOUR PERMITS THIS WEEK
+              Your Permits This Week
             </Text>
             <Text
               style={{
