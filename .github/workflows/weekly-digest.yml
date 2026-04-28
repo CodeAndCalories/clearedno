@@ -1,10 +1,10 @@
 name: Weekly Permit Digest
 
 on:
-  # Every Monday at 14:00 UTC = 8:00 AM CST (UTC-6) / 9:00 AM CDT (UTC-5)
+  # Every Tuesday at 14:00 UTC = 8:00 AM CST (UTC-6) / 9:00 AM CDT (UTC-5)
   # This covers both Central Standard and Central Daylight time for Texas contractors.
   schedule:
-    - cron: '0 14 * * 1'
+    - cron: '0 14 * * 2'
 
   # Allow manual trigger for testing
   workflow_dispatch:
