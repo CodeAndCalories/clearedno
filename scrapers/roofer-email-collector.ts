@@ -413,6 +413,7 @@ function findEmailsInObject(obj: unknown, depth = 0): string[] {
 function pickBestEmail(emails: string[]): string | null {
   const valid = emails.filter((e) => {
     if (!e.includes('@')) return false
+    if (e.includes('%')) return false
     const lower = e.toLowerCase()
     if (EMAIL_BLOCKLIST.some((blocked) => lower.includes(blocked))) return false
     const parts = lower.split('.')
