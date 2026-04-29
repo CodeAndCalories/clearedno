@@ -126,9 +126,13 @@ export default function LeadsLandingPage() {
           Roofing Leads · 6 Midwest States
         </p>
 
-        <h1 className="font-heading text-6xl sm:text-7xl lg:text-8xl tracking-widest text-[#F5F0E8] uppercase leading-none mb-8 max-w-3xl">
-          Fresh roofing leads. Every week.
+        <h1 className="font-heading text-6xl sm:text-7xl lg:text-8xl tracking-widest text-[#F5F0E8] uppercase leading-none mb-4 max-w-3xl">
+          Be First at the Door After the Storm.
         </h1>
+
+        <p className="text-sm text-[#F5F0E8]/60 leading-relaxed max-w-xl mb-10">
+          Weekly hail and wind damage property lists for Midwest roofing contractors. Owner names, addresses, year built. Updated every Monday from NOAA data.
+        </p>
 
         {/* ── Stats bar ──────────────────────────────────────────────── */}
         <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-0 mb-10 border border-[#FF6B00]/20 divide-y sm:divide-y-0 sm:divide-x divide-[#FF6B00]/20 w-full max-w-2xl">

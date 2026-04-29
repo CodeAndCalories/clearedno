@@ -112,7 +112,7 @@ function LoginForm() {
         <p className="text-xs text-[#F5F0E8]/40">
           No account?{" "}
           <Link href="/signup" className="text-[#FF6B00] hover:text-[#F5F0E8] transition-colors">
-            Start your free trial
+            Get Access — $300/mo
           </Link>
         </p>
         <p className="text-xs text-[#F5F0E8]/40">
