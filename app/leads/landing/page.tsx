@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import MarketingNav from "@/app/components/MarketingNav";
@@ -10,59 +10,49 @@ import RoiCalculator from "./RoiCalculator";
 // Types
 // ---------------------------------------------------------------------------
 
-interface SampleLead {
-  county:     string;
-  state:      string | null;
-  event_date: string;
-  magnitude:  number | null;
-  lead_score: "hot" | "warm";
-}
-
 const SCORE_CONFIG = {
   hot:  { label: "HOT",  color: "#FF6B00", bg: "rgba(255,107,0,0.12)"  },
   warm: { label: "WARM", color: "#EAB308", bg: "rgba(234,179,8,0.12)"  },
 } as const;
 
-function formatDate(iso: string): string {
-  const d = new Date(iso + "T00:00:00");
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
-}
+const PREVIEW_ROWS = [
+  {
+    address:   "1847 Maple Ave, Columbus OH",
+    owner:     "Patterson, James R",
+    yearBuilt: "1994",
+    event:     "Apr 12 Hail",
+    score:     "hot" as const,
+    blur:      false,
+  },
+  {
+    address:   "334 Birchwood Dr, Dayton OH",
+    owner:     "Kowalski, T",
+    yearBuilt: "2001",
+    event:     "Apr 12 Hail",
+    score:     "hot" as const,
+    blur:      false,
+  },
+  {
+    address:   "9021 Ridge Rd, Cincinnati OH",
+    owner:     "Nguyen, M A",
+    yearBuilt: "1988",
+    event:     "Apr 8 Wind",
+    score:     "warm" as const,
+    blur:      true,
+  },
+];
 
 // ---------------------------------------------------------------------------
 // Page
 // ---------------------------------------------------------------------------
 
 export default function LeadsLandingPage() {
-  const [loading, setLoading]                 = useState(false);
-  const [error, setError]                     = useState<string | null>(null);
-  const [sampleLeads, setSampleLeads]         = useState<SampleLead[]>([]);
-  const [totalCount, setTotalCount]           = useState<number | null>(null);
-  const [openFaq, setOpenFaq]                 = useState<number | null>(null);
-  const [sampleLoading, setSampleLoading]     = useState(false);
-  const [sampleError, setSampleError]         = useState<string | null>(null);
+  const [loading, setLoading]                   = useState(false);
+  const [error, setError]                       = useState<string | null>(null);
+  const [openFaq, setOpenFaq]                   = useState<number | null>(null);
+  const [sampleLoading, setSampleLoading]       = useState(false);
+  const [sampleError, setSampleError]           = useState<string | null>(null);
   const [sampleDownloaded, setSampleDownloaded] = useState(false);
-
-  useEffect(() => {
-    const supabase = createClient();
-
-    async function loadSample() {
-      const [sampleRes, countRes] = await Promise.all([
-        supabase
-          .from("roofing_leads")
-          .select("county, state, event_date, magnitude, lead_score")
-          .order("event_date", { ascending: false })
-          .limit(5),
-        supabase
-          .from("roofing_leads")
-          .select("id", { count: "exact", head: true }),
-      ]);
-
-      if (sampleRes.data) setSampleLeads(sampleRes.data as SampleLead[]);
-      if (countRes.count !== null) setTotalCount(countRes.count);
-    }
-
-    loadSample();
-  }, []);
 
   async function handleSampleDownload() {
     setSampleLoading(true);
@@ -202,66 +192,103 @@ export default function LeadsLandingPage() {
           ))}
         </div>
 
-        {/* ── Sample data table ──────────────────────────────────────── */}
-        {sampleLeads.length > 0 && (
-          <div className="w-full max-w-2xl mb-16 text-left">
-            <div className="flex items-center gap-3 mb-3">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B00] animate-pulse flex-shrink-0" />
-              <p className="text-[10px] tracking-[0.3em] text-[#FF6B00]/70 uppercase">
-                Live sample — updated weekly
-              </p>
-            </div>
-
-            <div className="border border-[#FF6B00]/20 overflow-x-auto">
-              <table className="w-full text-xs font-mono">
-                <thead>
-                  <tr className="border-b border-[#FF6B00]/20">
-                    {["County", "State", "Date", "Score"].map((h) => (
-                      <th
-                        key={h}
-                        className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal"
-                      >
-                        {h}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {sampleLeads.map((lead, i) => {
-                    const cfg = SCORE_CONFIG[lead.lead_score] ?? SCORE_CONFIG.warm;
-                    return (
-                      <tr
-                        key={i}
-                        className={`border-b border-[#FF6B00]/10 ${
-                          i % 2 === 0 ? "bg-transparent" : "bg-[#F5F0E8]/[0.02]"
-                        }`}
-                      >
-                        <td className="px-5 py-3 text-[#F5F0E8]/80 whitespace-nowrap">{lead.county}</td>
-                        <td className="px-5 py-3 text-[#F5F0E8]/50 whitespace-nowrap">{lead.state ?? "—"}</td>
-                        <td className="px-5 py-3 text-[#F5F0E8]/60 whitespace-nowrap">{formatDate(lead.event_date)}</td>
-                        <td className="px-5 py-3 whitespace-nowrap">
-                          <span
-                            className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] tracking-widest uppercase font-medium"
-                            style={{ color: cfg.color, backgroundColor: cfg.bg }}
-                          >
-                            <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
-                            {cfg.label}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            {totalCount !== null && (
-              <p className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase mt-3 text-right">
-                + {(totalCount - sampleLeads.length).toLocaleString()} more leads available this month
-              </p>
-            )}
+        {/* ── Data preview ───────────────────────────────────────────── */}
+        <div className="w-full max-w-2xl mb-16 text-left">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-px bg-[#FF6B00]" />
+            <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Here&apos;s exactly what you get</span>
           </div>
-        )}
+
+          <div className="border border-[#FF6B00]/20 overflow-x-auto">
+            <table className="w-full text-xs font-mono">
+              <thead>
+                <tr className="border-b border-[#FF6B00]/20">
+                  {["Address", "Owner", "Year Built", "Event", "Severity"].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left text-[9px] tracking-[0.25em] text-[#FF6B00]/60 uppercase px-5 py-3 whitespace-nowrap font-normal"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {PREVIEW_ROWS.map((row, i) => {
+                  const cfg = SCORE_CONFIG[row.score];
+                  return (
+                    <tr
+                      key={i}
+                      className={`border-b border-[#FF6B00]/10 ${i % 2 === 0 ? "bg-transparent" : "bg-[#F5F0E8]/[0.02]"}`}
+                    >
+                      <td className="px-5 py-3 text-[#F5F0E8]/80 whitespace-nowrap">{row.address}</td>
+                      <td className="px-5 py-3 whitespace-nowrap">
+                        {row.blur ? (
+                          <span className="text-[#F5F0E8]/60 select-none" style={{ filter: "blur(4px)" }}>
+                            {row.owner}
+                          </span>
+                        ) : (
+                          <span className="text-[#F5F0E8]/70">{row.owner}</span>
+                        )}
+                      </td>
+                      <td className="px-5 py-3 text-[#F5F0E8]/60 whitespace-nowrap">{row.yearBuilt}</td>
+                      <td className="px-5 py-3 text-[#F5F0E8]/60 whitespace-nowrap">{row.event}</td>
+                      <td className="px-5 py-3 whitespace-nowrap">
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[9px] tracking-widest uppercase font-medium"
+                          style={{ color: cfg.color, backgroundColor: cfg.bg }}
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.color }} />
+                          {cfg.label}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="text-[10px] tracking-[0.15em] text-[#F5F0E8]/30 uppercase mt-3 leading-relaxed">
+            Sample rows — paid access includes full owner data, mailing address, and severity score across 270,000+ Midwest properties.
+          </p>
+        </div>
+
+        {/* ── Not Angi ───────────────────────────────────────────────── */}
+        <div className="w-full max-w-2xl mb-16 text-left">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-8 h-px bg-[#FF6B00]" />
+            <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">This is not Angi or HomeAdvisor</span>
+          </div>
+
+          <div className="border border-[#FF6B00]/20">
+            {[
+              {
+                heading: "No shared leads",
+                body: "You get the property list, not a form submission 4 contractors already called.",
+              },
+              {
+                heading: "No per-lead fees",
+                body: "Flat $300/month — download as many leads as you want.",
+              },
+              {
+                heading: "You work your own process",
+                body: "Door knock, direct mail, cold call. Your leads, your close.",
+              },
+            ].map(({ heading, body }, i) => (
+              <div
+                key={heading}
+                className={`flex gap-4 px-6 py-5 ${i < 2 ? "border-b border-[#FF6B00]/20" : ""}`}
+              >
+                <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">→</span>
+                <div>
+                  <p className="text-sm text-[#F5F0E8] font-bold tracking-wide mb-1">{heading}</p>
+                  <p className="text-xs text-[#F5F0E8]/50 leading-relaxed">{body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* ── How it works ───────────────────────────────────────────── */}
         <div className="w-full max-w-2xl mb-16 text-left">
