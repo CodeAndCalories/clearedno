@@ -299,58 +299,16 @@ export default function LeadsLandingPage() {
         {/* ── ROI Calculator ─────────────────────────────────────────── */}
         <RoiCalculator />
 
-        {/* ── Testimonials ───────────────────────────────────────────── */}
-        <div className="w-full max-w-2xl mb-16 text-left">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-8 h-px bg-[#FF6B00]" />
-            <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">
-              What contractors are saying
-            </span>
-          </div>
-          <p className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/25 uppercase mb-6 ml-11">
-            (Early access members)
+        {/* ── Early adopter ──────────────────────────────────────────── */}
+        <div className="w-full max-w-2xl mb-16 text-left border border-[#FF6B00]/30 p-8 relative">
+          <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-[#FF6B00] -translate-x-px -translate-y-px" />
+          <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
+          <p className="text-base text-[#F5F0E8] leading-relaxed mb-3">
+            Be one of the first contractors in your market with access.
           </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {[
-              {
-                quote:
-                  "We knocked 40 doors in Franklin County last week using the canvassing sheet. Closed 2 jobs. Best $300 I've spent.",
-                name: "Mike T.",
-                location: "Columbus OH Roofing",
-              },
-              {
-                quote:
-                  "Finally stopped paying Angi. The hail data tells me exactly where to focus. My close rate doubled.",
-                name: "Jason R.",
-                location: "Indianapolis IN",
-              },
-              {
-                quote:
-                  "The Monday email is the first thing I check. When a storm hits my county I'm calling before anyone else knows.",
-                name: "Dave M.",
-                location: "Louisville KY",
-              },
-            ].map(({ quote, name, location }) => (
-              <div
-                key={name}
-                className="border border-[#FF6B00]/20 p-6 relative"
-              >
-                <span className="font-heading text-4xl text-[#FF6B00]/30 leading-none block mb-3 select-none">
-                  &ldquo;
-                </span>
-                <p className="text-sm text-[#F5F0E8]/70 leading-relaxed mb-4 -mt-2">
-                  {quote}
-                </p>
-                <div className="flex items-center gap-2">
-                  <span className="w-4 h-px bg-[#FF6B00]/40" />
-                  <span className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/35 uppercase">
-                    {name},&nbsp;{location}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <p className="text-sm text-[#F5F0E8]/60 leading-relaxed">
+            Early subscribers get locked in at $300/month — price increases as we add more counties and states.
+          </p>
         </div>
 
         {/* ── ROI section ────────────────────────────────────────────── */}
