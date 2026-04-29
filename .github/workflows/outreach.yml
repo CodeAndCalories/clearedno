@@ -61,7 +61,10 @@ jobs:
               '',
               '$300/month. 30-day money back. No per-lead fees.',
               '',
-              'See the data: <a href="https://clearedno.com/leads/landing">clearedno.com/leads/landing</a>',
+              'Want me to send over 10 sample properties in ' + city + ' so you can see the data quality yourself?',
+              'Just reply and I\'ll send them over — no signup needed.',
+              '',
+              'Or download instantly: <a href="https://clearedno.com/api/sample-download">clearedno.com/api/sample-download</a>',
               '',
               '---',
               "You're receiving this email because your business was found via public business listings as a roofing contractor serving the Midwest.",
@@ -97,7 +100,7 @@ jobs:
               if (!lead.email) continue;
 
               const city         = lead.city || 'your area';
-              const emailSubject = 'Roofing leads in ' + city + ' — ' + month + ' storm data';
+              const emailSubject = 'Hail hit ' + city + ' — ' + month + ' property list';
               const emailBody    = buildOutreachHtml(city, lead.email);
 
               try {
