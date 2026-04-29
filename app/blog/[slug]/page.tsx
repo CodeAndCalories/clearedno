@@ -81,11 +81,11 @@ const ARTICLES: Article[] = [
     ),
   },
   {
-    title: "Angi vs HomeAdvisor vs storm data — best roofing lead sources in 2026",
+    title: "Best Roofing Lead Sources in 2026 (Ranked)",
     slug: "roofing-lead-sources-2026",
     date: "April 14, 2026",
     description:
-      "Paying $300-600/month for shared leads that go to 5 competitors? There's a better way.",
+      "We tested every roofing lead source in 2026 — Angi, HomeAdvisor, storm data, and more. Here's what actually converts.",
     body: (
       <>
         <p>

@@ -20,8 +20,13 @@ export function generateMetadata({ params }: Props): Metadata {
   const city = getCityData(params.state, params.city);
   if (!city) return {};
 
-  const title = `${city.name} Building Permit Status Tracker | ClearedNo`;
-  const description = `Track ${city.name} building permits automatically. Get instant alerts when your ${city.name}, ${city.stateAbbr} permit status changes. Built for contractors.`;
+  const isHouston = city.stateSlug === "tx" && city.slug === "houston";
+  const title = isHouston
+    ? "Houston TX Building Permit Status Check | ClearedNo"
+    : `${city.name} Building Permit Status Tracker | ClearedNo`;
+  const description = isHouston
+    ? "Check Houston building permit status instantly. Search by address or permit number. Updated daily."
+    : `Track ${city.name} building permits automatically. Get instant alerts when your ${city.name}, ${city.stateAbbr} permit status changes. Built for contractors.`;
   const url = `https://www.clearedno.com/locations/${city.stateSlug}/${city.slug}`;
 
   return {

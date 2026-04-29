@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Cincinnati Building Permit Approval Times in 2026: What Contractors Need to Know | ClearedNo",
+  title: "How Long Do Cincinnati Building Permits Take in 2026? | ClearedNo",
   description:
-    "Cincinnati splits building permit jurisdiction between the City and Hamilton County. Here's how to tell which department you need, typical approval times, and how to avoid jurisdiction confusion delays.",
+    "Cincinnati permit approval times by project type. Roofing, electrical, plumbing — average wait times and how to check status online.",
   keywords: [
     "Cincinnati building permit approval time",
     "Cincinnati permit guide",
