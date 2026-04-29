@@ -46,27 +46,22 @@ jobs:
             process.env.SUPABASE_SERVICE_ROLE_KEY
           );
 
+          const month = new Date().toLocaleString('en-US', { month: 'long' });
+
           function buildOutreachHtml(city, email) {
             const unsubUrl = 'https://clearedno.com/api/unsubscribe?email=' + encodeURIComponent(email);
             return [
-              'Hi there,',
+              'Hi,',
               '',
-              'I run a data service called ClearedNo that pulls latest available NOAA storm data for roofing contractors in the Midwest.',
+              'I pull weekly storm damage leads for roofing contractors in ' + city + '. Figured I\'d reach out since you cover the area.',
               '',
-              "Here's what's in the dashboard:",
+              'Last month\'s storms hit ' + city + ' hard — I have a list of properties with owner names, addresses, and year built ready to download.',
               '',
-              "- Weekly NOAA updates so you're the first on the doorstep after a storm hits",
-              '- 285,000+ property records with owner name, mailing address, and year built — so you know exactly who to call or mail',
-              '- Hot/warm lead scoring, CSV export, and print-ready canvassing sheets covering OH, IN, MI, KY, IL, and PA',
+              'Most contractors use it to canvass within 48 hours of a storm. One job covers the cost for the year.',
               '',
-              'I attached a sample CSV of 50 real Franklin County, Ohio properties — owner names, addresses, year built. This is exactly what you\'d get every week.',
+              '$300/month. 30-day money back. No per-lead fees.',
               '',
-              'Flat $300/month. No per-lead fees. No competing bids.',
-              '30-day money-back guarantee.',
-              '',
-              'See the full dashboard at <a href="https://clearedno.com/leads/landing">clearedno.com/leads/landing</a> — or just reply here if you want me to pull a specific county for you to check out.',
-              '',
-              'ClearedNo',
+              'See the data: <a href="https://clearedno.com/leads/landing">clearedno.com/leads/landing</a>',
               '',
               '---',
               "You're receiving this email because your business was found via public business listings as a roofing contractor serving the Midwest.",
@@ -102,7 +97,7 @@ jobs:
               if (!lead.email) continue;
 
               const city         = lead.city || 'your area';
-              const emailSubject = 'Updated: ' + city + ' Hail Event Data + 50 Lead Sample';
+              const emailSubject = 'Roofing leads in ' + city + ' — ' + month + ' storm data';
               const emailBody    = buildOutreachHtml(city, lead.email);
 
               try {
