@@ -1,7 +1,20 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "mcp__Roblox_Studio__list_roblox_studios",
+      "mcp__Roblox_Studio__set_active_studio",
+      "mcp__Roblox_Studio__execute_luau",
+      "mcp__Roblox_Studio__get_console_output",
+      "mcp__Roblox_Studio__script_read",
+      "mcp__Roblox_Studio__start_stop_play",
+      "mcp__Roblox_Studio__screen_capture",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "WebFetch(domain:www.ncei.noaa.gov)",
+      "mcp__claude_ai_Supabase__list_projects"
     ]
   }
 }

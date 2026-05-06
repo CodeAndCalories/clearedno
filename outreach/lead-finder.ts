@@ -7,6 +7,9 @@
 //   3. Website scrape → multi-method email extraction
 //   4. Save to outreach_leads (with email OR phone — not "no contact info")
 
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
+
 import axios from "axios";
 import { supabaseAdmin } from "../lib/supabase/admin";
 
@@ -25,20 +28,20 @@ export interface Lead {
 // ── Configuration ─────────────────────────────────────────────────────────────
 
 const TARGET_CITIES: Array<{ city: string; state: string }> = [
-  { city: "Austin",      state: "TX" },
-  { city: "Dallas",      state: "TX" },
-  { city: "Houston",     state: "TX" },
-  { city: "San Antonio", state: "TX" },
-  { city: "Fort Worth",  state: "TX" },
+  { city: "Columbus",     state: "OH" },
+  { city: "Cleveland",    state: "OH" },
+  { city: "Cincinnati",   state: "OH" },
+  { city: "Indianapolis", state: "IN" },
+  { city: "Chicago",      state: "IL" },
+  { city: "Detroit",      state: "MI" },
+  { city: "Louisville",   state: "KY" },
+  { city: "Pittsburgh",   state: "PA" },
 ];
 
 const SEARCH_QUERIES: Array<{ query: string; contractorType: string }> = [
-  { query: "general contractor",    contractorType: "general"    },
-  { query: "roofing contractor",    contractorType: "roofing"    },
-  { query: "plumbing contractor",   contractorType: "plumbing"   },
-  { query: "electrical contractor", contractorType: "electrical" },
-  { query: "HVAC contractor",       contractorType: "hvac"       },
-  { query: "remodeling contractor", contractorType: "remodeling" },
+  { query: "roofing contractor", contractorType: "roofing" },
+  { query: "roofing company",    contractorType: "roofing" },
+  { query: "roof repair",        contractorType: "roofing" },
 ];
 
 // Expanded contact page paths to check in order
@@ -150,6 +153,8 @@ export async function findAndSaveLeads(maxPerQuery = 10): Promise<Lead[]> {
     `${totalSkipped} skipped (no contact info)`
   );
 
+  // This file never sends emails — always save to DB regardless of DRY_RUN.
+  // (DRY_RUN only suppresses email sending, which happens in index.ts / sender.ts.)
   const saved = await saveLeads(allLeads);
   console.log(`[LeadFinder] Saved ${saved.length} new leads to DB`);
   return saved;
@@ -413,3 +418,10 @@ async function saveLeads(leads: Lead[]): Promise<Lead[]> {
 function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+// ── Entry point (run directly via ts-node) ────────────────────────────────────
+
+findAndSaveLeads(10).catch((err) => {
+  console.error("[LeadFinder] Fatal error:", err instanceof Error ? err.message : err);
+  process.exit(1);
+});

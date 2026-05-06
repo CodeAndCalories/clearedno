@@ -9,11 +9,16 @@
  * Usage:
  *   ts-node --project tsconfig.scripts.json scrapers/roofing-leads/index.ts
  *   ts-node --project tsconfig.scripts.json scrapers/roofing-leads/index.ts --dry-run
+ *   ts-node --project tsconfig.scripts.json scrapers/roofing-leads/index.ts --from 2026-01-01
  *
- * Required env vars — add to .env:
+ * Required env vars — add to .env.local:
  *   NEXT_PUBLIC_SUPABASE_URL
  *   SUPABASE_SERVICE_ROLE_KEY  (or NEXT_PUBLIC_SUPABASE_ANON_KEY)
  */
+
+// Must be first — loads .env.local before any module tries to read Supabase creds.
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
 
 import { STATES } from "./config";
 import { fetchStormEvents } from "./noaa-hail";
@@ -21,9 +26,22 @@ import { saveStormLeads } from "./save-leads";
 
 const DRY_RUN = process.argv.includes("--dry-run");
 
+// Optional --from YYYY-MM-DD override. Defaults to 12 months ago (rolling window).
+const fromIdx = process.argv.indexOf("--from");
+const fromArg  = fromIdx !== -1 ? process.argv[fromIdx + 1] : undefined;
+const FROM_DATE: Date | undefined = fromArg ? new Date(fromArg) : undefined;
+
+if (FROM_DATE && isNaN(FROM_DATE.getTime())) {
+  console.error(`[roofing-leads] Invalid --from date: "${fromArg}". Use YYYY-MM-DD.`);
+  process.exit(1);
+}
+
 async function main() {
+  const windowDesc = FROM_DATE
+    ? `from ${FROM_DATE.toISOString().split("T")[0]} → today`
+    : "last 12 months";
   console.log(
-    `[roofing-leads] Starting roofing leads scraper (${STATES.length} states, hail + wind)${
+    `[roofing-leads] Starting roofing leads scraper (${STATES.length} states, hail + wind, ${windowDesc})${
       DRY_RUN ? " — DRY RUN, no saves" : ""
     }...`
   );
@@ -38,12 +56,12 @@ async function main() {
 
     try {
       // ── Hail ────────────────────────────────────────────────────────────
-      const hailEvents = await fetchStormEvents(state, "hail");
+      const hailEvents = await fetchStormEvents(state, "hail", FROM_DATE);
       const hailHot    = hailEvents.filter((e) => e.magnitude >= 1.0).length;
       const hailWarm   = hailEvents.length - hailHot;
 
       // ── Wind ────────────────────────────────────────────────────────────
-      const windEvents = await fetchStormEvents(state, "wind");
+      const windEvents = await fetchStormEvents(state, "wind", FROM_DATE);
       const windHot    = windEvents.filter((e) => e.magnitude >= 50).length;
       const windWarm   = windEvents.length - windHot;
 

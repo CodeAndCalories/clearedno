@@ -242,19 +242,24 @@ async function parseYearFile(
 // ---------------------------------------------------------------------------
 
 /**
- * Fetches storm events (hail or thunderstorm wind) for the given state from
- * the last 12 months via NOAA Storm Events.
+ * Fetches storm events (hail or thunderstorm wind) for the given state.
+ *
+ * @param cutoffOverride  Explicit start date. Defaults to 12 months ago.
  *
  * Year files are cached in memory, so calling this for multiple states or
  * event types in the same process only downloads each file once.
  */
 export async function fetchStormEvents(
   state: StateConfig,
-  eventType: EventType
+  eventType: EventType,
+  cutoffOverride?: Date
 ): Promise<StormEvent[]> {
   const now    = new Date();
-  const cutoff = new Date(now);
-  cutoff.setFullYear(now.getFullYear() - 1);
+  const cutoff = cutoffOverride ?? (() => {
+    const c = new Date(now);
+    c.setFullYear(now.getFullYear() - 1);
+    return c;
+  })();
 
   const startStr = cutoff.toISOString().split("T")[0];
   const endStr   = now.toISOString().split("T")[0];
