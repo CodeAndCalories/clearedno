@@ -16,6 +16,9 @@ outreach/sent-log.json
 outreach/credentials.json
 outreach/token.json
 
+# Output data — contains sensitive lead/email CSVs
+output/
+
 # Misc
 .DS_Store
 *.pem
