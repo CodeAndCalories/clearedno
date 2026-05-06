@@ -292,6 +292,23 @@ export default function RoofReplacementCostColumbusPost() {
           </p>
         </section>
 
+        {/* Related Posts */}
+        <section>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">RELATED POSTS</h2>
+          <div className="space-y-3">
+            {[
+              { href: "/blog/emergency-roof-repair-columbus-oh", label: "Emergency Roof Repair in Columbus OH — What to Do Right Now" },
+              { href: "/blog/roof-replacement-cost-cleveland-oh", label: "Roof Replacement Cost in Cleveland OH (2026 Guide)" },
+              { href: "/blog/best-roofing-contractors-cleveland-oh", label: "Best Roofing Contractors in Cleveland OH (2026)" },
+            ].map((post) => (
+              <div key={post.href} className="flex gap-3">
+                <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">→</span>
+                <Link href={post.href} className="text-[#F5F0E8]/70 hover:text-[#FF6B00] transition-colors">{post.label}</Link>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* CTA */}
         <div className="border border-[#FF6B00]/40 bg-[#FF6B00]/5 p-6 relative">
           <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-[#FF6B00] -translate-x-px -translate-y-px" />

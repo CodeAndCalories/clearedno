@@ -156,6 +156,13 @@ export default function HailDamageRoofRepairChicagoPost() {
             The suburbs — Naperville, Aurora, Joliet, Schaumburg, Arlington Heights — often see
             more severe hail than the city proper due to storm track patterns.
           </p>
+          <p className="mt-3">
+            The hail corridor extends well south of Chicago — central Illinois cities like{" "}
+            <Link href="/blog/hail-damage-clinton-il" className="text-[#FF6B00] hover:text-[#F5F0E8] transition-colors underline underline-offset-2">
+              Clinton
+            </Link>{" "}
+            and Champaign also see multiple significant hail events per year.
+          </p>
         </section>
 
         {/* Spotting Damage */}
@@ -328,6 +335,23 @@ export default function HailDamageRoofRepairChicagoPost() {
               <div key={n.name} className="flex gap-3">
                 <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">→</span>
                 <span><strong className="text-[#F5F0E8]">{n.name}:</strong> {n.desc}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Related Posts */}
+        <section>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">RELATED POSTS</h2>
+          <div className="space-y-3">
+            {[
+              { href: "/blog/hail-damaged-roof-champaign-il", label: "Hail Damaged Roof in Champaign IL — Guide for Contractors" },
+              { href: "/blog/hail-damage-clinton-il", label: "Hail Damage in Clinton IL — Guide for Roofing Contractors" },
+              { href: "/blog/roof-replacement-cost-columbus-oh", label: "Roof Replacement Cost in Columbus OH (2026 Guide)" },
+            ].map((post) => (
+              <div key={post.href} className="flex gap-3">
+                <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">→</span>
+                <Link href={post.href} className="text-[#F5F0E8]/70 hover:text-[#FF6B00] transition-colors">{post.label}</Link>
               </div>
             ))}
           </div>

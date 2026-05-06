@@ -233,6 +233,12 @@ export default function BestRoofingContractorsClevelandPost() {
                 Prices for identical scope of work vary 20–30% in Cleveland&apos;s market. Three
                 quotes give you a real baseline. More than five quotes wastes everyone&apos;s time.
               </p>
+              <p className="mt-3">
+                For typical price ranges by material and home size, see our{" "}
+                <Link href="/blog/roof-replacement-cost-cleveland-oh" className="text-[#FF6B00] hover:text-[#F5F0E8] transition-colors underline underline-offset-2">
+                  Cleveland roof replacement cost guide
+                </Link>.
+              </p>
             </div>
 
             <div>
@@ -346,6 +352,23 @@ export default function BestRoofingContractorsClevelandPost() {
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* Related Posts */}
+        <section>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">RELATED POSTS</h2>
+          <div className="space-y-3">
+            {[
+              { href: "/blog/roof-replacement-cost-cleveland-oh", label: "Roof Replacement Cost in Cleveland OH (2026 Guide)" },
+              { href: "/blog/hail-damaged-roof-champaign-il", label: "Hail Damaged Roof in Champaign IL — Guide for Contractors" },
+              { href: "/blog/cleveland-ohio-building-permit-guide-contractors", label: "Cleveland Ohio Building Permit Guide for Contractors" },
+            ].map((post) => (
+              <div key={post.href} className="flex gap-3">
+                <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">→</span>
+                <Link href={post.href} className="text-[#F5F0E8]/70 hover:text-[#FF6B00] transition-colors">{post.label}</Link>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* CTA */}

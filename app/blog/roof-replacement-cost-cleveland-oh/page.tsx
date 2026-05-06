@@ -280,6 +280,13 @@ export default function RoofReplacementCostClevelandPost() {
         {/* Finding a Contractor */}
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">FINDING A RELIABLE CLEVELAND ROOFING CONTRACTOR</h2>
+          <p className="mb-4">
+            Not sure how to vet candidates? Our{" "}
+            <Link href="/blog/best-roofing-contractors-cleveland-oh" className="text-[#FF6B00] hover:text-[#F5F0E8] transition-colors underline underline-offset-2">
+              guide to the best roofing contractors in Cleveland
+            </Link>{" "}
+            covers licensing, insurance, certifications, and the 10 questions to ask before signing.
+          </p>
           <div className="grid sm:grid-cols-2 gap-6">
             <div>
               <p className="text-[9px] text-[#FF6B00] font-mono tracking-widest uppercase mb-3">Look for</p>
@@ -303,6 +310,23 @@ export default function RoofReplacementCostClevelandPost() {
                 ))}
               </ul>
             </div>
+          </div>
+        </section>
+
+        {/* Related Posts */}
+        <section>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">RELATED POSTS</h2>
+          <div className="space-y-3">
+            {[
+              { href: "/blog/best-roofing-contractors-cleveland-oh", label: "Best Roofing Contractors in Cleveland OH (2026)" },
+              { href: "/blog/roof-replacement-cost-columbus-oh", label: "Roof Replacement Cost in Columbus OH (2026 Guide)" },
+              { href: "/blog/cleveland-ohio-building-permit-guide-contractors", label: "Cleveland Ohio Building Permit Guide for Contractors" },
+            ].map((post) => (
+              <div key={post.href} className="flex gap-3">
+                <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">→</span>
+                <Link href={post.href} className="text-[#F5F0E8]/70 hover:text-[#FF6B00] transition-colors">{post.label}</Link>
+              </div>
+            ))}
           </div>
         </section>
 

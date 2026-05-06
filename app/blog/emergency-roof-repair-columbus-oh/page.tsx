@@ -273,6 +273,13 @@ export default function EmergencyRoofRepairColumbusPost() {
               </div>
             ))}
           </div>
+          <p className="mt-4">
+            If the damage requires a full replacement, see our{" "}
+            <Link href="/blog/roof-replacement-cost-columbus-oh" className="text-[#FF6B00] hover:text-[#F5F0E8] transition-colors underline underline-offset-2">
+              Columbus roof replacement cost guide
+            </Link>{" "}
+            for typical prices by size and material.
+          </p>
         </section>
 
         {/* Insurance */}
@@ -360,6 +367,23 @@ export default function EmergencyRoofRepairColumbusPost() {
               </li>
             ))}
           </ul>
+        </section>
+
+        {/* Related Posts */}
+        <section>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">RELATED POSTS</h2>
+          <div className="space-y-3">
+            {[
+              { href: "/blog/roof-replacement-cost-columbus-oh", label: "Roof Replacement Cost in Columbus OH (2026 Guide)" },
+              { href: "/blog/best-roofing-contractors-cleveland-oh", label: "Best Roofing Contractors in Cleveland OH (2026)" },
+              { href: "/blog/hail-damage-clinton-il", label: "Hail Damage in Clinton IL — Guide for Roofing Contractors" },
+            ].map((post) => (
+              <div key={post.href} className="flex gap-3">
+                <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">→</span>
+                <Link href={post.href} className="text-[#F5F0E8]/70 hover:text-[#FF6B00] transition-colors">{post.label}</Link>
+              </div>
+            ))}
+          </div>
         </section>
 
         {/* CTA */}
