@@ -11,9 +11,9 @@ name: Outreach Email Sender
 #   FROM_NAME                 — sender display name (e.g. "Alex at ClearedNo")
 
 on:
-  schedule:
-    - cron: '0 14 * * 1-5'   # Mon-Fri 9:00am EST (UTC-5 → 14:00 UTC)
-    - cron: '5 14 * * 1-5'   # Mon-Fri 9:05am EST
+  # schedule:
+  #   - cron: '0 14 * * 1-5'   # Mon-Fri 9:00am EST (UTC-5 → 14:00 UTC)
+  #   - cron: '5 14 * * 1-5'   # Mon-Fri 9:05am EST
   workflow_dispatch:          # Allow manual trigger from GitHub Actions UI
 
 jobs:
