@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 const RECENT_POSTS = [
+  { title: "Houston Building Permit Status Check — Complete 2026 Guide", href: "/blog/houston-building-permit-status-2026" },
   { title: "How to Check Building Inspection Status Online (OH, TX, IL, PA)", href: "/blog/how-to-check-building-inspection-status" },
   { title: "Austin TX Permit Search Tool: How to Find Any Permit", href: "/blog/austin-permit-tx-search-tool" },
   { title: "Tracking Multiple Permits Without Losing Your Mind", href: "/blog/contractor-permit-tracking-multiple-jobs" },
