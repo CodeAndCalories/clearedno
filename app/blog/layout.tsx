@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 const RECENT_POSTS = [
+  { title: "Free Building Permit Lookup by Address — Search Any City (2026)", href: "/blog/free-permit-lookup-by-address" },
   { title: "Building Permit Status Check — How to Find Any Permit in the Midwest", href: "/blog/building-permit-status-check-guide" },
   { title: "Houston Building Permit Status Check — Complete 2026 Guide", href: "/blog/houston-building-permit-status-2026" },
   { title: "How to Check Building Inspection Status Online (OH, TX, IL, PA)", href: "/blog/how-to-check-building-inspection-status" },
