@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Average Building Permit Approval Times in Texas (2026) | ClearedNo",
+  title: "Average Building Permit Times in Texas 2026 — By City | ClearedNo",
   description:
-    "How long do building permits take in Austin, Dallas, Houston, and San Antonio? A breakdown of typical permit timelines by city and project type.",
+    "How long do building permits take in Texas? Average approval times for Houston, Austin, Dallas, San Antonio by project type.",
   keywords: ["Texas permit approval times", "Austin permit timeline", "Dallas permit time", "Houston permit time", "San Antonio permit time"],
   alternates: { canonical: "https://www.clearedno.com/blog/average-permit-times-texas" },
   openGraph: {

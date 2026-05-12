@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "How Long Do Cincinnati Building Permits Take in 2026? | ClearedNo",
+  title: "Cincinnati Building Permit Approval Times 2026 — Real Data | ClearedNo",
   description:
-    "Cincinnati permit approval times by project type. Roofing, electrical, plumbing — average wait times and how to check status online.",
+    "How long do Cincinnati building permits take in 2026? Average approval times by project type with tips to avoid delays.",
   keywords: [
     "Cincinnati building permit approval time",
     "Cincinnati permit guide",

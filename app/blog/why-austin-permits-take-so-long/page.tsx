@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Why Austin Permits Take So Long (And What to Do About It) | ClearedNo",
+  title: "Why Austin Building Permits Take So Long (And What To Do) | ClearedNo",
   description:
-    "Austin's permit approval times frustrate contractors. Here's what actually causes the delays, which project types are worst, and practical ways to speed things up.",
+    "Austin permits averaging 6-12 weeks in 2026. Here's why they're delayed and exactly how contractors are tracking status automatically.",
   keywords: [
     "Austin permit delays",
     "Austin building permit wait times",
