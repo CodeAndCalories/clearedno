@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Austin TX Permit Search Tool: How to Find Any Permit in 2026 | ClearedNo",
+  title: "Austin TX Permit Search Tool — Check Status by Address Free (2026)",
   description:
-    "How to search Austin TX permits by address, permit number, or contractor — using the city's official portals plus faster third-party tools.",
+    "Search any Austin building permit by address or number. Check inspection status, approval dates, and contractor info. Free instant lookup tool.",
   keywords: [
     "Austin TX permit search tool",
     "Austin permit search",

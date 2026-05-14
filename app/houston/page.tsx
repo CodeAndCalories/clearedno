@@ -4,9 +4,9 @@ import Image from "next/image";
 import { PermitChecker } from "@/app/components/permit-checker";
 
 export const metadata: Metadata = {
-  title: "Houston TX Permit Status Check — Search by Address | ClearedNo",
+  title: "Houston TX Building Permit Status — Check Any Permit Free | ClearedNo",
   description:
-    "Check any Houston building permit status instantly. Search by address or permit number. Roofing, electrical, plumbing and more. Free lookup.",
+    "Look up any Houston building permit status instantly. Search by address or permit number. Roofing, electrical, plumbing, new construction. Free 24/7 lookup.",
   keywords: [
     "Houston permit tracking", "Houston building permit status", "check permit status Houston",
     "Houston TX permit monitoring", "Houston permitting center", "Houston permit cleared",
