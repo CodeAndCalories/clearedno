@@ -2,7 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Resend } from "resend";
 
-const CRON_SECRET = process.env.CRON_SECRET ?? "leads_cron_secret_2026";
+// CRON_SECRET is REQUIRED. This endpoint triggers mass outreach emails, so a
+// missing secret must fail closed — never fall back to a literal default
+// (a hardcoded fallback would let anyone with the literal hit the endpoint).
+// If this errors in prod, set CRON_SECRET in the host env (Vercel/Cloudflare).
+const CRON_SECRET = process.env.CRON_SECRET;
 const FROM_EMAIL  = process.env.OUTREACH_FROM_EMAIL ?? "outreach@clearedno.com";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
@@ -37,6 +41,11 @@ clearedno.com`;
 }
 
 export async function POST(req: NextRequest) {
+  if (!CRON_SECRET) {
+    console.error("[outreach-send] CRON_SECRET env var is not set");
+    return NextResponse.json({ error: "CRON_SECRET not configured" }, { status: 500 });
+  }
+
   const authHeader = req.headers.get("authorization");
   const querySecret = req.nextUrl.searchParams.get("secret");
   const authed =

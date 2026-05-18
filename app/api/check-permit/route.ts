@@ -92,57 +92,12 @@ async function checkAustin(permitNumber: string): Promise<{ status: string; addr
   return { status, address };
 }
 
-// ── Dallas — portal check (best-effort, no Playwright) ───────────────────────
-
-async function checkDallas(permitNumber: string): Promise<{ status: string; address?: string }> {
-  // Dallas Development Services portal (Energov-based) doesn't expose a public API.
-  // We return a best-effort result and direct users to sign up for full monitoring.
-  const url = `https://developmentservices.dallascityhall.com/`;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-    if (res.ok) {
-      return { status: "PENDING" };
-    }
-  } catch {
-    // Portal unreachable — return generic pending
-  }
-  return { status: "PENDING" };
-}
-
-// ── Houston — portal check (best-effort) ─────────────────────────────────────
-
-async function checkHouston(permitNumber: string): Promise<{ status: string; address?: string }> {
-  // Houston's permit portal is a JS-rendered SPA — full check requires Playwright.
-  // We confirm the portal is reachable and return PENDING until the user signs up.
-  const url = `https://www.houston311.org/hpd/`;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-    if (res.ok) {
-      return { status: "PENDING" };
-    }
-  } catch {
-    // fall through
-  }
-  return { status: "PENDING" };
-}
-
-// ── San Antonio — portal check (best-effort) ─────────────────────────────────
-
-async function checkSanAntonio(permitNumber: string): Promise<{ status: string; address?: string }> {
-  // SAICIMS portal is Accela-based and requires Playwright for full scraping.
-  const url = `https://saicims.sanantonio.gov/PermitStatus/`;
-  try {
-    const res = await fetch(url, { signal: AbortSignal.timeout(8_000) });
-    if (res.ok) {
-      return { status: "PENDING" };
-    }
-  } catch {
-    // fall through
-  }
-  return { status: "PENDING" };
-}
-
 // ── City router ───────────────────────────────────────────────────────────────
+//
+// Only Austin has a live integration (Socrata Open Data API). Dallas, Houston,
+// and San Antonio portals don't expose public APIs and would need Playwright
+// scrapers — until those exist, we surface an honest "coming soon" instead of
+// pretending to check.
 
 const CITY_LABELS: Record<string, string> = {
   austin:       "Austin, TX",
@@ -151,18 +106,7 @@ const CITY_LABELS: Record<string, string> = {
   "san-antonio": "San Antonio, TX",
 };
 
-async function runCityCheck(
-  city: string,
-  permitNumber: string
-): Promise<{ status: string; address?: string }> {
-  switch (city) {
-    case "austin":       return checkAustin(permitNumber);
-    case "dallas":       return checkDallas(permitNumber);
-    case "houston":      return checkHouston(permitNumber);
-    case "san-antonio":  return checkSanAntonio(permitNumber);
-    default:             throw new Error(`Unsupported city: ${city}`);
-  }
-}
+const SUPPORTED_CITIES = new Set(["austin"]);
 
 // ── Route handler ─────────────────────────────────────────────────────────────
 
@@ -201,8 +145,24 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Permit number too long" }, { status: 400 });
   }
 
+  // Cities without a live integration return an honest 503. Surfacing fake
+  // "PENDING" results regardless of input was destroying user trust on the
+  // Dallas / Houston / San Antonio landing pages.
+  if (!SUPPORTED_CITIES.has(city)) {
+    const label = CITY_LABELS[city];
+    const cityName = label.split(",")[0];
+    return NextResponse.json(
+      {
+        status: "unavailable",
+        message: `Live data for ${cityName} is coming soon. We're still working on the integration. Try Austin while you wait.`,
+        city: cityName,
+      },
+      { status: 503 }
+    );
+  }
+
   try {
-    const { status, address } = await runCityCheck(city, permitNumber);
+    const { status, address } = await checkAustin(permitNumber);
 
     return NextResponse.json({
       status,

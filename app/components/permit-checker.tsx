@@ -10,6 +10,18 @@ const CITIES = [
   { label: "San Antonio, TX", value: "san-antonio" },
 ];
 
+// Cities with a live API integration. The others render a "coming soon"
+// state instead of a permit-number input — we don't want to ask for input
+// we can't act on.
+const SUPPORTED_CITIES = new Set(["austin"]);
+
+const CITY_LABELS: Record<string, string> = {
+  austin:        "Austin",
+  dallas:        "Dallas",
+  houston:       "Houston",
+  "san-antonio": "San Antonio",
+};
+
 type Result = {
   status: string;
   address?: string;
@@ -29,6 +41,8 @@ export function PermitChecker({ defaultCity }: PermitCheckerProps) {
   const [result, setResult]       = useState<Result | null>(null);
   const [error, setError]         = useState<string | null>(null);
 
+  const citySupported = SUPPORTED_CITIES.has(city);
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError(null);
@@ -43,6 +57,14 @@ export function PermitChecker({ defaultCity }: PermitCheckerProps) {
       });
 
       const data = await res.json();
+
+      // 503 = city integration not live yet. The UI already renders a
+      // "coming soon" panel for unsupported cities so this is a defensive
+      // fallback (e.g. user races the dropdown).
+      if (res.status === 503) {
+        setError(data.message ?? "Live data isn't available for this city yet.");
+        return;
+      }
 
       if (!res.ok) {
         setError(data.error ?? "Something went wrong. Try again.");
@@ -77,7 +99,7 @@ export function PermitChecker({ defaultCity }: PermitCheckerProps) {
 
       <div className="p-6 sm:p-8">
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid sm:grid-cols-3 gap-4">
+          <div className={citySupported ? "grid sm:grid-cols-3 gap-4" : ""}>
             {/* City selector */}
             <div>
               <label className="block text-[10px] tracking-[0.2em] text-[#FF6B00]/80 uppercase mb-2">
@@ -94,30 +116,59 @@ export function PermitChecker({ defaultCity }: PermitCheckerProps) {
               </select>
             </div>
 
-            {/* Permit number */}
-            <div className="sm:col-span-2">
-              <label className="block text-[10px] tracking-[0.2em] text-[#FF6B00]/80 uppercase mb-2">
-                Permit Number
-              </label>
-              <input
-                type="text"
-                required
-                value={permitNumber}
-                onChange={(e) => setPermit(e.target.value)}
-                placeholder="e.g. 2024-BC-04812 or 2026-033822 PP"
-                className="w-full bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-sm font-mono px-4 py-3 focus:outline-none focus:border-[#FF6B00] transition-colors placeholder-[#F5F0E8]/20"
-              />
-            </div>
+            {citySupported && (
+              <div className="sm:col-span-2">
+                <label className="block text-[10px] tracking-[0.2em] text-[#FF6B00]/80 uppercase mb-2">
+                  Permit Number
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={permitNumber}
+                  onChange={(e) => setPermit(e.target.value)}
+                  placeholder="e.g. 2024-BC-04812 or 2026-033822 PP"
+                  className="w-full bg-[#0A0A0A] border border-[#FF6B00]/30 text-[#F5F0E8] text-sm font-mono px-4 py-3 focus:outline-none focus:border-[#FF6B00] transition-colors placeholder-[#F5F0E8]/20"
+                />
+              </div>
+            )}
           </div>
 
-          <button
-            type="submit"
-            disabled={loading || !permitNumber.trim()}
-            className="w-full sm:w-auto bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-4 hover:bg-[#F5F0E8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {loading ? "CHECKING..." : "CHECK STATUS →"}
-          </button>
+          {citySupported && (
+            <button
+              type="submit"
+              disabled={loading || !permitNumber.trim()}
+              className="w-full sm:w-auto bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-4 hover:bg-[#F5F0E8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? "CHECKING..." : "CHECK STATUS →"}
+            </button>
+          )}
         </form>
+
+        {!citySupported && (
+          <div className="mt-6 border border-[#FF6B00]/30 bg-[#FF6B00]/5 px-5 py-5">
+            <div className="text-[10px] tracking-[0.25em] text-[#FF6B00] uppercase font-mono mb-2">
+              Coming soon
+            </div>
+            <p className="text-sm text-[#F5F0E8]/80 leading-relaxed mb-3">
+              Live permit data for <strong className="text-[#F5F0E8]">{CITY_LABELS[city] ?? "this city"}</strong> isn&rsquo;t wired up yet — we&rsquo;re still building the integration with the city portal.
+            </p>
+            <p className="text-xs text-[#F5F0E8]/50">
+              In the meantime, you can{" "}
+              <button
+                type="button"
+                onClick={() => setCity("austin")}
+                className="text-[#FF6B00] hover:text-[#F5F0E8] underline underline-offset-2"
+              >
+                try the Austin checker
+              </button>
+              {" "}or{" "}
+              <Link href="/signup" className="text-[#FF6B00] hover:text-[#F5F0E8] underline underline-offset-2">
+                sign up for early access
+              </Link>
+              {" "}and we&rsquo;ll notify you when this city goes live.
+            </p>
+          </div>
+        )}
 
         {/* Error */}
         {error && (

@@ -57,13 +57,18 @@ function sleep(ms: number) {
 }
 
 export async function POST(req: NextRequest) {
-  // Simple bearer-token auth so only the GitHub Actions workflow can call this
+  // Bearer-token auth so only the GitHub Actions workflow can call this.
+  // DIGEST_SECRET is REQUIRED — a missing secret must fail closed, never
+  // fall through to "anyone can trigger the digest". If this errors in prod,
+  // set DIGEST_SECRET in the host env (Vercel/Cloudflare).
   const secret = process.env.DIGEST_SECRET;
-  if (secret) {
-    const auth = req.headers.get("authorization") ?? "";
-    if (auth !== `Bearer ${secret}`) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  if (!secret) {
+    console.error("[digest] DIGEST_SECRET env var is not set");
+    return NextResponse.json({ error: "DIGEST_SECRET not configured" }, { status: 500 });
+  }
+  const auth = req.headers.get("authorization") ?? "";
+  if (auth !== `Bearer ${secret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const weekOf = weekOfString();
