@@ -33,3 +33,8 @@ dist/
 
 # Playwright browsers
 playwright-browsers/
+
+# Sensitive audit + sale-prep docs (keep local only on private/local copies)
+AUDIT_REPORT.md
+SELL_PREP.md
+POLISH_NOTES.md
