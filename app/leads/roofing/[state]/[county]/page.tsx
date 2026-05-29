@@ -149,11 +149,12 @@ async function resolveCounty(
 // Metadata
 // ---------------------------------------------------------------------------
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { state: string; county: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ state: string; county: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const stateName = STATE_MAP[params.state];
   if (!stateName) return {};
 
@@ -600,11 +601,12 @@ async function CityLeadsPage({
 // Page (routes to city or county view)
 // ---------------------------------------------------------------------------
 
-export default async function CountyLeadsPage({
-  params,
-}: {
-  params: { state: string; county: string };
-}) {
+export default async function CountyLeadsPage(
+  props: {
+    params: Promise<{ state: string; county: string }>;
+  }
+) {
+  const params = await props.params;
   const stateName = STATE_MAP[params.state];
   if (!stateName) notFound();
 
@@ -677,7 +679,6 @@ export default async function CountyLeadsPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <MarketingNav />
-
       {/* Header */}
       <div className="border-b border-[#FF6B00]/20 px-6 pt-24 pb-10">
         <div className="max-w-5xl mx-auto">
@@ -700,7 +701,6 @@ export default async function CountyLeadsPage({
           </p>
         </div>
       </div>
-
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-12">
 
         {/* Stats */}

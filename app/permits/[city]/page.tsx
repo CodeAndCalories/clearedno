@@ -72,9 +72,8 @@ export function generateStaticParams() {
 
 // ─── Per-page metadata ────────────────────────────────────────────────────────
 
-export async function generateMetadata(
-  { params }: { params: { city: string } }
-): Promise<Metadata> {
+export async function generateMetadata(props: { params: Promise<{ city: string }> }): Promise<Metadata> {
+  const params = await props.params;
   if (STATE_META[params.city]) {
     const meta = STATE_META[params.city];
     const title = `Building Permits in ${meta.name} — Costs, Requirements & Timelines`;
@@ -288,9 +287,8 @@ async function StatePermitsPage({ slug }: { slug: string }) {
 
 // ─── Page (handles both state and city slugs) ─────────────────────────────────
 
-export default async function CityPermitsPage(
-  { params }: { params: { city: string } }
-) {
+export default async function CityPermitsPage(props: { params: Promise<{ city: string }> }) {
+  const params = await props.params;
   if (STATE_META[params.city]) {
     return <StatePermitsPage slug={params.city} />;
   }

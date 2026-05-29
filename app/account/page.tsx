@@ -61,7 +61,7 @@ async function startLeadsCheckout() {
       .eq("user_id", user.id);
   }
 
-  const host = headers().get("host") ?? "www.clearedno.com";
+  const host = (await headers()).get("host") ?? "www.clearedno.com";
   const origin = `https://${host}`;
 
   const session = await stripe.checkout.sessions.create({

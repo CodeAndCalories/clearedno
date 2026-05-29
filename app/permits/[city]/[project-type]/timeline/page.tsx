@@ -71,11 +71,12 @@ type PermitRow = {
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { city: string; "project-type": string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ city: string; "project-type": string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const cityMeta = CITY_META[params.city];
   if (!cityMeta) return {};
 
@@ -154,11 +155,12 @@ function timelinePhases(avgDays: number) {
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default async function PermitTimelinePage({
-  params,
-}: {
-  params: { city: string; "project-type": string };
-}) {
+export default async function PermitTimelinePage(
+  props: {
+    params: Promise<{ city: string; "project-type": string }>;
+  }
+) {
+  const params = await props.params;
   const { data: permit, error } = await supabaseAdmin
     .from("city_permits")
     .select("city_name, state, project_type_label, base_fee, avg_approval_days, requirements_summary, official_url")

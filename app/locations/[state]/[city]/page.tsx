@@ -6,7 +6,7 @@ import { cities, getCityData, getCityDisplayName } from "@/lib/cities";
 import { PermitDelayCalculator } from "@/app/components/permit-delay-calculator";
 
 type Props = {
-  params: { state: string; city: string };
+  params: Promise<{ state: string; city: string }>;
 };
 
 export function generateStaticParams() {
@@ -16,7 +16,8 @@ export function generateStaticParams() {
   }));
 }
 
-export function generateMetadata({ params }: Props): Metadata {
+export async function generateMetadata(props: Props): Promise<Metadata> {
+  const params = await props.params;
   const city = getCityData(params.state, params.city);
   if (!city) return {};
 
@@ -58,7 +59,8 @@ export function generateMetadata({ params }: Props): Metadata {
   };
 }
 
-export default function LocationCityPage({ params }: Props) {
+export default async function LocationCityPage(props: Props) {
+  const params = await props.params;
   const city = getCityData(params.state, params.city);
   if (!city) notFound();
 

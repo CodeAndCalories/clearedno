@@ -45,11 +45,12 @@ export function generateStaticParams() {
 // Metadata
 // ---------------------------------------------------------------------------
 
-export async function generateMetadata({
-  params,
-}: {
-  params: { state: string };
-}): Promise<Metadata> {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ state: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const stateName = STATE_MAP[params.state];
   if (!stateName) return {};
 
@@ -125,11 +126,12 @@ function StatCard({
 // Page
 // ---------------------------------------------------------------------------
 
-export default async function StateLeadsPage({
-  params,
-}: {
-  params: { state: string };
-}) {
+export default async function StateLeadsPage(
+  props: {
+    params: Promise<{ state: string }>;
+  }
+) {
+  const params = await props.params;
   const stateName = STATE_MAP[params.state];
   if (!stateName) notFound();
 
@@ -174,7 +176,6 @@ export default async function StateLeadsPage({
   return (
     <div className="min-h-screen bg-[#0A0A0A] text-[#F5F0E8] font-mono">
       <MarketingNav />
-
       {/* Header */}
       <div className="border-b border-[#FF6B00]/20 px-6 pt-24 pb-10">
         <div className="max-w-5xl mx-auto">
@@ -190,7 +191,6 @@ export default async function StateLeadsPage({
           </p>
         </div>
       </div>
-
       <div className="max-w-5xl mx-auto px-6 py-10 space-y-12">
 
         {/* Stats */}

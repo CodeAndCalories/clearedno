@@ -112,11 +112,12 @@ export function generateStaticParams() {
 
 // ─── Metadata ─────────────────────────────────────────────────────────────────
 
-export function generateMetadata({
-  params,
-}: {
-  params: { trade: string; city: string };
-}): Metadata {
+export async function generateMetadata(
+  props: {
+    params: Promise<{ trade: string; city: string }>;
+  }
+): Promise<Metadata> {
+  const params = await props.params;
   const tradeMeta = TRADE_META[params.trade];
   const cityMeta = CITY_META[params.city];
   if (!tradeMeta || !cityMeta) return {};
@@ -142,11 +143,12 @@ export function generateMetadata({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
-export default function ContractorCityPage({
-  params,
-}: {
-  params: { trade: string; city: string };
-}) {
+export default async function ContractorCityPage(
+  props: {
+    params: Promise<{ trade: string; city: string }>;
+  }
+) {
+  const params = await props.params;
   const tradeMeta = TRADE_META[params.trade];
   const cityMeta = CITY_META[params.city];
 
