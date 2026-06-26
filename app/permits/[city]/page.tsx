@@ -4,6 +4,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
+// Revalidate daily so Supabase-sourced permit data refreshes without a redeploy.
+export const revalidate = 86400;
+
 // ─── Static city config ───────────────────────────────────────────────────────
 
 const CITY_META: Record<string, { name: string; state: string; stateFull: string }> = {

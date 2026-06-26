@@ -5,9 +5,11 @@ import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import StickyPermitCTA from "./sticky-cta";
 
+// Revalidate daily so Supabase-sourced fees/timelines refresh without a redeploy.
+export const revalidate = 86400;
+
 // ─── Static param sets ────────────────────────────────────────────────────────
-// Top 5 project types × 7 cities = 35 pre-rendered pages.
-// new-construction and plumbing-permit are rendered on-demand via SSR.
+// All 7 project types × 11 cities = 77 pre-rendered pages.
 
 const CITIES = [
   "austin-tx",
@@ -23,18 +25,20 @@ const CITIES = [
   "cincinnati-oh",
 ];
 
-const TOP_PROJECT_TYPES = [
+const PROJECT_TYPES = [
   "deck-permit",
   "roof-permit",
   "fence-permit",
   "addition-permit",
+  "new-construction",
   "electrical-permit",
+  "plumbing-permit",
 ];
 
 export function generateStaticParams() {
   const params: Array<{ city: string; "project-type": string }> = [];
   for (const city of CITIES) {
-    for (const pt of TOP_PROJECT_TYPES) {
+    for (const pt of PROJECT_TYPES) {
       params.push({ city, "project-type": pt });
     }
   }
