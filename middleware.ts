@@ -1,8 +1,16 @@
-// Next.js middleware — refreshes Supabase auth sessions and protects routes
+// Next.js middleware — refreshes Supabase auth sessions and protects routes.
+//
+// The `config.matcher` at the bottom restricts this to auth-relevant routes
+// only (/dashboard, /leads, /login, /auth/*). Public marketing pages — /,
+// /blog, /permits, /contractors, and the city landing pages — never match,
+// so they never invoke this middleware or trigger a Supabase auth (getUser)
+// call. This keeps static pages cheap to serve.
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-// Cron/internal API routes that must bypass all auth middleware
+// Cron/internal API routes that must bypass all auth middleware.
+// With the narrowed matcher below these /api/* paths no longer match at all,
+// so this is now defensive — it keeps them safe even if the matcher is widened.
 const CRON_API_ROUTES = [
   "/api/leads-digest",
   "/api/outreach-send",
@@ -96,7 +104,15 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip static assets and Next.js internals
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+    // Auth-relevant routes ONLY. Everything else (/, /blog, /permits,
+    // /contractors, city pages, static assets) is excluded so public traffic
+    // never triggers a Supabase auth call.
+    //
+    // Note: /leads/landing and /leads/roofing also match here, but they are
+    // explicitly allowed through inside the handler (LEADS_PUBLIC_PREFIXES).
+    "/dashboard/:path*",
+    "/leads/:path*",
+    "/login",
+    "/auth/:path*",
   ],
 };
