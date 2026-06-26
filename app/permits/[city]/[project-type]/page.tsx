@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import StickyPermitCTA from "./sticky-cta";
+import PermitAlertSignup from "../../../permit-alert-signup";
 
 // Revalidate daily so Supabase-sourced fees/timelines refresh without a redeploy.
 export const revalidate = 86400;
@@ -376,6 +377,12 @@ export default async function ProjectTypePermitPage(
           </Link>
         </div>
       </section>
+
+      {/* Email capture — permit alert leads for the $79 tracker upsell */}
+      <PermitAlertSignup
+        city={`${cityMeta.name}, ${cityMeta.state}`}
+        projectType={row.project_type_label}
+      />
 
       <footer className="border-t border-[#FF6B00]/10 px-6 py-8 text-center">
         <p className="text-[10px] text-[#F5F0E8]/20 tracking-widest">
