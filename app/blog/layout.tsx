@@ -75,6 +75,26 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
 
           {/* Sidebar */}
           <aside className="mt-16 lg:mt-0">
+            {/* Free Tools */}
+            <div className="border border-[#FF6B00]/20 p-6 mb-6">
+              <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-4">Free Tools</div>
+              <ul className="space-y-2">
+                {[
+                  { label: "Permit Fee Calculator", href: "/tools/permit-fee-calculator" },
+                  { label: "Permit Lookup by Address", href: "/" },
+                ].map((tool) => (
+                  <li key={tool.href}>
+                    <Link
+                      href={tool.href}
+                      className="text-xs text-[#F5F0E8]/50 hover:text-[#FF6B00] transition-colors font-mono"
+                    >
+                      → {tool.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
             {/* Recent Posts */}
             <div className="border border-[#FF6B00]/20 p-6 mb-6">
               <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-4">Recent Posts</div>
