@@ -81,6 +81,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               <ul className="space-y-2">
                 {[
                   { label: "Permit Fee Calculator", href: "/tools/permit-fee-calculator" },
+                  { label: "Permit Timeline Estimator", href: "/tools/permit-timeline-estimator" },
                   { label: "Permit Lookup by Address", href: "/" },
                 ].map((tool) => (
                   <li key={tool.href}>
