@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 
 const RECENT_POSTS = [
+  { title: "Permit Tracking Software for Contractors (2026) — Automate Status Checks", href: "/blog/permit-tracking-software-for-contractors" },
   { title: "Free Building Permit Lookup by Address — Search Any City (2026)", href: "/blog/free-permit-lookup-by-address" },
   { title: "Building Permit Status Check — How to Find Any Permit in the Midwest", href: "/blog/building-permit-status-check-guide" },
   { title: "Houston Building Permit Status Check — Complete 2026 Guide", href: "/blog/houston-building-permit-status-2026" },
