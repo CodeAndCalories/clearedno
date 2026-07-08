@@ -200,6 +200,9 @@ export async function generateMetadata(
   return {
     title: `${displayCounty} County ${stateName} Roofing Leads — ${total} Hail Events | ClearedNo`,
     description: `Roofing leads in ${displayCounty} County, ${stateName}. ${hot} properties hit by ${maxMag.toFixed(2)}"+ hail. Updated weekly from NOAA storm data.`,
+    // Thin programmatic pages — kept out of the index for AdSense quality,
+    // but crawlable so link equity still flows to state/city hubs.
+    robots: { index: false, follow: true },
     alternates: {
       canonical: `https://www.clearedno.com/leads/roofing/${params.state}/${params.county}`,
     },
