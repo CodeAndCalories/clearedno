@@ -76,37 +76,24 @@ function formatMag(mag: number | null): string {
 }
 
 // ---------------------------------------------------------------------------
-// Static params — county combos from DB + hardcoded city slugs
+// Static params — city hubs only
+//
+// Only the city hubs are prerendered. The ~500 county pages across the six
+// states render on demand and are then cached by the `revalidate` above, which
+// keeps build times flat. They are noindex anyway, so there is nothing to gain
+// from prerendering them.
+//
+// This used to derive county params from a `select county, state` with no
+// limit, which PostgREST silently capped at 1000 rows — so most counties were
+// never listed here either.
 // ---------------------------------------------------------------------------
 
-export async function generateStaticParams() {
-  const { data } = await supabaseAdmin
-    .from("roofing_leads")
-    .select("county, state")
-    .order("state")
-    .order("county");
-
-  const seen = new Set<string>();
+export function generateStaticParams() {
   const params: { state: string; county: string }[] = [];
 
-  for (const row of data ?? []) {
-    const stateSlug  = (row.state as string).toLowerCase();
-    const countySlug = countyToSlug(row.county as string);
-    const key        = `${stateSlug}/${countySlug}`;
-    if (!seen.has(key)) {
-      seen.add(key);
-      params.push({ state: stateSlug, county: countySlug });
-    }
-  }
-
-  // Add city slugs
   for (const [state, cities] of Object.entries(CITY_DATA)) {
     for (const citySlug of Object.keys(cities)) {
-      const key = `${state}/${citySlug}`;
-      if (!seen.has(key)) {
-        seen.add(key);
-        params.push({ state, county: citySlug });
-      }
+      params.push({ state, county: citySlug });
     }
   }
 
@@ -128,21 +115,118 @@ interface Lead {
 }
 
 // ---------------------------------------------------------------------------
-// Resolve slug → actual county name in DB
+// Resolve slug → the county value(s) stored in the DB
+//
+// The stored data is not normalized: Franklin County OH is written as the
+// literal "franklin" on ~271k rows and as "Franklin County" on 9 others. Both
+// slugify to "franklin", so one slug can map to several stored spellings and
+// every query below has to match the whole set rather than a single string.
 // ---------------------------------------------------------------------------
 
-async function resolveCounty(
+/** Every distinct county stored for a state. Never sampled or capped. */
+async function fetchStateCounties(stateAbbrev: string): Promise<string[]> {
+  // Loose index scan over (state, county). Do NOT replace this with a row
+  // query: Ohio holds ~285k rows, so any row cap hides most of its 87
+  // counties and serves them as 404s (previously 67 of them).
+  const { data } = await supabaseAdmin.rpc("distinct_counties_by_state", {
+    state_abbrev: stateAbbrev,
+  });
+
+  return ((data ?? []) as { county: string | null }[])
+    .map((r) => r.county)
+    .filter((c): c is string => Boolean(c));
+}
+
+async function resolveCountyVariants(
   stateAbbrev: string,
   countySlug: string
-): Promise<string | null> {
-  const { data } = await supabaseAdmin
-    .from("roofing_leads")
-    .select("county")
-    .eq("state", stateAbbrev)
-    .limit(500);
+): Promise<string[]> {
+  const counties = await fetchStateCounties(stateAbbrev);
+  return counties.filter((c) => countyToSlug(c) === countySlug);
+}
 
-  const counties = Array.from(new Set((data ?? []).map((r: { county: string }) => r.county)));
-  return counties.find((c) => countyToSlug(c) === countySlug) ?? null;
+/**
+ * Human-readable county name, preferring a well-formed stored spelling
+ * ("Franklin County") over a malformed one ("franklin"), then falling back to
+ * title-casing the slug so display never leaks raw data inconsistencies.
+ */
+function displayCountyName(variants: string[], countySlug: string): string {
+  const preferred =
+    variants.find((v) => /\s+County$/i.test(v) && /[A-Z]/.test(v)) ??
+    variants.find((v) => /[A-Z]/.test(v));
+
+  if (preferred) return preferred.replace(/\s*County$/i, "").trim();
+
+  return countySlug
+    .split("-")
+    .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+    .join(" ");
+}
+
+/** Three sibling counties for the footer nav, all guaranteed to resolve. */
+async function fetchOtherCounties(
+  stateAbbrev: string,
+  currentSlug: string
+): Promise<string[]> {
+  const counties = await fetchStateCounties(stateAbbrev);
+  const bySlug = new Map<string, string>();
+
+  for (const county of counties) {
+    const slug = countyToSlug(county);
+    if (slug === currentSlug || bySlug.has(slug)) continue;
+    bySlug.set(slug, displayCountyName([county], slug));
+  }
+
+  return Array.from(bySlug.values()).slice(0, 3);
+}
+
+// ---------------------------------------------------------------------------
+// County stats
+//
+// Counted in the DB rather than by measuring a result array — PostgREST caps
+// rows at 1000, so counting client-side understated every county with more
+// than 1000 events (Franklin reported 1000 instead of 271,423).
+// ---------------------------------------------------------------------------
+
+/** Recent events rendered in the table; totals come from the counts below. */
+const RECENT_EVENT_LIMIT = 250;
+
+interface CountyStats {
+  total: number;
+  hot: number;
+  maxMag: number;
+}
+
+async function fetchCountyStats(
+  stateAbbrev: string,
+  variants: string[]
+): Promise<CountyStats> {
+  const countQuery = () =>
+    supabaseAdmin
+      .from("roofing_leads")
+      .select("id", { count: "exact", head: true })
+      .eq("state", stateAbbrev)
+      .in("county", variants);
+
+  const [totalRes, hotRes, magRes] = await Promise.all([
+    countQuery(),
+    countQuery().eq("lead_score", "hot"),
+    supabaseAdmin
+      .from("roofing_leads")
+      .select("magnitude")
+      .eq("state", stateAbbrev)
+      .in("county", variants)
+      .not("magnitude", "is", null)
+      .order("magnitude", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+
+  return {
+    total:  totalRes.count ?? 0,
+    hot:    hotRes.count ?? 0,
+    maxMag: magRes.data?.magnitude ?? 0,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -182,20 +266,11 @@ export async function generateMetadata(
 
   // County path
   const stateAbbrev = params.state.toUpperCase();
-  const countyName  = await resolveCounty(stateAbbrev, params.county);
-  if (!countyName) return {};
+  const variants    = await resolveCountyVariants(stateAbbrev, params.county);
+  if (variants.length === 0) return {};
 
-  const displayCounty = countyName.replace(/ County$/i, "");
-
-  const { data: leads } = await supabaseAdmin
-    .from("roofing_leads")
-    .select("lead_score, magnitude")
-    .eq("state", stateAbbrev)
-    .eq("county", countyName);
-
-  const total    = leads?.length ?? 0;
-  const hot      = leads?.filter((l) => l.lead_score === "hot").length ?? 0;
-  const maxMag   = leads?.reduce((m, l) => Math.max(m, l.magnitude ?? 0), 0) ?? 0;
+  const displayCounty = displayCountyName(variants, params.county);
+  const { total, hot, maxMag } = await fetchCountyStats(stateAbbrev, variants);
 
   return {
     title: `${displayCounty} County ${stateName} Roofing Leads — ${total} Hail Events | ClearedNo`,
@@ -626,38 +701,35 @@ export default async function CountyLeadsPage(
 
   // ── County path ────────────────────────────────────────────────────────────
   const stateAbbrev = params.state.toUpperCase();
-  const countyName  = await resolveCounty(stateAbbrev, params.county);
-  if (!countyName) notFound();
+  const variants    = await resolveCountyVariants(stateAbbrev, params.county);
+  if (variants.length === 0) notFound();
 
-  const displayCounty = countyName.replace(/ County$/i, "");
+  const displayCounty = displayCountyName(variants, params.county);
 
-  const { data } = await supabaseAdmin
-    .from("roofing_leads")
-    .select("id, county, state, event_date, magnitude, lead_score, event_type")
-    .eq("state", stateAbbrev)
-    .eq("county", countyName)
-    .order("event_date", { ascending: false });
+  const [stats, recentRes, otherCounties] = await Promise.all([
+    fetchCountyStats(stateAbbrev, variants),
+    supabaseAdmin
+      .from("roofing_leads")
+      .select("id, county, state, event_date, magnitude, lead_score, event_type")
+      .eq("state", stateAbbrev)
+      .in("county", variants)
+      .order("event_date", { ascending: false })
+      .limit(RECENT_EVENT_LIMIT),
+    fetchOtherCounties(stateAbbrev, params.county),
+  ]);
 
-  const leads = (data ?? []) as Lead[];
-  if (leads.length === 0) notFound();
+  const leads = (recentRes.data ?? []) as Lead[];
+  if (stats.total === 0) notFound();
 
-  const totalLeads  = leads.length;
-  const hotLeads    = leads.filter((l) => l.lead_score === "hot").length;
+  const totalLeads  = stats.total;
+  // Counties now report their true totals, which run into six figures for the
+  // busiest ones — group the digits so the copy stays readable.
+  const totalLabel  = totalLeads.toLocaleString();
+  const hotLeads    = stats.hot;
   const warmLeads   = totalLeads - hotLeads;
-  const maxMag      = leads.reduce((m, l) => Math.max(m, l.magnitude ?? 0), 0);
-  const newestDate  = leads[0]?.event_date ? formatDate(leads[0].event_date) : "—";
+  const maxMag      = stats.maxMag;
   const newestRaw   = leads[0]?.event_date ?? "";
-
-  const { data: otherCountyData } = await supabaseAdmin
-    .from("roofing_leads")
-    .select("county")
-    .eq("state", stateAbbrev)
-    .neq("county", countyName)
-    .limit(200);
-
-  const otherCounties = Array.from(
-    new Set((otherCountyData ?? []).map((r: { county: string }) => r.county))
-  ).slice(0, 3);
+  const newestDate  = newestRaw ? formatDate(newestRaw) : "—";
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -699,7 +771,7 @@ export default async function CountyLeadsPage(
             {displayCounty} County, {stateName} — Roofing Leads
           </h1>
           <p className="text-sm text-[#F5F0E8]/50 max-w-xl leading-relaxed">
-            {totalLeads} hail-verified roofing leads in {displayCounty} County.
+            {totalLabel} hail-verified roofing leads in {displayCounty} County.
             Sourced from NOAA Storm Events, updated every Monday.
           </p>
         </div>
@@ -708,7 +780,7 @@ export default async function CountyLeadsPage(
 
         {/* Stats */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard label="Total Leads"    value={totalLeads}             />
+          <StatCard label="Total Leads"    value={totalLabel}             />
           <StatCard label="Hot Leads"      value={hotLeads}   accent="#FF6B00" />
           <StatCard label="Largest Hail"   value={`${maxMag.toFixed(2)}"`} accent="#EAB308" />
           <StatCard label="Latest Event"   value={newestDate}             />
@@ -718,7 +790,7 @@ export default async function CountyLeadsPage(
         <div className="border-l-2 border-[#FF6B00]/40 pl-6 py-2">
           <p className="text-sm text-[#F5F0E8]/70 leading-relaxed">
             {displayCounty} County was hit by{" "}
-            <span className="text-[#F5F0E8]">{totalLeads} hail events</span> in
+            <span className="text-[#F5F0E8]">{totalLabel} hail events</span> in
             the past 12 months. The largest recorded was{" "}
             <span className="text-[#FF6B00] font-medium">{maxMag.toFixed(2)}&quot;</span> on{" "}
             {newestRaw ? formatDate(newestRaw) : "record"}.{" "}
@@ -791,6 +863,11 @@ export default async function CountyLeadsPage(
                 })}
               </tbody>
             </table>
+            {totalLeads > leads.length && (
+              <div className="px-5 py-3 border-t border-[#FF6B00]/10 text-[10px] text-[#F5F0E8]/30 tracking-widest">
+                Showing the {leads.length} most recent of {totalLeads.toLocaleString()} events — get the full list below
+              </div>
+            )}
           </div>
         </div>
 
@@ -809,7 +886,7 @@ export default async function CountyLeadsPage(
           </h2>
           <p className="text-sm text-[#F5F0E8]/50 mb-8 max-w-md mx-auto leading-relaxed">
             Download the full CSV with addresses, magnitudes, and scores for all{" "}
-            {totalLeads} {displayCounty} County hail events. Plus all other counties
+            {totalLabel} {displayCounty} County hail events. Plus all other counties
             across 6 states.
           </p>
           <Link
@@ -845,7 +922,7 @@ export default async function CountyLeadsPage(
                 href={`/leads/roofing/${params.state}/${countyToSlug(c)}`}
                 className="border border-[#FF6B00]/20 px-4 py-2 text-[10px] tracking-widest uppercase text-[#F5F0E8]/50 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors"
               >
-                {c.replace(/ County$/, "")}
+                {c}
               </Link>
             ))}
           </div>
