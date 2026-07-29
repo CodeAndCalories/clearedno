@@ -54,6 +54,9 @@ const LEADS_BLOG_SLUGS = [
 ];
 
 const BLOG_SLUGS = [
+  "grand-rapids-building-permit-status-2026",
+  "philadelphia-building-permit-status-2026",
+  "pennsylvania-roofing-permit-requirements",
   "austin-permit-tx-search-tool",
   "contractor-permit-tracking-multiple-jobs",
   "why-austin-permits-take-so-long",
