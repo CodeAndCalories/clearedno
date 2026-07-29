@@ -156,7 +156,10 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
                   </li>
                 ))}
                 <li className="pt-2 border-t border-[#FF6B00]/10">
-                  <span className="text-[9px] tracking-[0.2em] text-[#FF6B00]/40 uppercase font-mono">Coming Soon</span>
+                  <span className="text-[9px] tracking-[0.2em] text-[#FF6B00]/40 uppercase font-mono">Tracking Coming Soon</span>
+                  <p className="mt-1.5 text-[10px] text-[#F5F0E8]/25 leading-relaxed">
+                    Guides are live for these cities — automated permit tracking is expanding next.
+                  </p>
                 </li>
                 {[
                   { label: "Columbus, OH", href: "/suggest-city" },
