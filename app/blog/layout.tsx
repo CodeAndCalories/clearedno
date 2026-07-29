@@ -123,7 +123,9 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-3">Stop Checking Manually</div>
               <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
                 Get instant alerts when your Austin, Dallas, Houston, or San Antonio permit status changes.
-                Columbus, Philadelphia, and Grand Rapids coming soon.
+                Permit guides for Austin, Houston, Dallas, San Antonio, Columbus, Cleveland,
+                Cincinnati, Akron, Philadelphia, Pittsburgh, Grand Rapids, and Detroit — more
+                cities added regularly.
               </p>
               <Link
                 href="/signup"
