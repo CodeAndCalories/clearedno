@@ -6,6 +6,7 @@ const RECENT_POSTS = [
   { title: "Philadelphia Building Permit Status — How to Check in 2026", href: "/blog/philadelphia-building-permit-status-2026" },
   { title: "Pennsylvania Roofing Permit Requirements (2026) — By City", href: "/blog/pennsylvania-roofing-permit-requirements" },
   { title: "Permit Tracking Software for Contractors (2026) — Automate Status Checks", href: "/blog/permit-tracking-software-for-contractors" },
+  { title: "Subcontractor Permit Tracking — How GCs Monitor Trade Permits (2026)", href: "/blog/subcontractor-permit-tracking" },
   { title: "Free Building Permit Lookup by Address — Search Any City (2026)", href: "/blog/free-permit-lookup-by-address" },
   { title: "Building Permit Status Check — How to Find Any Permit in the Midwest", href: "/blog/building-permit-status-check-guide" },
   { title: "Houston Building Permit Status Check — Complete 2026 Guide", href: "/blog/houston-building-permit-status-2026" },

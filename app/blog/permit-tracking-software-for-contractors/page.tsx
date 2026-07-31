@@ -276,6 +276,15 @@ export default function PermitTrackingSoftwareForContractorsPost() {
               </div>
             ))}
           </div>
+          <p className="mt-6">
+            Coordinating trades is where this gets most valuable for general contractors, because
+            the permits gating your schedule are the ones your subs pulled. We cover that case in
+            depth in{" "}
+            <Link href="/blog/subcontractor-permit-tracking" className="text-[#FF6B00] hover:underline">
+              subcontractor permit tracking for GCs
+            </Link>
+            .
+          </p>
         </section>
 
         {/* Buying criteria */}

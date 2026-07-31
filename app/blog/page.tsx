@@ -373,6 +373,15 @@ const PERMIT_POSTS = [
     date: "March 2026",
     readTime: "5 min read",
   },
+  {
+    href: "/blog/subcontractor-permit-tracking",
+    title: "Subcontractor Permit Tracking — How GCs Monitor Trade Permits (2026)",
+    excerpt:
+      "Your schedule depends on permits you didn't pull. How general contractors track electrical, plumbing, HVAC and roofing permits across trades — without portal logins or chasing subs for status.",
+    tag: "General Contractors",
+    date: "July 2026",
+    readTime: "9 min read",
+  },
 ];
 
 function PostRow({ post, last }: { post: typeof PERMIT_POSTS[number]; last: boolean }) {

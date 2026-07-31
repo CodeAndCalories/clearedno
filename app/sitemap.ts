@@ -86,6 +86,7 @@ const BLOG_SLUGS = [
   "how-much-does-permit-delay-cost-contractors",
   "permit-cleared-what-happens-next",
   "ohio-michigan-pennsylvania-permit-monitoring",
+  "subcontractor-permit-tracking",
 ];
 
 const LEADS_STATES = ["oh", "in", "mi", "ky", "il", "pa"];
