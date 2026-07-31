@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { cities, getCityData, getCityDisplayName } from "@/lib/cities";
+import { cities, getCityData, getCityDisplayName, LIVE_CHECKER_CITIES } from "@/lib/cities";
 import { PermitDelayCalculator } from "@/app/components/permit-delay-calculator";
+import { PermitChecker } from "@/app/components/permit-checker";
 
 type Props = {
   params: Promise<{ state: string; city: string }>;
@@ -65,6 +66,10 @@ export default async function LocationCityPage(props: Props) {
   if (!city) notFound();
 
   const pageUrl = `https://www.clearedno.com/locations/${city.stateSlug}/${city.slug}`;
+
+  // Only cities with a live integration get the "check any permit free" promise.
+  // The rest still render the checker, but in its honest "coming soon" state.
+  const checkerLive = LIVE_CHECKER_CITIES.has(city.slug);
 
   const localBusinessSchema = {
     "@context": "https://schema.org",
@@ -179,6 +184,29 @@ export default async function LocationCityPage(props: Props) {
           >
             AVOID {city.name.toUpperCase()} LATE FEES AND PROJECT DELAYS — START FREE TRIAL <span>→</span>
           </Link>
+        </div>
+      </section>
+
+      {/* Free Permit Checker */}
+      <section className="py-16 px-6 border-t border-[#FF6B00]/10">
+        <div className="max-w-3xl mx-auto">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="w-8 h-px bg-[#FF6B00]" />
+            <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">
+              Free Lookup
+            </span>
+          </div>
+          <h2 className="font-heading text-3xl sm:text-4xl tracking-widest text-[#F5F0E8] mb-2">
+            {checkerLive
+              ? `CHECK ANY ${city.name.toUpperCase()} PERMIT — FREE`
+              : `${city.name.toUpperCase()} PERMIT LOOKUP`}
+          </h2>
+          <p className="text-sm text-[#F5F0E8]/50 mb-8">
+            {checkerLive
+              ? "No signup needed. Enter your permit number to see its current status."
+              : `Live ${city.name} data isn't wired up yet. Check an Austin permit now, or sign up to be notified the moment ${city.name} goes live.`}
+          </p>
+          <PermitChecker defaultCity={city.slug} />
         </div>
       </section>
 
@@ -379,6 +407,8 @@ export default async function LocationCityPage(props: Props) {
           <Link href="/terms" className="hover:text-[#FF6B00] transition-colors">Terms</Link>
           {" · "}
           <Link href="/" className="hover:text-[#FF6B00] transition-colors">Home</Link>
+          {" · "}
+          <Link href="/locations" className="hover:text-[#FF6B00] transition-colors">All Cities</Link>
           {" · "}
           <Link href="/suggest-city" className="hover:text-[#FF6B00] transition-colors">Request a City</Link>
         </p>

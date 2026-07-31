@@ -64,7 +64,11 @@ export default function CincinnatiPermitApprovalPost() {
             The most important thing to understand about building permits in the Cincinnati area is
             that jurisdiction depends on whether your project is within the City of Cincinnati&apos;s
             incorporated limits or in unincorporated Hamilton County (or another municipality within
-            the county).
+            the county). For city projects, our{" "}
+            <Link href="/locations/oh/cincinnati" className="text-[#FF6B00] hover:underline">
+              Cincinnati permit tracking page
+            </Link>{" "}
+            lists the Development Services contacts and current approval windows.
           </p>
           <p className="mt-3">
             The <strong className="text-[#F5F0E8]">City of Cincinnati</strong> handles permits for projects

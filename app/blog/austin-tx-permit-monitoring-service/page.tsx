@@ -55,7 +55,11 @@ export default function AustinTxPermitMonitoringPost() {
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">AUSTIN&apos;S PERMIT PORTAL — WHAT IT DOES AND DOESN&apos;T DO</h2>
           <p>
-            Austin uses the Austin Build + Connect portal (ABC) as its primary permit management system. You can search by permit number, address, or contractor license. The information is accurate and updated regularly — it&apos;s the authoritative record.
+            Austin uses the Austin Build + Connect portal (ABC) as its primary permit management system. You can search by permit number, address, or contractor license. The information is accurate and updated regularly — it&apos;s the authoritative record. Our{" "}
+            <Link href="/locations/tx/austin" className="text-[#FF6B00] hover:underline">
+              Austin permit tracking page
+            </Link>{" "}
+            summarises the same department details alongside typical approval windows.
           </p>
           <p className="mt-3">
             What it doesn&apos;t do: send you an email when your status changes. There&apos;s no notification system built into ABC that reliably alerts permit holders when something moves. Contractors who want to know when their permit clears, gets a correction, or advances to the next stage have one option: log in and check.

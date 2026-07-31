@@ -66,7 +66,11 @@ export default function GrandRapidsMichiganPermitPost() {
             BS&amp;A is widely used by Michigan municipalities — Kent County townships like Kentwood,
             Wyoming, and Walker use it as well — but each municipality has its own separate instance.
             When searching for Grand Rapids permits specifically, you need to be on the City of Grand
-            Rapids instance, not a neighboring township&apos;s.
+            Rapids instance, not a neighboring township&apos;s. Our{" "}
+            <Link href="/locations/mi/grand-rapids" className="text-[#FF6B00] hover:underline">
+              Grand Rapids permit status page
+            </Link>{" "}
+            lists the Building Safety contacts alongside current timelines by project type.
           </p>
           <p className="mt-3">
             The direct URL for Grand Rapids is accessible through the city&apos;s Building Safety Department

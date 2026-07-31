@@ -65,7 +65,11 @@ export default function AustinPermitLookupPost() {
             The second is the <strong className="text-[#F5F0E8]">Austin Open Data portal</strong> at <strong className="text-[#F5F0E8]">data.austintexas.gov</strong>. This is a public dataset that Austin updates regularly. Permit numbers here look like <code className="bg-[#FF6B00]/10 text-[#FF6B00] px-1">2026-033822 PP</code>. If you&apos;re dealing with a newer permit or trying to look up someone else&apos;s permit by address, this is often faster.
           </p>
           <p className="mt-3">
-            Both are legitimate. Neither sends you alerts when something changes.
+            Both are legitimate. Neither sends you alerts when something changes — which is why our{" "}
+            <Link href="/locations/tx/austin" className="text-[#FF6B00] hover:underline">
+              Austin permit tracking page
+            </Link>{" "}
+            watches both systems and lists the current BDS contacts and approval timelines.
           </p>
         </section>
 

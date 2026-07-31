@@ -181,7 +181,10 @@ export default function GrandRapidsPermitStatus2026Post() {
             Grand Rapids issues building, electrical, plumbing, and mechanical permits separately,
             so a single remodel often produces four permit records. Check all of them: a project
             can be held up by a rough electrical correction while the building permit still reads
-            &quot;Issued.&quot;
+            &quot;Issued.&quot; Department contacts and typical approval windows are on our{" "}
+            <Link href="/locations/mi/grand-rapids" className="text-[#FF6B00] hover:underline">
+              Grand Rapids permit tracking page
+            </Link>.
           </p>
         </section>
 

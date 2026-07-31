@@ -66,7 +66,11 @@ export default function PittsburghPermitStatusPost() {
             <strong className="text-[#F5F0E8]">epli.pittsburghpa.gov</strong>. PLI handles building,
             electrical, plumbing, mechanical, and zoning permits for the City of Pittsburgh — note
             that Pittsburgh and Allegheny County are separate jurisdictions; projects outside city
-            limits go through Allegheny County or the relevant municipality.
+            limits go through Allegheny County or the relevant municipality. For city projects, our{" "}
+            <Link href="/locations/pa/pittsburgh" className="text-[#FF6B00] hover:underline">
+              Pittsburgh permit tracking page
+            </Link>{" "}
+            lists the PLI contacts and current approval windows.
           </p>
           <p className="mt-3">
             The ePLI portal allows contractors to apply for permits, upload documents, check status,

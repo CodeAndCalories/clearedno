@@ -106,6 +106,12 @@ export default function HomePage() {
             © {new Date().getFullYear()} ClearedNo
           </p>
           <Link
+            href="/locations"
+            className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase hover:text-[#FF6B00]/60 transition-colors"
+          >
+            Permit Status by City
+          </Link>
+          <Link
             href="/leads/landing"
             className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase hover:text-[#FF6B00]/60 transition-colors"
           >

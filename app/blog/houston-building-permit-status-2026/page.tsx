@@ -146,7 +146,11 @@ export default function HoustonPermitStatus2026Post() {
           <p className="mt-4">
             Go to the Houston Permitting Center online portal, click &ldquo;Check Permit Status,&rdquo; and enter
             your address or permit number. Houston&apos;s system shows full permit history including all
-            inspections, approvals, and any holds or violations.
+            inspections, approvals, and any holds or violations. Our{" "}
+            <Link href="/locations/tx/houston" className="text-[#FF6B00] hover:underline">
+              Houston permit tracking page
+            </Link>{" "}
+            collects the department contacts and typical approval windows in one place.
           </p>
         </section>
 

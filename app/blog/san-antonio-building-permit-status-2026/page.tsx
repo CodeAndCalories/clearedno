@@ -154,7 +154,11 @@ export default function SanAntonioPermitStatus2026Post() {
           <p className="mt-4">
             Navigate to San Antonio&apos;s Development Services department online portal, click permit
             search, and enter your address or permit number. The portal shows all active and historical
-            permits for the address, including inspection history and any holds.
+            permits for the address, including inspection history and any holds. Our{" "}
+            <Link href="/locations/tx/san-antonio" className="text-[#FF6B00] hover:underline">
+              San Antonio permit status page
+            </Link>{" "}
+            keeps the department contacts and typical timelines in one place.
           </p>
         </section>
 

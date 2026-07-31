@@ -55,7 +55,11 @@ export default function HoustonTxPermitTrackingPost() {
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">HOUSTON PERMIT VOLUME — THE SCALE OF THE PROBLEM</h2>
           <p>
-            Houston issues more building permits per year than any other Texas city, and it&apos;s consistently among the top in the country. The city&apos;s lack of traditional zoning — unique among major American cities — combined with a robust construction economy means the permitting system is constantly processing new applications, corrections, clearances, and inspections.
+            Houston issues more building permits per year than any other Texas city, and it&apos;s consistently among the top in the country. The city&apos;s lack of traditional zoning — unique among major American cities — combined with a robust construction economy means the permitting system is constantly processing new applications, corrections, clearances, and inspections. Our{" "}
+            <Link href="/locations/tx/houston" className="text-[#FF6B00] hover:underline">
+              Houston permit tracking page
+            </Link>{" "}
+            has the current department contacts and approval windows by project type.
           </p>
           <p className="mt-3">
             The Houston Permitting Center handles everything through the AMANDA system. For contractors who&apos;ve used permit portals in other cities, AMANDA has its own learning curve — the interface is functional but not intuitive, and understanding where to find specific information takes time.

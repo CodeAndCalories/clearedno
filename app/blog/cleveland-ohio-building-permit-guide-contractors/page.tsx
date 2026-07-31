@@ -65,7 +65,10 @@ export default function ClevelandOhioPermitGuidePost() {
             accessible online at <strong className="text-[#F5F0E8]">building.clevelandohio.gov</strong>. The department
             uses the CLEBuildingServices online portal for permit applications, status checks, and
             inspection scheduling. This is separate from the city&apos;s main portal, so bookmark the
-            building-specific URL.
+            building-specific URL. Current department details and timelines are summarised on our{" "}
+            <Link href="/locations/oh/cleveland" className="text-[#FF6B00] hover:underline">
+              Cleveland permit status page
+            </Link>.
           </p>
           <p className="mt-3">
             Walk-in service is available at the Department of Building and Housing at 601 Lakeside

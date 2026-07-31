@@ -63,6 +63,11 @@ export default function ColumbusOhioPermitStatusPost() {
             Columbus processes building permits through <strong className="text-[#F5F0E8]">permits.columbus.gov</strong>, which
             runs on the Accela Citizen Access platform. This is the same platform used by dozens of
             Ohio municipalities, so if you&apos;ve used it elsewhere, the interface will look familiar.
+            Our{" "}
+            <Link href="/locations/oh/columbus" className="text-[#FF6B00] hover:underline">
+              Columbus permit status page
+            </Link>{" "}
+            lists the Building and Zoning Services contacts alongside current timelines.
           </p>
           <p className="mt-3">
             No login is required to check the status of an existing permit. You can search by permit

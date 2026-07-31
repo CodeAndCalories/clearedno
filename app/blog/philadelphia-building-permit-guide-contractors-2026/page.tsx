@@ -65,7 +65,11 @@ export default function PhiladelphiaPermitGuidePost() {
             and Inspections (L&amp;I)</strong>. All permit applications, status tracking, document uploads,
             and inspection scheduling happen through <strong className="text-[#F5F0E8]">eclipsepermit.phila.gov</strong> —
             the eCLIPSE portal. This replaced the city&apos;s older systems and is now the primary
-            interface for everything permit-related in Philadelphia.
+            interface for everything permit-related in Philadelphia. Our{" "}
+            <Link href="/locations/pa/philadelphia" className="text-[#FF6B00] hover:underline">
+              Philadelphia permit tracking page
+            </Link>{" "}
+            summarises the L&amp;I contacts and typical approval windows.
           </p>
           <p className="mt-3">
             Creating a contractor account in eCLIPSE is required to submit applications and track

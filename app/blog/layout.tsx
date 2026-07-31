@@ -188,6 +188,8 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
           {" · "}
           <Link href="/terms" className="hover:text-[#FF6B00] transition-colors">Terms</Link>
           {" · "}
+          <Link href="/locations" className="hover:text-[#FF6B00] transition-colors">Permit Status by City</Link>
+          {" · "}
           <Link href="/" className="hover:text-[#FF6B00] transition-colors">Home</Link>
         </p>
       </footer>

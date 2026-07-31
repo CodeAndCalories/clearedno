@@ -8,6 +8,8 @@ export type CityData = {
   buildingDeptPhone: string;
   buildingDeptAddress: string;
   buildingDeptUrl: string;
+  /** One-line description used on the /locations hub cards. */
+  summary: string;
   timelines: { type: string; time: string }[];
   neighbors: string[]; // "/locations/state/city" paths for internal linking
 };
@@ -24,6 +26,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(512) 974-2800",
     buildingDeptAddress: "6310 Wilhelmina Delco Dr, Austin, TX 78752",
     buildingDeptUrl: "https://abc.austintexas.gov",
+    summary:
+      "Austin runs permits through the AB+C portal. Residential remodels clear fastest; new builds and commercial work carry the longest review queues in Central Texas.",
     timelines: [
       { type: "Simple remodel / repair", time: "1–3 weeks" },
       { type: "New residential build", time: "6–12 weeks" },
@@ -46,6 +50,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(214) 948-4480",
     buildingDeptAddress: "320 E Jefferson Blvd, Dallas, TX 75203",
     buildingDeptUrl: "https://dallascityhall.com/departments/sustainabledevelopment/developmentservices",
+    summary:
+      "Dallas Development Services handles permits for the city proper. New commercial construction carries the longest review window of any Texas metro we track.",
     timelines: [
       { type: "Residential addition / remodel", time: "2–4 weeks" },
       { type: "New single-family build", time: "4–8 weeks" },
@@ -68,6 +74,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(832) 394-8800",
     buildingDeptAddress: "1002 Washington Ave, Houston, TX 77002",
     buildingDeptUrl: "https://www.houstontx.gov/permits",
+    summary:
+      "Houston has no citywide zoning, but permits are still required for structural work. Verify whether your address falls under the city or unincorporated Harris County before applying.",
     timelines: [
       { type: "Residential repair / addition", time: "1–3 weeks" },
       { type: "New residential build", time: "4–8 weeks" },
@@ -90,6 +98,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(210) 207-1111",
     buildingDeptAddress: "1901 S Alamo St, San Antonio, TX 78204",
     buildingDeptUrl: "https://www.sanantonio.gov/DSD",
+    summary:
+      "San Antonio Development Services turns around residential repairs faster than most large Texas cities. Historic district projects add a design review step.",
     timelines: [
       { type: "Residential repair / addition", time: "1–2 weeks" },
       { type: "New residential build", time: "4–8 weeks" },
@@ -114,6 +124,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(614) 645-7433",
     buildingDeptAddress: "111 N Front St, Columbus, OH 43215",
     buildingDeptUrl: "https://www.columbus.gov/bzs",
+    summary:
+      "Columbus Building and Zoning Services covers Ohio's largest permit market. Residential additions typically clear in a few weeks; commercial work runs considerably longer.",
     timelines: [
       { type: "Residential repair / addition", time: "2–4 weeks" },
       { type: "New residential build", time: "6–10 weeks" },
@@ -137,6 +149,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(216) 664-2282",
     buildingDeptAddress: "601 Lakeside Ave E, Cleveland, OH 44114",
     buildingDeptUrl: "https://www.clevelandohio.gov/CityofCleveland/Home/Government/CityAgencies/BuildingAndHousing",
+    summary:
+      "Cleveland's Department of Building & Housing reviews everything from storm-driven roof replacements to full commercial builds, with some of Ohio's longest new-construction timelines.",
     timelines: [
       { type: "Residential repair / addition", time: "2–5 weeks" },
       { type: "New residential build", time: "6–12 weeks" },
@@ -160,6 +174,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(513) 352-3271",
     buildingDeptAddress: "805 Central Ave, Cincinnati, OH 45202",
     buildingDeptUrl: "https://www.cincinnati-oh.gov/psa/permits-inspections",
+    summary:
+      "Cincinnati Development Services posts the quickest residential turnaround of the three Ohio metros we track, with tenant improvements moving faster than regional averages.",
     timelines: [
       { type: "Residential repair / addition", time: "1–3 weeks" },
       { type: "New residential build", time: "5–10 weeks" },
@@ -184,6 +200,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(616) 456-3000",
     buildingDeptAddress: "1120 Monroe Ave NW, Grand Rapids, MI 49503",
     buildingDeptUrl: "https://www.grandrapidsmi.gov/Government/Departments/Planning-and-Development/Building-Safety-and-Services",
+    summary:
+      "Grand Rapids Building Safety and Services moves faster than Detroit across every project category, making it the quicker of Michigan's two major permit markets.",
     timelines: [
       { type: "Residential repair / addition", time: "1–3 weeks" },
       { type: "New residential build", time: "4–8 weeks" },
@@ -206,6 +224,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(313) 224-3160",
     buildingDeptAddress: "401 CAYMC, Detroit, MI 48226",
     buildingDeptUrl: "https://detroitmi.gov/departments/buildings-safety-engineering-and-environmental-department",
+    summary:
+      "Detroit's BSEED handles a heavy mix of rehab and new construction. New commercial projects carry the longest review window of any city we monitor.",
     timelines: [
       { type: "Residential repair / addition", time: "2–5 weeks" },
       { type: "New residential build", time: "6–12 weeks" },
@@ -230,6 +250,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(215) 686-2400",
     buildingDeptAddress: "1401 JFK Blvd, Philadelphia, PA 19102",
     buildingDeptUrl: "https://www.phila.gov/departments/department-of-licenses-and-inspections",
+    summary:
+      "Philadelphia's Department of Licenses and Inspections is the busiest permit office in Pennsylvania, with new residential and commercial builds both running long.",
     timelines: [
       { type: "Residential repair / addition", time: "2–4 weeks" },
       { type: "New residential build", time: "6–12 weeks" },
@@ -252,6 +274,8 @@ export const cities: CityData[] = [
     buildingDeptPhone: "(412) 255-2175",
     buildingDeptAddress: "200 Ross St, Pittsburgh, PA 15219",
     buildingDeptUrl: "https://pittsburghpa.gov/bbi",
+    summary:
+      "Pittsburgh's Bureau of Building Inspection clears commercial build-outs faster than Philadelphia, with residential timelines broadly similar across the state.",
     timelines: [
       { type: "Residential repair / addition", time: "2–4 weeks" },
       { type: "New residential build", time: "5–10 weeks" },
@@ -267,6 +291,13 @@ export const cities: CityData[] = [
   },
 ];
 
+/**
+ * Cities with a live permit-lookup integration behind /api/check-permit.
+ * Everything else renders the checker's honest "coming soon" state, so any
+ * copy wrapped around the tool must not promise an instant status result.
+ */
+export const LIVE_CHECKER_CITIES = new Set<string>(["austin"]);
+
 /** Look up a city by state slug + city slug */
 export function getCityData(
   stateSlug: string,
@@ -275,6 +306,25 @@ export function getCityData(
   return cities.find(
     (c) => c.stateSlug === stateSlug && c.slug === citySlug
   );
+}
+
+/**
+ * Cities grouped by state, preserving the declaration order above so the
+ * /locations hub renders Texas → Ohio → Michigan → Pennsylvania.
+ */
+export function getCitiesByState(): { state: string; stateAbbr: string; cities: CityData[] }[] {
+  const groups: { state: string; stateAbbr: string; cities: CityData[] }[] = [];
+
+  for (const city of cities) {
+    const existing = groups.find((g) => g.state === city.state);
+    if (existing) {
+      existing.cities.push(city);
+    } else {
+      groups.push({ state: city.state, stateAbbr: city.stateAbbr, cities: [city] });
+    }
+  }
+
+  return groups;
 }
 
 /** Get the display name for a /locations/state/city path */

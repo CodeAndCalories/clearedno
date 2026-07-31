@@ -2,25 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { cities, LIVE_CHECKER_CITIES } from "@/lib/cities";
 
-const CITIES = [
-  { label: "Austin, TX",      value: "austin" },
-  { label: "Dallas, TX",      value: "dallas" },
-  { label: "Houston, TX",     value: "houston" },
-  { label: "San Antonio, TX", value: "san-antonio" },
-];
+// Options are derived from the canonical city list so the dropdown, the
+// /locations pages, and the API route can't drift apart as cities are added.
+const CITIES = cities.map((c) => ({
+  label: `${c.name}, ${c.stateAbbr}`,
+  value: c.slug,
+}));
 
 // Cities with a live API integration. The others render a "coming soon"
 // state instead of a permit-number input — we don't want to ask for input
 // we can't act on.
-const SUPPORTED_CITIES = new Set(["austin"]);
+const SUPPORTED_CITIES = LIVE_CHECKER_CITIES;
 
-const CITY_LABELS: Record<string, string> = {
-  austin:        "Austin",
-  dallas:        "Dallas",
-  houston:       "Houston",
-  "san-antonio": "San Antonio",
-};
+const CITY_LABELS: Record<string, string> = Object.fromEntries(
+  cities.map((c) => [c.slug, c.name])
+);
 
 type Result = {
   status: string;

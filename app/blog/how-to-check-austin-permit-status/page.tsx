@@ -61,6 +61,10 @@ export default function AustinPermitStatusPost() {
           <p className="mt-3">
             Your permit number is on your permit application confirmation email, on the permit card
             posted at your job site, or on any correspondence from the City of Austin BDS department.
+            Department phone, address, and current timelines are listed on our{" "}
+            <Link href="/locations/tx/austin" className="text-[#FF6B00] hover:underline">
+              Austin permit status page
+            </Link>.
           </p>
         </section>
 

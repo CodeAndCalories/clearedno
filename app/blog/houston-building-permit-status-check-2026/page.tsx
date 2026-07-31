@@ -72,7 +72,11 @@ export default function HoustonPermitStatusPost() {
             This means Houston contractors don&apos;t need to worry about zoning compliance in the same
             way as Dallas or Austin contractors — but the permit process is still mandatory for all
             structural work, new construction, additions, and many renovation scopes. The absence
-            of zoning doesn&apos;t simplify permits; it just removes one common delay source.
+            of zoning doesn&apos;t simplify permits; it just removes one common delay source. Current
+            Houston timelines by project type are listed on our{" "}
+            <Link href="/locations/tx/houston" className="text-[#FF6B00] hover:underline">
+              Houston permit status page
+            </Link>.
           </p>
           <p className="mt-3">
             Building permits in the City of Houston are managed by the{" "}

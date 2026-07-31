@@ -279,6 +279,8 @@ async function StatePermitsPage({ slug }: { slug: string }) {
           © 2026 ClearedNo ·{" "}
           <Link href="/permits" className="hover:text-[#FF6B00] transition-colors">All Cities</Link>
           {" · "}
+          <Link href="/locations" className="hover:text-[#FF6B00] transition-colors">Permit Status by City</Link>
+          {" · "}
           <Link href="/privacy" className="hover:text-[#FF6B00] transition-colors">Privacy</Link>
           {" · "}
           <Link href="/terms" className="hover:text-[#FF6B00] transition-colors">Terms</Link>
@@ -453,6 +455,8 @@ export default async function CityPermitsPage(props: { params: Promise<{ city: s
         <p className="text-[10px] text-[#F5F0E8]/20 tracking-widest">
           © 2026 ClearedNo ·{" "}
           <Link href="/permits" className="hover:text-[#FF6B00] transition-colors">All Cities</Link>
+          {" · "}
+          <Link href="/locations" className="hover:text-[#FF6B00] transition-colors">Permit Status by City</Link>
           {" · "}
           <Link href="/privacy" className="hover:text-[#FF6B00] transition-colors">Privacy</Link>
           {" · "}

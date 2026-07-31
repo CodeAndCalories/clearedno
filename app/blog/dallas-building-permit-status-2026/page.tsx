@@ -157,7 +157,11 @@ export default function DallasPermitStatus2026Post() {
           <p className="mt-4">
             Go to Dallas Development Services online portal, navigate to permit search, and enter your
             address or permit number. Dallas tracks building, electrical, mechanical, and plumbing permits
-            separately — you may need to search multiple permit types for a full picture.
+            separately — you may need to search multiple permit types for a full picture. Department
+            contacts and typical approval windows are collected on our{" "}
+            <Link href="/locations/tx/dallas" className="text-[#FF6B00] hover:underline">
+              Dallas permit tracking page
+            </Link>.
           </p>
         </section>
 

@@ -55,7 +55,11 @@ export default function DallasTxPermitStatusAlertsPost() {
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">DALLAS&apos;S PERMIT PORTAL — THE BASICS</h2>
           <p>
-            Dallas uses the eDevelopment portal for building permit applications, status tracking, and inspection scheduling. It&apos;s the official system for residential and commercial permits within the city limits.
+            Dallas uses the eDevelopment portal for building permit applications, status tracking, and inspection scheduling. It&apos;s the official system for residential and commercial permits within the city limits. Our{" "}
+            <Link href="/locations/tx/dallas" className="text-[#FF6B00] hover:underline">
+              Dallas permit status page
+            </Link>{" "}
+            lists the same department details alongside current timelines by project type.
           </p>
           <p className="mt-3">
             The portal works. You can search by permit number, address, or project name. Status information is updated as the review process moves forward. For projects in unincorporated areas or some suburbs, you may be dealing with Dallas County or a different jurisdiction entirely — Dallas County and the city of Dallas are not the same permit system.

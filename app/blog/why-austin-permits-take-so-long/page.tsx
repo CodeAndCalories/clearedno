@@ -62,7 +62,10 @@ export default function AustinPermitDelaysPost() {
             The majority of those permits — probably 60–70% — are express permits that either approve automatically or get reviewed same-day. You&apos;ll never see those show up in a complaint. The complaints come from the other 30–40%: projects requiring a full plans review. Those are the ones sitting in queue, and those are the ones where contractors lose sleep.
           </p>
           <p className="mt-3">
-            As of early 2026, Austin BDS&apos;s published review targets for complex projects are 8–12 weeks. The reality is often 10–16 weeks on commercial and 6–10 weeks on residential new construction. That gap between target and reality is where the frustration lives.
+            As of early 2026, Austin BDS&apos;s published review targets for complex projects are 8–12 weeks. The reality is often 10–16 weeks on commercial and 6–10 weeks on residential new construction. That gap between target and reality is where the frustration lives. Current per-project-type estimates are on our{" "}
+            <Link href="/locations/tx/austin" className="text-[#FF6B00] hover:underline">
+              Austin permit tracking page
+            </Link>.
           </p>
         </section>
 

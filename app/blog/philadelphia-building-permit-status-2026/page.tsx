@@ -195,7 +195,11 @@ export default function PhiladelphiaPermitStatus2026Post() {
             The Department of Licenses and Inspections is the single permitting authority for the
             City of Philadelphia. Unlike most metros, Philadelphia is a consolidated
             city-county — there is no separate county building department to route around. If the
-            property is in Philadelphia, it goes through L+I.
+            property is in Philadelphia, it goes through L+I. Current department details and timelines
+            by project type are on our{" "}
+            <Link href="/locations/pa/philadelphia" className="text-[#FF6B00] hover:underline">
+              Philadelphia permit status page
+            </Link>.
           </p>
           <p className="mt-3">
             L+I splits a permit application across multiple review disciplines that run in parallel:

@@ -165,7 +165,10 @@ export default function ColumbusPermitStatus2026Post() {
             Navigate to permits.columbus.gov, use the permit search function, and enter your address
             or permit number. Columbus tracks building, electrical, plumbing, and mechanical permits
             separately — you may need to search multiple permit types to get a complete picture of a
-            property&apos;s permit activity.
+            property&apos;s permit activity. Department contacts and typical approval windows are on our{" "}
+            <Link href="/locations/oh/columbus" className="text-[#FF6B00] hover:underline">
+              Columbus permit tracking page
+            </Link>.
           </p>
         </section>
 

@@ -172,6 +172,11 @@ export default function CincinnatiPermitStatus2026Post() {
           <p className="mt-4">
             First confirm whether your property is within Cincinnati city limits or in unincorporated
             Hamilton County — then use the correct portal. Using the wrong system means starting over.
+            For projects inside city limits, our{" "}
+            <Link href="/locations/oh/cincinnati" className="text-[#FF6B00] hover:underline">
+              Cincinnati permit status page
+            </Link>{" "}
+            has the department contacts and typical timelines.
           </p>
         </section>
 

@@ -57,6 +57,10 @@ export default function AustinPermitSearchToolPost() {
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">THE THREE WAYS TO SEARCH AUSTIN PERMITS</h2>
           <p>
             Austin makes permit data available through three main channels. Each is good for different things.
+            If you just want current status and timelines in one place, start with our{" "}
+            <Link href="/locations/tx/austin" className="text-[#FF6B00] hover:underline">
+              Austin permit status page
+            </Link>.
           </p>
           <div className="mt-4 border border-[#FF6B00]/20 overflow-hidden">
             {[

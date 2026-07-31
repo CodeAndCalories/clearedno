@@ -55,7 +55,10 @@ export default function SanAntonioPermitTrackingPost() {
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">SAN ANTONIO&apos;S GROWTH — AND WHAT IT MEANS FOR PERMITS</h2>
           <p>
-            San Antonio has been one of the fastest-growing large cities in the United States for the past decade. Population growth consistently ranks it among the top five cities nationally, and the construction activity that follows has pushed the Development Services Department to its limits.
+            San Antonio has been one of the fastest-growing large cities in the United States for the past decade. Population growth consistently ranks it among the top five cities nationally, and the construction activity that follows has pushed the Development Services Department to its limits. Current DSD contacts and approval timelines are on our{" "}
+            <Link href="/locations/tx/san-antonio" className="text-[#FF6B00] hover:underline">
+              San Antonio permit tracking page
+            </Link>.
           </p>
           <p className="mt-3">
             The DSD processes tens of thousands of permit applications per year across residential, commercial, and infrastructure categories. That volume creates predictable pressure: review queues are longer, processing times extend, and the gap between permit submission and approval widens.

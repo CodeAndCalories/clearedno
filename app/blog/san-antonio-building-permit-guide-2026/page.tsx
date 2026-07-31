@@ -67,7 +67,10 @@ export default function SanAntonioPermitGuidePost() {
             Citizen Access platform — the same system used by Austin and many other Texas cities.
             If you&apos;re familiar with the Austin BDS portal, SAconnect will feel familiar. If you&apos;re
             new to Accela, it&apos;s worth spending 15 minutes getting oriented before your first
-            application.
+            application. DSD contact details and current approval windows are summarised on our{" "}
+            <Link href="/locations/tx/san-antonio" className="text-[#FF6B00] hover:underline">
+              San Antonio permit tracking page
+            </Link>.
           </p>
           <p className="mt-3">
             Contractor accounts are required to submit applications and upload documents. Public

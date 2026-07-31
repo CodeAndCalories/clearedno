@@ -194,6 +194,15 @@ const PERMIT_POSTS = [
     readTime: "4 min read",
   },
   {
+    href: "/blog/houston-building-permit-status-2026",
+    title: "Houston Building Permit Status Check — Complete 2026 Guide",
+    excerpt:
+      "Every Houston permit status explained, inspection stages by project type, Permitting Center contact details, and the Houston vs Harris County jurisdiction split.",
+    tag: "Houston, TX",
+    date: "May 2026",
+    readTime: "9 min read",
+  },
+  {
     href: "/blog/houston-building-permit-status-check-2026",
     title: "Houston Building Permit Status Check: A Contractor's Guide (2026)",
     excerpt:

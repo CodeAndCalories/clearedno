@@ -66,7 +66,11 @@ export default function DetroitPermitStatusPost() {
             <strong className="text-[#F5F0E8]">bseed.detroitmi.gov</strong>. BSEED is a combined agency
             that handles building permits, fire inspections, environmental compliance, and licensing
             — which means the department is large and its functions are not always obviously separated
-            on the website.
+            on the website. Our{" "}
+            <Link href="/locations/mi/detroit" className="text-[#FF6B00] hover:underline">
+              Detroit permit tracking page
+            </Link>{" "}
+            pulls out the BSEED contacts and current approval windows.
           </p>
           <p className="mt-3">
             The permit and licensing functions are the ones most contractors interact with. BSEED

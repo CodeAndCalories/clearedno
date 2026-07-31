@@ -7,6 +7,7 @@
 // Returns: { status, address?, lastChecked, city }
 
 import { NextRequest, NextResponse } from "next/server";
+import { cities, LIVE_CHECKER_CITIES } from "@/lib/cities";
 
 // ── Rate limiter (in-memory, resets on server restart) ───────────────────────
 
@@ -94,19 +95,19 @@ async function checkAustin(permitNumber: string): Promise<{ status: string; addr
 
 // ── City router ───────────────────────────────────────────────────────────────
 //
-// Only Austin has a live integration (Socrata Open Data API). Dallas, Houston,
-// and San Antonio portals don't expose public APIs and would need Playwright
-// scrapers — until those exist, we surface an honest "coming soon" instead of
-// pretending to check.
+// Only Austin has a live integration (Socrata Open Data API). The remaining
+// city portals don't expose public APIs and would need Playwright scrapers —
+// until those exist, we surface an honest "coming soon" instead of pretending
+// to check.
+//
+// Accepted cities are derived from lib/cities.ts so every city with a
+// /locations page can reach this route instead of failing "Invalid city".
 
-const CITY_LABELS: Record<string, string> = {
-  austin:       "Austin, TX",
-  dallas:       "Dallas, TX",
-  houston:      "Houston, TX",
-  "san-antonio": "San Antonio, TX",
-};
+const CITY_LABELS: Record<string, string> = Object.fromEntries(
+  cities.map((c) => [c.slug, `${c.name}, ${c.stateAbbr}`])
+);
 
-const SUPPORTED_CITIES = new Set(["austin"]);
+const SUPPORTED_CITIES = LIVE_CHECKER_CITIES;
 
 // ── Route handler ─────────────────────────────────────────────────────────────
 

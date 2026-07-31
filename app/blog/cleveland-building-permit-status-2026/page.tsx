@@ -165,7 +165,11 @@ export default function ClevelandPermitStatus2026Post() {
             For permits within Cleveland city limits, use the Cleveland Building Department ePlans
             portal. Enter your address or permit number to see status, inspection history, and any
             holds. Cleveland tracks building, electrical, plumbing, and mechanical permits — you may
-            need to search multiple types for a full picture.
+            need to search multiple types for a full picture. Our{" "}
+            <Link href="/locations/oh/cleveland" className="text-[#FF6B00] hover:underline">
+              Cleveland permit tracking page
+            </Link>{" "}
+            collects the department contacts and approval windows by project type.
           </p>
         </section>
 
