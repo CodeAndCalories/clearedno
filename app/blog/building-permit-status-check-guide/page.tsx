@@ -73,7 +73,7 @@ const OHIO_CITIES = [
   },
   {
     city: "Cincinnati",
-    portal: "development.cincinnati-oh.gov",
+    portal: "cincinnati-oh.gov/buildings/",
     details:
       "Search by permit number or parcel ID. Cincinnati city permits and Hamilton County permits are separate — verify jurisdiction before searching.",
     sees: null,

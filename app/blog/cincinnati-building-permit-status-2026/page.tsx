@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "Cincinnati Ohio building permit status",
     "Cincinnati permit status check 2026",
     "Hamilton County building permit lookup",
-    "Cincinnati Building Department permit search",
+    "Cincinnati Buildings & Inspections permit search",
     "Cincinnati Ohio inspection status",
     "Hamilton County permit search",
     "Cincinnati contractor permit tracking",
@@ -49,7 +49,7 @@ const STATUSES = [
 ];
 
 const ROOFING_STAGES = [
-  "Application submitted to Cincinnati Building Department or Hamilton County",
+  "Application submitted to Cincinnati Buildings & Inspections or Hamilton County",
   "Application reviewed and approved (2–5 business days for simple re-roofs)",
   "Work completed",
   "Final inspection requested",
@@ -99,7 +99,7 @@ const FAQS = [
   },
   {
     q: "Does Cincinnati use the same system as Hamilton County?",
-    a: "No — City of Cincinnati permits are handled by the Cincinnati Building Department. Hamilton County Building Inspections covers unincorporated areas and some suburban jurisdictions. Always verify which applies to your property before pulling a permit.",
+    a: "No — City of Cincinnati permits are handled by the Cincinnati Department of Buildings & Inspections (B&I). Hamilton County Building Inspections covers unincorporated areas and some suburban jurisdictions. Always verify which applies to your property before pulling a permit.",
   },
   {
     q: "Does Cincinnati require permits for roofing?",
@@ -154,7 +154,7 @@ export default function CincinnatiPermitStatus2026Post() {
           <div className="border border-[#FF6B00]/20 bg-[#FF6B00]/5 p-5 space-y-2 text-xs font-mono">
             <div className="flex gap-3">
               <span className="text-[#FF6B00] w-32 flex-shrink-0">City portal</span>
-              <span className="text-[#F5F0E8]/80">Cincinnati Building Department — development.cincinnati-oh.gov</span>
+              <span className="text-[#F5F0E8]/80">Cincinnati Buildings &amp; Inspections — cincinnati-oh.gov/buildings/</span>
             </div>
             <div className="flex gap-3">
               <span className="text-[#FF6B00] w-32 flex-shrink-0">County portal</span>
@@ -190,7 +190,7 @@ export default function CincinnatiPermitStatus2026Post() {
           </p>
           <div className="border-l-2 border-[#FF6B00]/40 pl-4 mt-4 text-xs font-mono text-[#F5F0E8]/60 space-y-1">
             <p className="text-[#F5F0E8]/40 text-[9px] tracking-widest uppercase mb-2">Jurisdiction split</p>
-            <p>Cincinnati city limits → Cincinnati Building Department</p>
+            <p>Cincinnati city limits → Cincinnati Department of Buildings &amp; Inspections</p>
             <p>Hamilton County (unincorporated) → Hamilton County Building Inspections</p>
           </div>
           <p className="mt-4">
@@ -298,13 +298,16 @@ export default function CincinnatiPermitStatus2026Post() {
 
         {/* Contact */}
         <section>
-          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">CINCINNATI BUILDING DEPARTMENT — CONTACT INFORMATION</h2>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">CINCINNATI BUILDINGS &amp; INSPECTIONS — CONTACT INFORMATION</h2>
 
-          <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-5 mb-3">CINCINNATI BUILDING DEPARTMENT</h3>
+          <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-5 mb-3">CINCINNATI DEPARTMENT OF BUILDINGS &amp; INSPECTIONS</h3>
           <div className="border-l-2 border-[#FF6B00]/30 pl-4 space-y-1 text-xs font-mono text-[#F5F0E8]/60">
-            <p>City of Cincinnati Building Department</p>
-            <p>805 Central Ave, Cincinnati, OH 45202</p>
-            <p>Monday–Friday, 8am–4pm</p>
+            <p>City of Cincinnati Department of Buildings &amp; Inspections (B&amp;I)</p>
+            <p>Permit Center, 805 Central Avenue, Suite 500</p>
+            <p>II Centennial Plaza, Cincinnati, OH 45202</p>
+            <p>Monday–Friday, 7:30am–4:00pm (Tier 1 permits: 7:30am–2:30pm)</p>
+            <p>Customer service: (513) 352-3271, option 1</p>
+            <p>Inspections scheduling: (513) 352-3275</p>
           </div>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">HAMILTON COUNTY BUILDING INSPECTIONS</h3>

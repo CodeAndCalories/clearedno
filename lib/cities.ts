@@ -170,12 +170,12 @@ export const cities: CityData[] = [
     stateAbbr: "OH",
     stateSlug: "oh",
     slug: "cincinnati",
-    buildingDeptName: "Cincinnati Development Services",
+    buildingDeptName: "Cincinnati Department of Buildings & Inspections (B&I)",
     buildingDeptPhone: "(513) 352-3271",
-    buildingDeptAddress: "805 Central Ave, Cincinnati, OH 45202",
-    buildingDeptUrl: "https://www.cincinnati-oh.gov/psa/permits-inspections",
+    buildingDeptAddress: "Permit Center, 805 Central Avenue, Suite 500, II Centennial Plaza, Cincinnati, OH 45202",
+    buildingDeptUrl: "https://www.cincinnati-oh.gov/buildings/",
     summary:
-      "Cincinnati Development Services posts the quickest residential turnaround of the three Ohio metros we track, with tenant improvements moving faster than regional averages.",
+      "Cincinnati's Department of Buildings & Inspections posts the quickest residential turnaround of the three Ohio metros we track, with tenant improvements moving faster than regional averages.",
     timelines: [
       { type: "Residential repair / addition", time: "1–3 weeks" },
       { type: "New residential build", time: "5–10 weeks" },

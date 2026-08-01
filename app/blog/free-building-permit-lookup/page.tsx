@@ -38,7 +38,7 @@ const jsonLd = {
 const OHIO = [
   { city: "Columbus",   portal: "permits.columbus.gov",                        search: "address, permit number, or contractor name", note: "Updated daily" },
   { city: "Cleveland",  portal: "Cleveland Building Department ePlans",         search: "address or permit number",                   note: "Some older permits require phone lookup" },
-  { city: "Cincinnati", portal: "Hamilton County Building Inspections",         search: "permit number or parcel ID",                 note: null },
+  { city: "Cincinnati", portal: "Cincinnati Department of Buildings & Inspections", search: "address or permit number",                note: "Unincorporated areas use Hamilton County Building Inspections instead" },
   { city: "Akron",      portal: "City of Akron Building Department",            search: "address or permit number",                   note: null },
   { city: "Toledo",     portal: "Toledo Building Inspection",                   search: "address",                                    note: null },
   { city: "Dayton",     portal: "City of Dayton Permit Center",                 search: "address or permit number",                   note: null },

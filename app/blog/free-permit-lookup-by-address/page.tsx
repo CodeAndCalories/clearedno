@@ -60,8 +60,8 @@ const OHIO_CITIES = [
   },
   {
     city: "Cincinnati",
-    url: "Hamilton County Building Inspections portal",
-    searchBy: "Parcel ID or permit number",
+    url: "cincinnati-oh.gov/buildings/ — Dept of Buildings & Inspections",
+    searchBy: "Address or permit number",
     detail: null,
     note: "City of Cincinnati and Hamilton County have separate systems. Most Cincinnati city addresses use the city portal.",
   },

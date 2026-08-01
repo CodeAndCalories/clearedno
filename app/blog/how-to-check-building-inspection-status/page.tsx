@@ -66,7 +66,7 @@ const OHIO_CITIES = [
   },
   {
     city: "Cincinnati",
-    portal: "development.cincinnati-oh.gov",
+    portal: "cincinnati-oh.gov/buildings/",
     searchBy: "Permit number or parcel ID",
     updateFreq: "—",
     notes:

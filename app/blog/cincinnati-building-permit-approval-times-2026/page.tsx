@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "Cincinnati building permit approval time",
     "Cincinnati permit guide",
     "Hamilton County building permit",
-    "development.cincinnati-oh.gov",
+    "cincinnati-oh.gov/buildings",
     "Cincinnati contractor permit",
   ],
   alternates: { canonical: "https://www.clearedno.com/blog/cincinnati-building-permit-approval-times-2026" },
@@ -72,8 +72,8 @@ export default function CincinnatiPermitApprovalPost() {
           </p>
           <p className="mt-3">
             The <strong className="text-[#F5F0E8]">City of Cincinnati</strong> handles permits for projects
-            within city limits through its Department of Buildings &amp; Inspections. The online portal
-            is at <strong className="text-[#F5F0E8]">development.cincinnati-oh.gov</strong>. The city
+            within city limits through its Department of Buildings &amp; Inspections (B&amp;I). The online portal
+            is at <strong className="text-[#F5F0E8]">cincinnati-oh.gov/buildings/</strong>. The city
             uses the Accela platform, similar to Columbus.
           </p>
           <p className="mt-3">
@@ -101,15 +101,17 @@ export default function CincinnatiPermitApprovalPost() {
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">THE CITY OF CINCINNATI PERMIT PROCESS</h2>
           <p>
             For projects within city limits, the City&apos;s Department of Buildings &amp; Inspections
-            at <strong className="text-[#F5F0E8]">development.cincinnati-oh.gov</strong> handles everything
+            at <strong className="text-[#F5F0E8]">cincinnati-oh.gov/buildings/</strong> handles everything
             from new construction to mechanical permits.
           </p>
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-5 mb-3">HOW TO APPLY</h3>
           <p>
-            Most permit types can be applied for online through the Cincinnati Development portal.
+            Most permit types can be applied for online through the B&amp;I portal.
             You&apos;ll need a registered contractor account — setup takes about 15 minutes with your
-            contractor license number, insurance certificates, and contact information. Walk-in
-            service is available at 805 Central Avenue, Suite 500, in downtown Cincinnati.
+            contractor license number, insurance certificates, and contact information. Counter
+            service is available at the Permit Center, 805 Central Avenue, Suite 500, II Centennial
+            Plaza, in downtown Cincinnati — open Monday through Friday, 7:30 a.m. to 4:00 p.m., with
+            Tier 1 permits handled until 2:30 p.m.
           </p>
           <p className="mt-3">
             Cincinnati requires plans to be submitted in PDF format for electronic review. Plans
