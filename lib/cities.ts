@@ -120,12 +120,15 @@ export const cities: CityData[] = [
     stateAbbr: "OH",
     stateSlug: "oh",
     slug: "columbus",
-    buildingDeptName: "Columbus Building and Zoning Services",
+    buildingDeptName: "Columbus Department of Building and Zoning Services (BZS)",
+    // UNVERIFIED: neither (614) 645-7433 nor the inspection line (614) 645-5731
+    // used in the blog posts could be confirmed against an official columbus.gov
+    // source. Address, department name, and columbus.gov/bzs are verified.
     buildingDeptPhone: "(614) 645-7433",
-    buildingDeptAddress: "111 N Front St, Columbus, OH 43215",
+    buildingDeptAddress: "111 N Front Street, Columbus, OH 43215",
     buildingDeptUrl: "https://www.columbus.gov/bzs",
     summary:
-      "Columbus Building and Zoning Services covers Ohio's largest permit market. Residential additions typically clear in a few weeks; commercial work runs considerably longer.",
+      "Columbus Building and Zoning Services (BZS) covers Ohio's largest permit market. Residential additions typically clear in a few weeks; commercial work runs considerably longer.",
     timelines: [
       { type: "Residential repair / addition", time: "2–4 weeks" },
       { type: "New residential build", time: "6–10 weeks" },

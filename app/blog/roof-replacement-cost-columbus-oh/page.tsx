@@ -241,7 +241,7 @@ export default function RoofReplacementCostColumbusPost() {
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">GETTING ROOFING PERMITS IN COLUMBUS</h2>
           <p>
             The City of Columbus requires permits for roof replacements. The permit process
-            through Columbus Building Services typically takes 1–3 business days for residential
+            through Columbus Building and Zoning Services typically takes 1–3 business days for residential
             work.
           </p>
           <p className="mt-3">
@@ -346,7 +346,7 @@ export default function RoofReplacementCostColumbusPost() {
               },
               {
                 q: "Is a permit required for roof replacement in Columbus?",
-                a: "Yes. Any full replacement or significant repair requires a permit from Columbus Building Services. Contractors who skip permits create problems for resale.",
+                a: "Yes. Any full replacement or significant repair requires a permit from Columbus Building and Zoning Services (BZS). Contractors who skip permits create problems for resale.",
               },
               {
                 q: "How do I compare Columbus roofing quotes?",

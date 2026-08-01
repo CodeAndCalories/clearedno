@@ -54,7 +54,7 @@ const OHIO_CITIES = [
     searchBy: "Address, permit number, or contractor name",
     updateFreq: "Within 24 hours of inspection",
     notes:
-      "Columbus Building Services handles all city permits. Suburban cities (Dublin, Westerville, Hilliard) have separate portals.",
+      "Columbus Building and Zoning Services (BZS) handles all city permits. Suburban cities (Dublin, Westerville, Hilliard) have separate portals.",
   },
   {
     city: "Cleveland",

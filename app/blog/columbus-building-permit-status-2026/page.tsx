@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "Franklin County building permit",
     "Columbus Ohio inspection status",
     "Columbus contractor permit tracking",
-    "Columbus Development Services permit",
+    "Columbus Building and Zoning Services permit",
   ],
   alternates: { canonical: "https://www.clearedno.com/blog/columbus-building-permit-status-2026" },
   openGraph: {
@@ -103,7 +103,7 @@ const FAQS = [
   },
   {
     q: "What is Franklin County's role in Columbus permitting?",
-    a: "Properties within Columbus city limits use Columbus Building Services. Properties in unincorporated Franklin County use Franklin County Building Inspection. Always verify which jurisdiction applies before pulling a permit.",
+    a: "Properties within Columbus city limits use the Columbus Department of Building and Zoning Services (BZS). Properties in unincorporated Franklin County use Franklin County Building Inspection. Always verify which jurisdiction applies before pulling a permit.",
   },
   {
     q: "When is peak permit season in Columbus?",
@@ -146,7 +146,7 @@ export default function ColumbusPermitStatus2026Post() {
           <div className="border border-[#FF6B00]/20 bg-[#FF6B00]/5 p-5 space-y-2 text-xs font-mono">
             <div className="flex gap-3">
               <span className="text-[#FF6B00] w-32 flex-shrink-0">Portal</span>
-              <span className="text-[#F5F0E8]/80">permits.columbus.gov — Columbus Building Services</span>
+              <span className="text-[#F5F0E8]/80">permits.columbus.gov — Building and Zoning Services (BZS)</span>
             </div>
             <div className="flex gap-3">
               <span className="text-[#FF6B00] w-32 flex-shrink-0">Search by</span>
@@ -182,7 +182,7 @@ export default function ColumbusPermitStatus2026Post() {
           </p>
           <div className="border-l-2 border-[#FF6B00]/40 pl-4 mt-4 text-xs font-mono text-[#F5F0E8]/60 space-y-1">
             <p className="text-[#F5F0E8]/40 text-[9px] tracking-widest uppercase mb-2">Jurisdiction split</p>
-            <p>Columbus city limits → Columbus Building Services at permits.columbus.gov</p>
+            <p>Columbus city limits → Building and Zoning Services (BZS) at permits.columbus.gov</p>
             <p>Franklin County (unincorporated) → Franklin County Building Inspection</p>
           </div>
           <p className="mt-4">
@@ -292,19 +292,21 @@ export default function ColumbusPermitStatus2026Post() {
 
         {/* Contact */}
         <section>
-          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">COLUMBUS BUILDING SERVICES — CONTACT INFORMATION</h2>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">COLUMBUS BUILDING AND ZONING SERVICES — CONTACT INFORMATION</h2>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-5 mb-3">IN-PERSON</h3>
           <div className="border-l-2 border-[#FF6B00]/30 pl-4 space-y-1 text-xs font-mono text-[#F5F0E8]/60">
-            <p>Columbus Building Services</p>
-            <p>757 Carolyn Ave, Columbus, OH 43224</p>
+            <p>Department of Building and Zoning Services (BZS)</p>
+            <p>111 N Front Street, Columbus, OH 43215</p>
             <p>Monday–Friday, 8am–4:30pm</p>
           </div>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">ONLINE PORTAL</h3>
           <p>
-            <strong className="text-[#F5F0E8]">permits.columbus.gov</strong> — available 24/7 for
-            status checks, permit applications, document uploads, and inspection requests.
+            <strong className="text-[#F5F0E8]">permits.columbus.gov</strong> — the Accela Citizen
+            Access portal, available 24/7 for status checks, permit applications, document uploads,
+            and inspection requests. The department&apos;s own site, with fee schedules, forms, and
+            staff contacts, is at <strong className="text-[#F5F0E8]">columbus.gov/bzs</strong>.
           </p>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">INSPECTION REQUESTS</h3>

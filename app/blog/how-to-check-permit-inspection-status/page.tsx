@@ -44,7 +44,7 @@ const STATUS_DEFINITIONS = [
 ];
 
 const OHIO_PORTALS = [
-  { city: "Columbus",    detail: "Columbus Building Services portal — search by address or permit number at permits.columbus.gov" },
+  { city: "Columbus",    detail: "Columbus Building and Zoning Services (BZS) — search by address or permit number at permits.columbus.gov" },
   { city: "Cleveland",   detail: "City of Cleveland Building Department — ePlans portal for status checks" },
   { city: "Cincinnati",  detail: "Cincinnati Department of Buildings & Inspections — search by address or permit number at cincinnati-oh.gov/buildings/" },
   { city: "Dayton",      detail: "City of Dayton Permit Center — online status available at daytonohio.gov" },

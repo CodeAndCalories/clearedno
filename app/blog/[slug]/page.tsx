@@ -1362,8 +1362,8 @@ const ARTICLES: Article[] = [
           <strong style={{ color: "#FF6B00" }}>Columbus (Franklin County):</strong> Standard
           residential permits — roof replacements, deck additions, fence permits — average 12 days
           from submission to approval under normal conditions. During peak construction season
-          (May through August), that average climbs to 16–20 days as the Columbus Development
-          Services Department processes a higher volume of applications. Permits requiring plan
+          (May through August), that average climbs to 16–20 days as the Columbus Department of
+          Building and Zoning Services processes a higher volume of applications. Permits requiring plan
           review — additions, new construction — run 21–30 days as a baseline, with corrections
           adding another 7–14 days per round.
         </p>
