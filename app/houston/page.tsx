@@ -103,7 +103,7 @@ export default function HoustonPage() {
             <div className="space-y-4 text-sm text-[#F5F0E8]/60 leading-relaxed">
               <p>
                 Houston uses the <strong className="text-[#F5F0E8]">Houston Permitting Center</strong>{" "}
-                at <a href="https://www.houston311.org/hpd/" target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] hover:underline">houston311.org/hpd</a>.
+                at <a href="https://www.houstonpermittingcenter.org" target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] hover:underline">houstonpermittingcenter.org</a>.
                 Houston is one of the few major U.S. cities without zoning laws, making the permitting
                 process unique — but no less time-consuming to monitor.
               </p>

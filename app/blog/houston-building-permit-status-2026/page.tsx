@@ -91,7 +91,7 @@ const FAQS = [
   },
   {
     q: "How do I request a Houston inspection?",
-    a: "Through the online portal at houstonpermittingcenter.org or by phone at (832) 394-8880. Requests must be made at least 24 hours in advance. Inspections are typically scheduled for the next available business day.",
+    a: "Through the online portal at houstonpermittingcenter.org or by phone at (832) 394-9000. Requests must be made at least 24 hours in advance. Inspections are typically scheduled for the next available business day.",
   },
   {
     q: "How long is a Houston building permit valid?",
@@ -250,8 +250,8 @@ export default function HoustonPermitStatus2026Post() {
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-5 mb-3">IN-PERSON</h3>
           <div className="border-l-2 border-[#FF6B00]/30 pl-4 space-y-1 text-xs font-mono text-[#F5F0E8]/60">
             <p>Houston Permitting Center</p>
-            <p>1002 Washington Ave, Houston, TX 77002</p>
-            <p>Monday–Friday, 8am–4:30pm</p>
+            <p>1002 Washington Avenue, Houston, TX 77002</p>
+            <p>Monday–Friday, 8am–5pm</p>
           </div>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">ONLINE PORTAL</h3>
@@ -263,7 +263,7 @@ export default function HoustonPermitStatus2026Post() {
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">PHONE</h3>
           <p>
-            <strong className="text-[#F5F0E8]">(832) 394-8880</strong> — for status questions that
+            <strong className="text-[#F5F0E8]">(832) 394-9000</strong> — for status questions that
             aren&apos;t clear in the portal. Hold times vary; mornings early in the week tend to be
             shortest.
           </p>

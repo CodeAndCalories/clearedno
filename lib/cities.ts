@@ -70,10 +70,10 @@ export const cities: CityData[] = [
     stateAbbr: "TX",
     stateSlug: "tx",
     slug: "houston",
-    buildingDeptName: "Houston Permits & Inspections Division",
-    buildingDeptPhone: "(832) 394-8800",
-    buildingDeptAddress: "1002 Washington Ave, Houston, TX 77002",
-    buildingDeptUrl: "https://www.houstontx.gov/permits",
+    buildingDeptName: "Houston Permitting Center",
+    buildingDeptPhone: "(832) 394-9000",
+    buildingDeptAddress: "1002 Washington Avenue, Houston, TX 77002",
+    buildingDeptUrl: "https://www.houstonpermittingcenter.org",
     summary:
       "Houston has no citywide zoning, but permits are still required for structural work. Verify whether your address falls under the city or unincorporated Harris County before applying.",
     timelines: [
@@ -222,7 +222,7 @@ export const cities: CityData[] = [
     slug: "detroit",
     buildingDeptName: "Detroit Buildings, Safety Engineering and Environmental Department",
     buildingDeptPhone: "(313) 224-3160",
-    buildingDeptAddress: "401 CAYMC, Detroit, MI 48226",
+    buildingDeptAddress: "Coleman A. Young Municipal Center, 2 Woodward Avenue, Suite 401, Detroit, MI 48226",
     buildingDeptUrl: "https://detroitmi.gov/departments/buildings-safety-engineering-and-environmental-department",
     summary:
       "Detroit's BSEED handles a heavy mix of rehab and new construction. New commercial projects carry the longest review window of any city we monitor.",

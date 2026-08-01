@@ -8,8 +8,8 @@ export const metadata: Metadata = {
   keywords: [
     "Houston building permit status",
     "Houston permit check",
-    "permits.houston.gov",
-    "Houston Permit Center AMANDA",
+    "houstonpermittingcenter.org",
+    "Houston Permitting Center AMANDA",
     "Houston permit approval time 2026",
   ],
   alternates: { canonical: "https://www.clearedno.com/blog/houston-building-permit-status-check-2026" },
@@ -80,28 +80,28 @@ export default function HoustonPermitStatusPost() {
           </p>
           <p className="mt-3">
             Building permits in the City of Houston are managed by the{" "}
-            <strong className="text-[#F5F0E8]">Houston Permit Center</strong>, accessible through{" "}
-            <strong className="text-[#F5F0E8]">permits.houston.gov</strong>. The city uses the AMANDA
+            <strong className="text-[#F5F0E8]">Houston Permitting Center</strong>, accessible through{" "}
+            <strong className="text-[#F5F0E8]">houstonpermittingcenter.org</strong>. The city uses the AMANDA
             permit management platform for backend processing and the ProjectDox system for online
-            plan review. The public-facing portal at permits.houston.gov handles permit applications,
+            plan review. The public-facing portal at houstonpermittingcenter.org handles permit applications,
             status checks, and document submissions.
           </p>
           <p className="mt-3">
-            The Houston Permit Center&apos;s main office is at 1002 Washington Avenue in Houston.
-            Phone: (832) 394-8800. Walk-in hours are Monday through Friday, 8 AM to 5 PM. For
+            The Houston Permitting Center&apos;s main office is at 1002 Washington Avenue in Houston.
+            Phone: (832) 394-9000. Walk-in hours are Monday through Friday, 8 AM to 5 PM. For
             commercial projects, Houston also has district permit offices that can handle certain
             permit types closer to the project site.
           </p>
         </section>
 
         <section>
-          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">HOW TO CHECK PERMIT STATUS THROUGH PERMITS.HOUSTON.GOV</h2>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">HOW TO CHECK PERMIT STATUS THROUGH HOUSTONPERMITTINGCENTER.ORG</h2>
           <p>
             Houston&apos;s portal allows status checks with or without a login. For basic status lookups:
           </p>
           <ol className="space-y-3 mt-3 ml-4">
             {[
-              { n: "1", t: "Go to permits.houston.gov" },
+              { n: "1", t: "Go to houstonpermittingcenter.org" },
               { n: "2", t: "Select \"Check Permit Status\" or navigate to the permit lookup tool" },
               { n: "3", t: "Enter your permit number. Houston permit numbers follow the format YYYY-XXXXXX for building permits." },
               { n: "4", t: "You can also search by address. Enter the full street address including zip code for best results." },
@@ -292,7 +292,7 @@ export default function HoustonPermitStatusPost() {
             </li>
           </ul>
           <p className="mt-3">
-            Schedule inspections through permits.houston.gov or by calling (832) 394-8800, inspection
+            Schedule inspections through houstonpermittingcenter.org or by calling (832) 394-9000, inspection
             scheduling option. Aim for at least 24–48 hours lead time on standard inspections.
           </p>
         </section>
@@ -316,8 +316,8 @@ export default function HoustonPermitStatusPost() {
             <li className="flex gap-3">
               <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">→</span>
               <div>
-                <strong className="text-[#F5F0E8]">Call with your permit number ready.</strong> (832) 394-8800
-                connects to the Permit Center. Ask specifically whether a reviewer has been assigned
+                <strong className="text-[#F5F0E8]">Call with your permit number ready.</strong> (832) 394-9000
+                connects to the Permitting Center. Ask specifically whether a reviewer has been assigned
                 and whether there are any outstanding comments. General status questions get generic
                 answers.
               </div>
@@ -326,7 +326,7 @@ export default function HoustonPermitStatusPost() {
               <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">→</span>
               <div>
                 <strong className="text-[#F5F0E8]">Request a permit status meeting for commercial projects.</strong>
-                Houston&apos;s Permit Center offers pre-construction meetings and mid-review consultations
+                Houston&apos;s Permitting Center offers pre-construction meetings and mid-review consultations
                 for commercial projects. If your commercial project has been stuck for an unusually
                 long time, requesting a formal status meeting often produces more information — and
                 sometimes accelerates review — compared to phone calls alone.

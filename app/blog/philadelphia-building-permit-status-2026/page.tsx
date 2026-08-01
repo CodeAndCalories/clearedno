@@ -456,7 +456,7 @@ export default function PhiladelphiaPermitStatus2026Post() {
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">PHONE</h3>
           <p>
-            Philadelphia routes general L+I questions through <strong className="text-[#F5F0E8]">311</strong>.
+            <strong className="text-[#F5F0E8]">(215) 686-2433</strong> — the L+I permit line.
             For a specific application, the assigned plan examiner&apos;s contact appears on the
             eCLIPSE record — reaching them directly is far faster than the general line.
           </p>
