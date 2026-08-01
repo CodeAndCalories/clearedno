@@ -12,7 +12,7 @@ export const metadata: Metadata = {
     "dallascityhall.com permit lookup",
     "Dallas inspection status",
     "Dallas contractor permit tracking",
-    "Dallas Development Services",
+    "Dallas Planning and Development Department",
   ],
   alternates: { canonical: "https://www.clearedno.com/blog/dallas-building-permit-status-2026" },
   openGraph: {
@@ -45,7 +45,7 @@ const STATUSES = [
   { status: "Failed", meaning: "Corrections required", next: "Fix issues, request re-inspection" },
   { status: "Final", meaning: "All inspections complete", next: "Project closed" },
   { status: "Expired", meaning: "Permit lapsed without final", next: "Renew or re-apply" },
-  { status: "Hold", meaning: "Action required", next: "Contact Development Services" },
+  { status: "Hold", meaning: "Action required", next: "Contact Planning and Development" },
 ];
 
 const ROOFING_STAGES = [
@@ -90,7 +90,7 @@ const FAQS = [
   },
   {
     q: "Can I check Dallas permit status by address?",
-    a: "Yes — the Dallas Development Services portal allows address-based search. You'll see all permits associated with that address including historical records.",
+    a: "Yes — the DallasNow portal allows address-based search. You'll see all permits associated with that address including historical records.",
   },
   {
     q: "Does Dallas require permits for roofing?",
@@ -106,7 +106,7 @@ const FAQS = [
   },
   {
     q: "Does Dallas have a roofing permit lookup by address?",
-    a: "Yes — through the Dallas Development Services portal at dallascityhall.com. Search by address to see all roofing permits associated with a property.",
+    a: "Yes — through the DallasNow portal, reached from dallascityhall.com. Search by address to see all roofing permits associated with a property.",
   },
 ];
 
@@ -139,7 +139,7 @@ export default function DallasPermitStatus2026Post() {
           <div className="border border-[#FF6B00]/20 bg-[#FF6B00]/5 p-5 space-y-2 text-xs font-mono">
             <div className="flex gap-3">
               <span className="text-[#FF6B00] w-32 flex-shrink-0">Portal</span>
-              <span className="text-[#F5F0E8]/80">dallascityhall.com — Development Services department</span>
+              <span className="text-[#F5F0E8]/80">DallasNow — Planning and Development Department</span>
             </div>
             <div className="flex gap-3">
               <span className="text-[#FF6B00] w-32 flex-shrink-0">Search by</span>
@@ -155,7 +155,7 @@ export default function DallasPermitStatus2026Post() {
             </div>
           </div>
           <p className="mt-4">
-            Go to Dallas Development Services online portal, navigate to permit search, and enter your
+            Go to the DallasNow portal, navigate to permit search, and enter your
             address or permit number. Dallas tracks building, electrical, mechanical, and plumbing permits
             separately — you may need to search multiple permit types for a full picture. Department
             contacts and typical approval windows are collected on our{" "}
@@ -266,20 +266,23 @@ export default function DallasPermitStatus2026Post() {
 
         {/* Contact info */}
         <section>
-          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">DALLAS DEVELOPMENT SERVICES — CONTACT INFORMATION</h2>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">DALLAS PLANNING AND DEVELOPMENT — CONTACT INFORMATION</h2>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-5 mb-3">IN-PERSON</h3>
           <div className="border-l-2 border-[#FF6B00]/30 pl-4 space-y-1 text-xs font-mono text-[#F5F0E8]/60">
-            <p>Dallas Development Services</p>
-            <p>1500 Marilla St, Dallas, TX 75201</p>
+            <p>Permit Service Center — Planning and Development Department</p>
+            <p>Oak Cliff Municipal Center, 320 E. Jefferson Blvd., Room 118</p>
+            <p>Dallas, TX 75203</p>
             <p>Monday–Friday, 8am–4:30pm</p>
+            <p>No transactions accepted after 4:00pm</p>
           </div>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">ONLINE PORTAL</h3>
           <p>
-            <strong className="text-[#F5F0E8]">dallascityhall.com/departments/sustainabledevelopment</strong> —
-            available 24/7 for status checks, document uploads, and inspection requests. This is the
-            fastest way to track permits and request inspections outside of business hours.
+            <strong className="text-[#F5F0E8]">DallasNow</strong> — the city&apos;s permitting portal,
+            reached from dallascityhall.com. It launched in May 2025, replacing the legacy POSSE
+            system, and is available 24/7 for status checks, document uploads, and inspection
+            requests. This is the fastest way to track permits outside of business hours.
           </p>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">PHONE</h3>
@@ -291,7 +294,8 @@ export default function DallasPermitStatus2026Post() {
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">INSPECTION REQUESTS</h3>
           <p>
-            Request inspections through the online portal or by phone. Dallas requires 24-hour advance
+            Request inspections through DallasNow, or by phone on the inspection scheduling IVR at{" "}
+            <strong className="text-[#F5F0E8]">(214) 670-5313</strong>. Dallas requires 24-hour advance
             notice for most inspections. Same-day requests are not typically accommodated. Inspections
             are assigned to the next available inspector by zone — you cannot request a specific
             inspector or time window.
@@ -363,7 +367,7 @@ export default function DallasPermitStatus2026Post() {
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">CONTRACTOR REGISTRATION</h3>
           <p>
-            Dallas requires contractor registration with Development Services. Expired registrations
+            Dallas requires contractor registration with Planning and Development. Expired registrations
             cause inspection holds. Verify registration status before starting any permitted work — a
             lapsed registration discovered mid-project can freeze all inspection activity until
             it&apos;s resolved.
@@ -385,7 +389,7 @@ export default function DallasPermitStatus2026Post() {
               "Permit applications spike immediately across all Dallas jurisdictions",
               "Out-of-state storm chasers flood the market",
               "Local contractors book 4–8 weeks out within days of the storm",
-              "Dallas Development Services extends hours during surge periods",
+              "Dallas Planning and Development extends hours during surge periods",
             ].map((item) => (
               <li key={item} className="flex gap-3">
                 <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">■</span>

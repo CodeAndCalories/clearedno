@@ -46,12 +46,12 @@ export const cities: CityData[] = [
     stateAbbr: "TX",
     stateSlug: "tx",
     slug: "dallas",
-    buildingDeptName: "Dallas Development Services Department",
+    buildingDeptName: "Dallas Planning and Development Department",
     buildingDeptPhone: "(214) 948-4480",
-    buildingDeptAddress: "320 E Jefferson Blvd, Dallas, TX 75203",
-    buildingDeptUrl: "https://dallascityhall.com/departments/sustainabledevelopment/developmentservices",
+    buildingDeptAddress: "Permit Service Center, Oak Cliff Municipal Center, 320 E. Jefferson Blvd., Room 118, Dallas, TX 75203",
+    buildingDeptUrl: "https://dallascityhall.com/departments/planning-and-development",
     summary:
-      "Dallas Development Services handles permits for the city proper. New commercial construction carries the longest review window of any Texas metro we track.",
+      "Dallas Planning and Development handles permits for the city proper. New commercial construction carries the longest review window of any Texas metro we track.",
     timelines: [
       { type: "Residential addition / remodel", time: "2–4 weeks" },
       { type: "New single-family build", time: "4–8 weeks" },

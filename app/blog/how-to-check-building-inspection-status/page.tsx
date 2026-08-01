@@ -114,7 +114,7 @@ const TEXAS_CITIES = [
   },
   {
     city: "Dallas",
-    portal: "dallascityhall.com — Development Services",
+    portal: "DallasNow — dallascityhall.com, Planning and Development",
     searchBy: "Address or permit number",
     updateFreq: "—",
     notes:

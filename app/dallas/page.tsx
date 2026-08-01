@@ -9,12 +9,12 @@ export const metadata: Metadata = {
     "Track your Dallas building permits automatically. Get instant alerts when your Dallas permit status changes. Built for Texas contractors.",
   keywords: [
     "Dallas permit tracking", "Dallas building permit status", "check permit status Dallas",
-    "Dallas TX permit monitoring", "Dallas Development Services", "Dallas permit cleared",
+    "Dallas TX permit monitoring", "Dallas Planning and Development", "Dallas permit cleared",
   ],
   alternates: { canonical: "https://www.clearedno.com/dallas" },
   openGraph: {
     title: "Dallas TX Building Permit Tracking | ClearedNo",
-    description: "Stop manually checking Dallas Development Services. Get instant alerts when your permit clears.",
+    description: "Stop manually checking Dallas Planning and Development. Get instant alerts when your permit clears.",
     url: "https://www.clearedno.com/dallas",
     type: "website",
     images: [{ url: "/clearedno-icon.png", width: 512, height: 512 }],
@@ -67,7 +67,7 @@ export default function DallasPage() {
             AUTOMATICALLY.
           </h1>
           <p className="text-sm text-[#F5F0E8]/60 leading-relaxed max-w-2xl mb-8">
-            Dallas Development Services doesn&apos;t send permit status alerts. ClearedNo watches
+            Dallas Planning and Development doesn&apos;t send permit status alerts. ClearedNo watches
             the portal for you — checking daily and alerting you the moment your permit status changes,
             so your crew starts work the same day it clears.
           </p>
@@ -102,9 +102,12 @@ export default function DallasPage() {
             </h2>
             <div className="space-y-4 text-sm text-[#F5F0E8]/60 leading-relaxed">
               <p>
-                Dallas uses the <strong className="text-[#F5F0E8]">Development Services portal</strong>{" "}
-                at <a href="https://developmentservices.dallascityhall.com" target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] hover:underline">dallascityhall.com</a>.
-                The system handles building, mechanical, electrical, and plumbing permits for all of Dallas County.
+                Dallas uses the <strong className="text-[#F5F0E8]">DallasNow portal</strong>, run by the
+                Planning and Development Department{" "}
+                at <a href="https://dallascityhall.com/departments/planning-and-development" target="_blank" rel="noopener noreferrer" className="text-[#FF6B00] hover:underline">dallascityhall.com</a>.
+                It handles building, mechanical, electrical, and plumbing permits for the city of
+                Dallas only — Plano, Irving, Garland, Mesquite, Richardson, and Carrollton each run
+                separate permit systems, so confirm which city your job site falls in before applying.
               </p>
               <div className="border border-[#FF6B00]/20 p-4">
                 <div className="text-[10px] tracking-[0.2em] text-[#FF6B00] uppercase mb-3">Typical Dallas Permit Timelines</div>
@@ -127,7 +130,7 @@ export default function DallasPage() {
                 { tip: "Plan your inspections early", detail: "Dallas inspection queues can back up 1–2 weeks. Schedule as soon as you know the inspection is coming, not the day before." },
                 { tip: "Check the trade permit status separately", detail: "Electrical, plumbing, and mechanical permits are tracked separately from the main building permit. Make sure all trade permits are also cleared before starting work." },
                 { tip: "Get your COA early", detail: "If your project requires a Certificate of Occupancy, apply as soon as the final inspection is passed — Dallas COA processing adds additional time." },
-                { tip: "Use Dallas 311 for escalation", detail: "If your permit has been sitting 'under review' for longer than expected, call Dallas 311 and ask to speak with the Development Services permit technician." },
+                { tip: "Use Dallas 311 for escalation", detail: "If your permit has been sitting 'under review' for longer than expected, call Dallas 311 and ask to speak with the Planning and Development permit technician." },
               ].map((item) => (
                 <div key={item.tip} className="border-l-2 border-[#FF6B00]/40 pl-4">
                   <div className="text-xs font-mono font-bold text-[#FF6B00] mb-1">{item.tip}</div>
@@ -144,7 +147,7 @@ export default function DallasPage() {
         <div className="max-w-3xl mx-auto text-center">
           <div className="font-heading text-5xl text-[#FF6B00] mb-6">&ldquo;</div>
           <p className="text-lg text-[#F5F0E8]/80 leading-relaxed mb-6">
-            The Dallas Development Services site is painful to navigate. With ClearedNo I just get
+            The Dallas permit portal is painful to navigate. With ClearedNo I just get
             a text when my permit clears and my crew gets moving. Simple as that.
           </p>
           <div className="text-xs tracking-widest text-[#F5F0E8]/40 uppercase font-mono">

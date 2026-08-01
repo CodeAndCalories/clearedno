@@ -105,7 +105,7 @@ const TEXAS_CITIES = [
   },
   {
     city: "Dallas",
-    url: "dallascityhall.com — Development Services",
+    url: "DallasNow — dallascityhall.com, Planning and Development",
     searchBy: "Address or permit number",
     detail: null,
     note: "Dallas tracks building, electrical, mechanical, and plumbing permits separately.",
