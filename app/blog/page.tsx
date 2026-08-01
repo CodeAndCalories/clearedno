@@ -107,6 +107,78 @@ const ROOFING_POSTS = [
     date: "April 2026",
     readTime: "6 min read",
   },
+  {
+    href: "/blog/angi-vs-homeadvisor-cost-for-contractors-2026",
+    title: "Angi vs HomeAdvisor Cost for Contractors in 2026 — Is It Worth It?",
+    excerpt:
+      "We break down the real cost of Angi and HomeAdvisor for roofing contractors in 2026 — and compare them to storm data lead services.",
+    tag: "Lead Generation",
+    date: "April 2026",
+    readTime: "5 min read",
+  },
+  {
+    href: "/blog/hail-damage-clinton-il",
+    title: "Hail Damage in Clinton IL — Guide for Roofing Contractors",
+    excerpt:
+      "Clinton IL hail damage data for roofing contractors. Storm history, how to find affected properties, and how to canvass before your competition.",
+    tag: "Clinton, IL",
+    date: "April 2026",
+    readTime: "4 min read",
+  },
+  {
+    href: "/blog/hail-damaged-roof-champaign-il",
+    title: "Hail Damaged Roof in Champaign IL? What Roofing Contractors Need to Know",
+    excerpt:
+      "Champaign IL hail damage guide for roofing contractors — storm history, how to find leads, and how to get there before your competition.",
+    tag: "Champaign, IL",
+    date: "April 2026",
+    readTime: "4 min read",
+  },
+  {
+    href: "/blog/hail-damage-roof-repair-chicago-il",
+    title: "Hail Damage Roof Repair in Chicago IL (2026 Guide)",
+    excerpt:
+      "How to spot hail damage, file an insurance claim, find a contractor, and what repairs actually cost in Chicago in 2026.",
+    tag: "Chicago, IL",
+    date: "May 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/roof-replacement-cost-columbus-oh",
+    title: "Roof Replacement Cost in Columbus OH (2026 Guide)",
+    excerpt:
+      "Average roof replacement cost in Columbus OH in 2026. Prices by material, neighborhood, and home size — what to expect before getting quotes.",
+    tag: "Columbus, OH",
+    date: "May 2026",
+    readTime: "5 min read",
+  },
+  {
+    href: "/blog/roof-replacement-cost-cleveland-oh",
+    title: "Roof Replacement Cost in Cleveland OH (2026 Guide)",
+    excerpt:
+      "How much does a roof replacement cost in Cleveland OH in 2026? Average prices by material, size, and neighborhood before you hire.",
+    tag: "Cleveland, OH",
+    date: "May 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/emergency-roof-repair-columbus-oh",
+    title: "Emergency Roof Repair in Columbus OH — What to Do Right Now",
+    excerpt:
+      "What to do immediately after storm damage, how to find a contractor fast, and what emergency roof repair costs in Columbus.",
+    tag: "Columbus, OH",
+    date: "May 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/best-roofing-contractors-cleveland-oh",
+    title: "Best Roofing Contractors in Cleveland OH (2026)",
+    excerpt:
+      "How to find the best roofing contractors in Cleveland OH in 2026. What to look for, red flags to avoid, and how to get the best price on your roof.",
+    tag: "Cleveland, OH",
+    date: "May 2026",
+    readTime: "6 min read",
+  },
 ];
 
 // ── Permit articles ───────────────────────────────────────────────────────────
@@ -381,6 +453,177 @@ const PERMIT_POSTS = [
     tag: "General Contractors",
     date: "July 2026",
     readTime: "9 min read",
+  },
+  {
+    href: "/blog/columbus-building-permit-status-2026",
+    title: "Columbus OH Building Permit Status — Complete 2026 Guide",
+    excerpt:
+      "Check Columbus Ohio permit status online. Search by address or permit number at permits.columbus.gov — roofing, new construction, and commercial timelines.",
+    tag: "Columbus, OH",
+    date: "May 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/cleveland-building-permit-status-2026",
+    title: "Cleveland OH Building Permit Status — How to Check in 2026",
+    excerpt:
+      "Search Cuyahoga County permits by address or number, and what to expect on roofing, electrical, and new construction timelines.",
+    tag: "Cleveland, OH",
+    date: "May 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/cincinnati-building-permit-status-2026",
+    title: "Cincinnati OH Building Permit Status — Full 2026 Guide",
+    excerpt:
+      "Hamilton County permits by address or number, plus approval times for roofing, additions, and new construction.",
+    tag: "Cincinnati, OH",
+    date: "May 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/akron-building-permit-status-2026",
+    title: "Akron OH Building Permit Status — How to Check in 2026",
+    excerpt:
+      "Summit County permit search by address or number, and typical roofing, new construction, and commercial timelines in Akron.",
+    tag: "Akron, OH",
+    date: "May 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/dallas-building-permit-status-2026",
+    title: "Dallas Building Permit Status Check — Complete 2026 Guide",
+    excerpt:
+      "How to check Dallas permit status online, search by address or permit number, understand inspection stages, and track permits automatically.",
+    tag: "Dallas, TX",
+    date: "May 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/san-antonio-building-permit-status-2026",
+    title: "San Antonio Building Permit Status — How to Check in 2026",
+    excerpt:
+      "Search by address or permit number, understand the Bexar County vs city split, and track San Antonio permits automatically.",
+    tag: "San Antonio, TX",
+    date: "May 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/san-antonio-tx-permit-tracking-contractors",
+    title: "San Antonio TX Permit Tracking for Contractors: 2026 Guide",
+    excerpt:
+      "High permit volume, a slow portal, and no notifications mean contractors lose days waiting. How 24/7 monitoring closes that gap.",
+    tag: "San Antonio, TX",
+    date: "March 2026",
+    readTime: "5 min read",
+  },
+  {
+    href: "/blog/grand-rapids-building-permit-status-2026",
+    title: "Grand Rapids MI Building Permit Status — 2026 Guide",
+    excerpt:
+      "Check Grand Rapids permit status online. Home remodel, addition, and roofing permit timelines, fees, and requirements for 2026.",
+    tag: "Grand Rapids, MI",
+    date: "July 2026",
+    readTime: "9 min read",
+  },
+  {
+    href: "/blog/philadelphia-building-permit-status-2026",
+    title: "Philadelphia Building Permit Status — How to Check in 2026",
+    excerpt:
+      "Check Philadelphia permit status via eCLIPSE. Search by address or permit number, understand approval times, and track permits automatically.",
+    tag: "Philadelphia, PA",
+    date: "July 2026",
+    readTime: "9 min read",
+  },
+  {
+    href: "/blog/pennsylvania-roofing-permit-requirements",
+    title: "Pennsylvania Roofing Permit Requirements (2026) — By City",
+    excerpt:
+      "Do you need a permit to replace a roof in Pennsylvania? Requirements, costs, and approval times for Philadelphia, Pittsburgh, Allentown, Erie and more.",
+    tag: "Pennsylvania",
+    date: "July 2026",
+    readTime: "9 min read",
+  },
+  {
+    href: "/blog/building-permit-status-check-guide",
+    title: "Building Permit Status Check — How to Find Any Permit in the Midwest",
+    excerpt:
+      "Free lookup tools for Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania — by address or permit number.",
+    tag: "Permits 101",
+    date: "May 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/free-building-permit-lookup",
+    title: "Free Building Permit Lookup by Address — OH, IL, IN, MI, KY, PA",
+    excerpt:
+      "Look up building permits by address across six Midwest states. Free permit search tools for contractors and homeowners.",
+    tag: "Permits 101",
+    date: "April 2026",
+    readTime: "5 min read",
+  },
+  {
+    href: "/blog/free-permit-lookup-by-address",
+    title: "Free Building Permit Lookup by Address — Search Any City (2026)",
+    excerpt:
+      "Find any permit, check inspection status, and verify contractor work in Ohio, Texas, Illinois, Michigan, and more.",
+    tag: "Permits 101",
+    date: "May 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/how-to-check-building-inspection-status",
+    title: "How to Check Building Inspection Status Online (OH, TX, IL, PA)",
+    excerpt:
+      "Free lookup tools by city, what each inspection status means, and how contractors track multiple permits automatically.",
+    tag: "Inspections",
+    date: "May 2026",
+    readTime: "7 min read",
+  },
+  {
+    href: "/blog/how-to-check-permit-inspection-status",
+    title: "How to Check Building Permit Inspection Status in Ohio, Illinois, Indiana",
+    excerpt:
+      "Search by address or permit number across OH, IL, and IN. Free lookup tools and what each status actually means.",
+    tag: "Inspections",
+    date: "April 2026",
+    readTime: "5 min read",
+  },
+  {
+    href: "/blog/permit-status-pending-what-it-means",
+    title: "Permit Status Pending: What It Means and What to Do While You Wait",
+    excerpt:
+      "Pending, under review, approved, cleared, rejected — what each one means, what to do at each stage, and how monitoring catches the change.",
+    tag: "Permits 101",
+    date: "March 2026",
+    readTime: "5 min read",
+  },
+  {
+    href: "/blog/permit-tracking-software-for-contractors",
+    title: "Permit Tracking Software for Contractors (2026) — Automate Status Checks",
+    excerpt:
+      "Tracking permits across multiple jobs and cities: automated status alerts, subcontractor permit tracking, and how to stop checking portals manually.",
+    tag: "Operations",
+    date: "July 2026",
+    readTime: "6 min read",
+  },
+  {
+    href: "/blog/how-to-never-miss-permit-approval",
+    title: "How Contractors Never Miss a Permit Approval (Without Checking Every Day)",
+    excerpt:
+      "The problem with manual permit checking, what missing an approval actually costs, and the real workflow of a contractor on instant alerts.",
+    tag: "Operations",
+    date: "March 2026",
+    readTime: "5 min read",
+  },
+  {
+    href: "/blog/reduce-permit-wait-time-contractors",
+    title: "How Contractors Reduce the Real Cost of Permit Wait Time in 2026",
+    excerpt:
+      "You can't speed up the city, but you can react faster. Knowing in seconds vs the next morning — and what that difference is worth in dollars.",
+    tag: "Business",
+    date: "March 2026",
+    readTime: "5 min read",
   },
 ];
 
