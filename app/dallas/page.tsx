@@ -9,7 +9,7 @@ export const metadata: Metadata = {
     "Track your Dallas building permits automatically. Get instant alerts when your Dallas permit status changes. Built for Texas contractors.",
   keywords: [
     "Dallas permit tracking", "Dallas building permit status", "check permit status Dallas",
-    "Dallas TX permit monitoring", "Dallas Planning and Development", "Dallas permit cleared",
+    "Dallas TX permit monitoring", "Dallas Planning and Development", "Dallas Development Services", "Dallas permit cleared",
   ],
   alternates: { canonical: "https://www.clearedno.com/dallas" },
   openGraph: {

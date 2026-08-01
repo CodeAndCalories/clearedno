@@ -13,6 +13,7 @@ export const metadata: Metadata = {
     "Dallas inspection status",
     "Dallas contractor permit tracking",
     "Dallas Planning and Development Department",
+    "Dallas Development Services",
   ],
   alternates: { canonical: "https://www.clearedno.com/blog/dallas-building-permit-status-2026" },
   openGraph: {
