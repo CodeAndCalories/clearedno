@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     "Philadelphia building permit status",
     "eCLIPSE permit search",
     "eclipse.phila.gov permit lookup",
-    "Philadelphia L+I permit",
+    "Philadelphia L&I permit",
     "Philadelphia zoning permit vs building permit",
     "Philadelphia historic district review",
     "Philadelphia roofing permit",
@@ -48,7 +48,7 @@ const STATUSES = [
   { status: "Failed", meaning: "Violations or deficiencies noted", next: "Correct and request re-inspection" },
   { status: "Completed", meaning: "Final inspection passed, permit closed", next: "Project closed" },
   { status: "Expired", meaning: "Permit lapsed without completion", next: "Apply for extension or re-apply" },
-  { status: "Revoked / Hold", meaning: "L+I suspended the permit", next: "Contact L+I immediately" },
+  { status: "Revoked / Hold", meaning: "L&I suspended the permit", next: "Contact L&I immediately" },
 ];
 
 const ECLIPSE_STEPS = [
@@ -87,11 +87,11 @@ const CONTRACTOR_USES = [
 const FAQS = [
   {
     q: "How do I check a Philadelphia building permit status?",
-    a: "Use eCLIPSE at eclipse.phila.gov. Search by property address, permit number, or application number. No account is required for a public status lookup, and the portal reflects real-time updates from L+I staff.",
+    a: "Use eCLIPSE at eclipse.phila.gov. Search by property address, permit number, or application number. No account is required for a public status lookup, and the portal reflects real-time updates from L&I staff.",
   },
   {
     q: "What is eCLIPSE?",
-    a: "eCLIPSE is Philadelphia's online permitting and licensing system, run by the Department of Licenses and Inspections (L+I). It handles applications, plan review, fee payment, inspection scheduling, and status tracking for every permit type in the city.",
+    a: "eCLIPSE is Philadelphia's online permitting and licensing system, run by the Department of Licenses and Inspections (L&I). It handles applications, plan review, fee payment, inspection scheduling, and status tracking for every permit type in the city.",
   },
   {
     q: "How long does a Philadelphia roofing permit take?",
@@ -156,7 +156,7 @@ export default function PhiladelphiaPermitStatus2026Post() {
             </div>
             <div className="flex gap-3">
               <span className="text-[#FF6B00] w-32 flex-shrink-0">Department</span>
-              <span className="text-[#F5F0E8]/80">Licenses and Inspections (L+I)</span>
+              <span className="text-[#F5F0E8]/80">Licenses and Inspections (L&amp;I)</span>
             </div>
             <div className="flex gap-3">
               <span className="text-[#FF6B00] w-32 flex-shrink-0">Search by</span>
@@ -188,21 +188,21 @@ export default function PhiladelphiaPermitStatus2026Post() {
           </p>
         </section>
 
-        {/* L+I */}
+        {/* L&I */}
         <section>
-          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">PHILADELPHIA L+I — WHO ACTUALLY REVIEWS YOUR PERMIT</h2>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">PHILADELPHIA L&amp;I — WHO ACTUALLY REVIEWS YOUR PERMIT</h2>
           <p>
             The Department of Licenses and Inspections is the single permitting authority for the
             City of Philadelphia. Unlike most metros, Philadelphia is a consolidated
             city-county — there is no separate county building department to route around. If the
-            property is in Philadelphia, it goes through L+I. Current department details and timelines
+            property is in Philadelphia, it goes through L&amp;I. Current department details and timelines
             by project type are on our{" "}
             <Link href="/locations/pa/philadelphia" className="text-[#FF6B00] hover:underline">
               Philadelphia permit status page
             </Link>.
           </p>
           <p className="mt-3">
-            L+I splits a permit application across multiple review disciplines that run in parallel:
+            L&amp;I splits a permit application across multiple review disciplines that run in parallel:
           </p>
           <ul className="space-y-2 mt-3 ml-4">
             {[
@@ -225,7 +225,7 @@ export default function PhiladelphiaPermitStatus2026Post() {
             at the review lines individually.
           </p>
           <p className="mt-3">
-            L+I also requires contractors to hold an active Philadelphia contractor license with
+            L&amp;I also requires contractors to hold an active Philadelphia contractor license with
             current insurance on file. A lapsed license blocks permit issuance regardless of how
             clean the plan review is.
           </p>
@@ -437,26 +437,27 @@ export default function PhiladelphiaPermitStatus2026Post() {
 
         {/* Contact */}
         <section>
-          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">PHILADELPHIA L+I — CONTACT INFORMATION</h2>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">PHILADELPHIA L&amp;I — CONTACT INFORMATION</h2>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-5 mb-3">IN-PERSON</h3>
           <div className="border-l-2 border-[#FF6B00]/30 pl-4 space-y-1 text-xs font-mono text-[#F5F0E8]/60">
             <p>Department of Licenses and Inspections — Permit and License Center</p>
-            <p>1401 John F. Kennedy Blvd, Municipal Services Building, Concourse Level</p>
-            <p>Philadelphia, PA 19102</p>
-            <p>Monday–Friday, business hours (appointment recommended)</p>
+            <p>Municipal Services Building, Public Service Concourse</p>
+            <p>1401 John F. Kennedy Blvd, Philadelphia, PA 19102</p>
+            <p>Appointment required — main L&amp;I office is on the 11th Floor</p>
           </div>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">ONLINE PORTAL</h3>
           <p>
             <strong className="text-[#F5F0E8]">eclipse.phila.gov</strong> — available 24/7 for status
             checks, applications, plan uploads, comment responses, fee payment, and inspection
-            scheduling. Status reflects real-time L+I activity.
+            scheduling. Status reflects real-time L&amp;I activity.
           </p>
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">PHONE</h3>
           <p>
-            <strong className="text-[#F5F0E8]">(215) 686-2433</strong> — the L+I permit line.
+            Call <strong className="text-[#F5F0E8]">311</strong> within Philadelphia, or{" "}
+            <strong className="text-[#F5F0E8]">(215) 686-8686</strong> from outside the city.
             For a specific application, the assigned plan examiner&apos;s contact appears on the
             eCLIPSE record — reaching them directly is far faster than the general line.
           </p>
@@ -482,7 +483,7 @@ export default function PhiladelphiaPermitStatus2026Post() {
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">UNANSWERED COMMENTS</h3>
           <p>
             When an examiner returns &quot;additional information required,&quot; the clock stops on
-            L+I&apos;s side and starts on yours. Applications sit dead for weeks because nobody
+            L&amp;I&apos;s side and starts on yours. Applications sit dead for weeks because nobody
             noticed the comment posted. This is the single most common self-inflicted delay in
             Philadelphia — and the one automatic status alerts eliminate outright.
           </p>
@@ -496,7 +497,7 @@ export default function PhiladelphiaPermitStatus2026Post() {
 
           <h3 className="font-heading text-lg tracking-widest text-[#F5F0E8] mt-6 mb-3">LAPSED CONTRACTOR LICENSE OR INSURANCE</h3>
           <p>
-            L+I will not issue a permit to a contractor whose Philadelphia license or insurance
+            L&amp;I will not issue a permit to a contractor whose Philadelphia license or insurance
             certificate has expired. The plan review can be fully approved and the permit still will
             not issue. Verify both before applying.
           </p>

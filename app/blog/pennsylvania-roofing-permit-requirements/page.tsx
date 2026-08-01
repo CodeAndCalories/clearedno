@@ -69,7 +69,7 @@ const PERMIT_USUALLY_NOT = [
 const CITIES = [
   {
     city: "Philadelphia",
-    dept: "Licenses and Inspections (L+I)",
+    dept: "Licenses and Inspections (L&I)",
     portal: "eclipse.phila.gov",
     time: "3–7 business days",
     fee: "$100–$300",

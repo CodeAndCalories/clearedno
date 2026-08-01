@@ -246,10 +246,10 @@ export const cities: CityData[] = [
     stateAbbr: "PA",
     stateSlug: "pa",
     slug: "philadelphia",
-    buildingDeptName: "Philadelphia Department of Licenses and Inspections",
-    buildingDeptPhone: "(215) 686-2400",
-    buildingDeptAddress: "1401 JFK Blvd, Philadelphia, PA 19102",
-    buildingDeptUrl: "https://www.phila.gov/departments/department-of-licenses-and-inspections",
+    buildingDeptName: "Philadelphia Department of Licenses and Inspections (L&I)",
+    buildingDeptPhone: "(215) 686-8686",
+    buildingDeptAddress: "Municipal Services Building, 1401 John F. Kennedy Blvd, 11th Floor, Philadelphia, PA 19102",
+    buildingDeptUrl: "https://www.phila.gov/li",
     summary:
       "Philadelphia's Department of Licenses and Inspections is the busiest permit office in Pennsylvania, with new residential and commercial builds both running long.",
     timelines: [

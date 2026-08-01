@@ -78,10 +78,13 @@ export default function PhiladelphiaPermitGuidePost() {
             business day or two for verification.
           </p>
           <p className="mt-3">
-            L&amp;I&apos;s main permit office is at the Municipal Services Building, 1401 JFK Boulevard,
-            Concourse Level. The phone line for permits is (215) 686-2433. Walk-in hours are Monday
-            through Friday, 8:30 AM to 3:30 PM. For permit status questions, the portal is faster
-            than calling — phone wait times can be significant.
+            L&amp;I&apos;s main office is at the Municipal Services Building, 1401 John F. Kennedy
+            Blvd, 11th Floor. The Permit and License Center is in the Public Service Concourse of the
+            same building — <strong className="text-[#F5F0E8]">an appointment is required</strong>, so
+            don&apos;t plan on walking in. For phone contact, call <strong className="text-[#F5F0E8]">311</strong> within
+            Philadelphia or <strong className="text-[#F5F0E8]">(215) 686-8686</strong> from outside the
+            city. For permit status questions, the portal is faster than calling — phone wait times can
+            be significant.
           </p>
           <p className="mt-3">
             Philadelphia also maintains a public permit map at <strong className="text-[#F5F0E8]">li.phila.gov/licenseinspection</strong>
