@@ -220,10 +220,10 @@ export const cities: CityData[] = [
     stateAbbr: "MI",
     stateSlug: "mi",
     slug: "detroit",
-    buildingDeptName: "Detroit Buildings, Safety Engineering and Environmental Department",
-    buildingDeptPhone: "(313) 224-3160",
-    buildingDeptAddress: "Coleman A. Young Municipal Center, 2 Woodward Avenue, Suite 401, Detroit, MI 48226",
-    buildingDeptUrl: "https://detroitmi.gov/departments/buildings-safety-engineering-and-environmental-department",
+    buildingDeptName: "Detroit Buildings, Safety Engineering and Environmental Department (BSEED)",
+    buildingDeptPhone: "(313) 224-2372",
+    buildingDeptAddress: "Coleman A Young Municipal Center, 2 Woodward Avenue, 4th Floor, Suite 434, Detroit, MI 48226",
+    buildingDeptUrl: "https://detroitmi.gov/bseed",
     summary:
       "Detroit's BSEED handles a heavy mix of rehab and new construction. New commercial projects carry the longest review window of any city we monitor.",
     timelines: [

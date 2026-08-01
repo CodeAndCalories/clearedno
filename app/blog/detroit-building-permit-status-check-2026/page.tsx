@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   keywords: [
     "Detroit building permit status",
     "BSEED Detroit permit",
-    "bseed.detroitmi.gov",
+    "detroitmi.gov/bseed",
     "Detroit permit contractor",
     "Detroit permit approval time 2026",
   ],
@@ -63,7 +63,7 @@ export default function DetroitPermitStatusPost() {
           <p>
             Detroit&apos;s building permits are handled by <strong className="text-[#F5F0E8]">BSEED — the Buildings,
             Safety Engineering and Environmental Department</strong>, accessible at{" "}
-            <strong className="text-[#F5F0E8]">bseed.detroitmi.gov</strong>. BSEED is a combined agency
+            <strong className="text-[#F5F0E8]">detroitmi.gov/bseed</strong>. BSEED is a combined agency
             that handles building permits, fire inspections, environmental compliance, and licensing
             — which means the department is large and its functions are not always obviously separated
             on the website. Our{" "}
@@ -74,14 +74,17 @@ export default function DetroitPermitStatusPost() {
           </p>
           <p className="mt-3">
             The permit and licensing functions are the ones most contractors interact with. BSEED
-            operates the Detroit Permit Center at the Coleman A. Young Municipal Center, 2 Woodward
-            Avenue, Suite 401. Counter hours are Monday through Friday, 8 AM to 4 PM. BSEED also
-            has a satellite office in the city&apos;s northwest side for certain permit types.
+            operates the Development Resource Center (DRC) at the Coleman A Young Municipal Center,
+            2 Woodward Avenue, 4th Floor, Suite 434. Counter hours are Monday through Friday,
+            8:00 AM to 4:30 PM, and the DRC line is <strong className="text-[#F5F0E8]">(313) 224-2372</strong>.
+            BSEED also has a satellite office in the city&apos;s northwest side for certain permit types.
           </p>
           <p className="mt-3">
             One critical thing to know upfront: Detroit operates what is effectively a dual-track
-            system for permits. The modern online system handles applications submitted through the
-            Detroit Permit Center portal (linked from bseed.detroitmi.gov), while legacy permits
+            system for permits. Permit applications go through <strong className="text-[#F5F0E8]">eLAPS</strong>,
+            Detroit&apos;s online licensing and permitting system, with construction drawings submitted
+            separately through <strong className="text-[#F5F0E8]">ePlans</strong> — both reached from
+            detroitmi.gov/bseed. Legacy permits
             issued before the system was digitized in the mid-2010s may only exist as paper records.
             For properties with older permit histories, you may need to request records in person.
           </p>
@@ -95,7 +98,7 @@ export default function DetroitPermitStatusPost() {
           </p>
           <ol className="space-y-3 mt-3 ml-4">
             {[
-              { n: "1", t: "Go to bseed.detroitmi.gov and navigate to the Permit Center section" },
+              { n: "1", t: "Go to detroitmi.gov/bseed and open eLAPS, the online licensing and permitting system" },
               { n: "2", t: "Log into your contractor account (required for status checks on submitted permits)" },
               { n: "3", t: "Select \"My Permits\" or use the permit search function with your record number" },
               { n: "4", t: "Your permit record will show the current status, assigned reviewer (if applicable), and any comments or corrections" },
@@ -151,7 +154,7 @@ export default function DetroitPermitStatusPost() {
           <p className="mt-3">
             Because Under Review doesn&apos;t distinguish between these stages, calling with your record
             number is often the only way to get a meaningful update on where exactly your application
-            stands. BSEED&apos;s permit tracking line is (313) 224-3158. Have your record number ready
+            stands. BSEED&apos;s permit contact is the Development Resource Center at (313) 224-2372. Have your record number ready
             and be specific — ask &quot;Has a plan examiner been assigned?&quot; and &quot;Are there any outstanding
             correction comments?&quot; rather than just asking for a status update.
           </p>
@@ -250,8 +253,10 @@ export default function DetroitPermitStatusPost() {
             <li className="flex gap-3">
               <span className="text-[#FF6B00] flex-shrink-0 mt-0.5">→</span>
               <div>
-                <strong className="text-[#F5F0E8]">Call with your record number ready.</strong> (313) 224-3158 is
-                the BSEED main line. Specifically ask whether your application has been assigned to
+                <strong className="text-[#F5F0E8]">Call with your record number ready.</strong> (313) 224-2372
+                reaches the Development Resource Center, which handles permit questions; (313) 224-2733
+                is the BSEED main line, and plan review sits with the Construction Division on
+                (313) 224-3202. Specifically ask whether your application has been assigned to
                 an examiner yet, and if not, how many applications are ahead of yours in the queue.
                 This gives you real information rather than a generic status.
               </div>
