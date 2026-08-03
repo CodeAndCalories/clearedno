@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { cities } from "@/lib/cities";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 
 const BASE = "https://www.clearedno.com";
 
@@ -115,6 +116,15 @@ const BLOG_SLUGS = [
 
 const LEADS_STATES = ["oh", "in", "mi", "ky", "il", "pa"];
 
+function countyToSlug(county: string): string {
+  return county
+    .replace(/ County$/i, "")
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, "-")
+    .replace(/[^a-z0-9-]/g, "");
+}
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── Roofing leads: state pages ─────────────────────────────────────────────
   const leadsStateEntries: MetadataRoute.Sitemap = LEADS_STATES.map((state) => ({
@@ -142,8 +152,55 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  // County pages under /leads/roofing/[state]/[county] are intentionally
-  // excluded — they carry robots noindex (thin programmatic content).
+  // ── Roofing leads: county pages — TEMPORARY, remove once deindexed ─────────
+  //
+  // These pages are noindex (see app/leads/roofing/[state]/[county]/page.tsx).
+  // They are listed here ONLY to get Google to recrawl them: a noindex tag is
+  // invisible until the page is fetched, and dropping these URLs from the
+  // sitemap on 2026-07-07 cut their crawl rate so far that just 29 of 243 had
+  // been processed three weeks later. Listing them again restores crawl
+  // scheduling so the tag is actually seen and the pages fall out of the index.
+  //
+  // priority 0.1 / changeFrequency "monthly" is deliberate — these must not
+  // compete with real content for crawl budget, only stay above the floor.
+  //
+  // DO NOT remove the noindex to "fix" the mismatch between a sitemap entry
+  // and a noindexed page. The mismatch is the mechanism.
+  //
+  // The 1000-row cap below is load-bearing, not a bug to fix: PostgREST caps
+  // the response at 1000 rows regardless of the 2000 asked for, so ordering by
+  // (state, county) yields the ~244 counties across IL/IN/KY that were in the
+  // sitemap before it was trimmed — i.e. exactly the set Google indexed. The
+  // uncapped distinct_counties_by_state RPC would add ~270 counties that were
+  // never indexed and have nothing to deindex, wasting the crawl budget this
+  // block is trying to conserve.
+  //
+  // REMOVE this block (and the countyToSlug helper and supabaseAdmin import
+  // above) once GSC reports the county pages as "Excluded by 'noindex' tag".
+  const { data: countyRows } = await supabaseAdmin
+    .from("roofing_leads")
+    .select("county, state")
+    .order("state")
+    .order("county")
+    .limit(2000); // over-fetch; deduplicate below then cap
+
+  const seen = new Set<string>();
+  const leadsCountyEntries: MetadataRoute.Sitemap = [];
+
+  for (const row of countyRows ?? []) {
+    if (leadsCountyEntries.length >= 500) break;
+    const stateSlug  = (row.state as string).toLowerCase();
+    const countySlug = countyToSlug(row.county as string);
+    const key        = `${stateSlug}/${countySlug}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    leadsCountyEntries.push({
+      url: `${BASE}/leads/roofing/${stateSlug}/${countySlug}`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.1,
+    });
+  }
 
   const blogEntries: MetadataRoute.Sitemap = BLOG_SLUGS.map((slug) => ({
     url: `${BASE}/blog/${slug}`,
@@ -337,5 +394,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...contractorPageEntries,
     ...leadsStateEntries,
     ...leadsCityEntries,
+    ...leadsCountyEntries,
   ];
 }
