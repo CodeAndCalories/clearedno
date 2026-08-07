@@ -14,6 +14,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { cities, LIVE_CHECKER_CITIES } from "@/lib/cities";
+import { resolveStatus } from "@/lib/permit-status";
 
 // ── Rate limiter (in-memory, resets on server restart) ───────────────────────
 
@@ -37,67 +38,12 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-// ── Status normaliser ─────────────────────────────────────────────────────────
-
-const STATUS_MAP: Record<string, string> = {
-  // Cleared / done
-  FINAL: "CLEARED", FINALED: "CLEARED", CLOSED: "CLEARED",
-  "CO ISSUED": "CLEARED", "CERTIFICATE OF OCCUPANCY": "CLEARED",
-  COMPLETED: "CLEARED", "FINAL INSPECTION": "CLEARED", "FINAL INSPECTION APPROVED": "CLEARED",
-  "CERTIFICATE OF OCCUPANCY ISSUED": "CLEARED",
-
-  // Approved / active.
-  // "PERMIT ISSUED" is Columbus's most common issued state and means work may
-  // proceed — it previously mapped to CLEARED, which told users a permit was
-  // finished when it had only just been issued.
-  "PERMIT ISSUED": "APPROVED",
-  ISSUED: "APPROVED", "ISSUED ONLINE": "APPROVED", ACTIVE: "APPROVED",
-  APPROVED: "APPROVED", "IN PROGRESS": "APPROVED", OPEN: "APPROVED",
-
-  // Under review
-  "UNDER REVIEW": "UNDER_REVIEW", "IN REVIEW": "UNDER_REVIEW",
-  "CORRECTIONS REQUIRED": "UNDER_REVIEW", "PLAN REVIEW": "UNDER_REVIEW",
-  HOLD: "UNDER_REVIEW", "ON HOLD": "UNDER_REVIEW", INSPECTION: "UNDER_REVIEW",
-  "INACTIVE PENDING REVISION": "UNDER_REVIEW", "INACTIVE CONTRACTOR": "UNDER_REVIEW",
-  "RE REVIEW": "UNDER_REVIEW", SUSPENDED: "UNDER_REVIEW",
-  "APPLICATION INCOMPLETE": "UNDER_REVIEW", "STOP WORK": "UNDER_REVIEW",
-  "AMENDMENT APPLICATION INCOMPLETE": "UNDER_REVIEW",
-  "AMENDMENT APPLICANT REVISIONS": "UNDER_REVIEW",
-  "AMENDMENT REVIEW": "UNDER_REVIEW", "AMENDMENT REQUESTED": "UNDER_REVIEW",
-
-  // Pending
-  PENDING: "PENDING", "PENDING PERMIT": "PENDING",
-  APPLICATION: "PENDING", SUBMITTED: "PENDING", INTAKE: "PENDING",
-  "APPLICATION RECEIVED": "PENDING", "IN QUEUE": "PENDING", "IN INTAKE": "PENDING",
-  RECEIVED: "PENDING", "APPLIED ONLINE": "PENDING", "ISSUANCE PENDING": "PENDING",
-  "AWAITING UPLOAD": "PENDING", "AWAITING UPDATE": "PENDING",
-  "READY FOR ISSUE": "PENDING", "AMENDMENT READY FOR ISSUE": "PENDING",
-
-  // Rejected
-  CANCELLED: "REJECTED", CANCELED: "REJECTED", VOID: "REJECTED", VOIDED: "REJECTED",
-  WITHDRAWN: "REJECTED", DENIED: "REJECTED", REVOKED: "REJECTED",
-  REJECTED: "REJECTED", ABORTED: "REJECTED", ABANDONED: "REJECTED",
-  REFUSED: "REJECTED", "AMENDMENT DENIED": "REJECTED",
-  "DENIED BUT CLOSED": "REJECTED", "EXPIRED DENIAL": "REJECTED",
-  "CANCELLED - CONTRACTOR REQUIRED": "REJECTED",
-  "CANCELLED - NEW PERMIT REQUIRED": "REJECTED",
-  "NEW PERMIT REQUIRED": "REJECTED",
-  "VOID - WRONG CAP TYPE": "REJECTED", "VOID - DUPLICATE": "REJECTED",
-  "VOID - ENTERED IN ERROR": "REJECTED", "VOID - TEST": "REJECTED",
-
-  // Expired
-  EXPIRED: "EXPIRED", LAPSED: "EXPIRED", "EXPIRED PERMIT": "EXPIRED",
-  "EXPIRED - LICENSE": "EXPIRED", "EXPIRED NO PERMIT": "EXPIRED",
-};
-
-// Returns null when the city's status text has no mapping. Callers must
-// surface that as UNKNOWN rather than substituting a plausible status —
-// reporting "PENDING" for a status we don't recognise is a guess dressed
-// up as a fact.
-function normaliseStatus(raw: string): string | null {
-  const key = raw.trim().toUpperCase();
-  return STATUS_MAP[key] ?? null;
-}
+// ── Status normalisation ──────────────────────────────────────────────────────
+//
+// Status vocabularies live in lib/permit-status.ts and are shared with the
+// scraper engine. This route previously carried its own generic map, which
+// meant the same permit could report one status here and a different one in
+// the dashboard. resolveStatus() is the exact logic the scrapers use.
 
 // ── City checkers ─────────────────────────────────────────────────────────────
 //
@@ -105,9 +51,11 @@ function normaliseStatus(raw: string): string | null {
 // Each one must return { found: false } when the permit is absent rather than
 // inventing a status.
 //
-// NOTE: these deliberately re-implement the lookups in scrapers/cities/*.ts
-// instead of importing them. Those modules pull in `playwright` (Austin still
-// keeps a portal fallback), which must never enter the Next.js bundle.
+// NOTE: the fetch/parse logic below deliberately re-implements what the
+// scrapers in scrapers/cities/*.ts do, instead of importing them: those
+// modules pull in `playwright` (Austin still keeps a portal fallback), which
+// must never enter the Next.js bundle. The status VOCABULARIES are not
+// duplicated — both sides call resolveStatus() from lib/permit-status.
 
 type CheckResult =
   | { found: false }
@@ -148,7 +96,7 @@ async function checkAustin(permitNumber: string): Promise<CheckResult> {
     .filter(Boolean)
     .join(", ") || undefined;
 
-  const status = (rawStatus && normaliseStatus(rawStatus)) || "UNKNOWN";
+  const status = rawStatus ? resolveStatus("austin", rawStatus) : "UNKNOWN";
 
   return { found: true, status, rawStatus, address };
 }
@@ -198,7 +146,7 @@ async function checkColumbus(permitNumber: string): Promise<CheckResult> {
 
   return {
     found:     true,
-    status:    (usable && normaliseStatus(usable)) || "UNKNOWN",
+    status:    usable ? resolveStatus("columbus", usable) : "UNKNOWN",
     rawStatus: usable,
     address,
   };
@@ -231,9 +179,130 @@ async function checkPhiladelphia(permitNumber: string): Promise<CheckResult> {
 
   return {
     found:     true,
-    status:    (rawStatus && normaliseStatus(rawStatus)) || "UNKNOWN",
+    status:    rawStatus ? resolveStatus("philadelphia", rawStatus) : "UNKNOWN",
     rawStatus,
     address,
+  };
+}
+
+// Cleveland — ArcGIS Feature Service (City of Cleveland Open Data)
+async function checkCleveland(permitNumber: string): Promise<CheckResult> {
+  const params = new URLSearchParams({
+    where:             `PERMIT_ID=${sqlQuote(permitNumber)}`,
+    outFields:         "PERMIT_ID,CURRENT_TASK,CURRENT_TASK_STATUS,PRIMARY_ADDRESS",
+    returnGeometry:    "false",
+    resultRecordCount: "1",
+    f:                 "json",
+  });
+  const url =
+    "https://services3.arcgis.com/dty2kHktVXHrqO8i/arcgis/rest/services/" +
+    `Building_Permits/FeatureServer/0/query?${params.toString()}`;
+
+  const res = await fetch(url, {
+    headers: { "Accept": "application/json" },
+    signal: AbortSignal.timeout(10_000),
+  });
+
+  if (!res.ok) throw new Error(`Cleveland API ${res.status}`);
+
+  const data = await res.json() as {
+    features?: { attributes?: Record<string, string | null> }[];
+    error?: { message?: string };
+  };
+
+  if (data.error) throw new Error(`Cleveland API: ${data.error.message ?? "unknown"}`);
+
+  const attrs = data.features?.[0]?.attributes;
+  if (!attrs) return { found: false };
+
+  const taskStatus  = (attrs.CURRENT_TASK_STATUS ?? "").trim();
+  const currentTask = (attrs.CURRENT_TASK        ?? "").trim();
+  // Surface the workflow stage alongside the status — "Inspection / Inspection
+  // Pending" reads far better than the bare status.
+  const rawStatus = currentTask && taskStatus
+    ? `${currentTask} / ${taskStatus}`
+    : taskStatus;
+
+  return {
+    found:     true,
+    status:    taskStatus ? resolveStatus("cleveland", taskStatus) : "UNKNOWN",
+    rawStatus,
+    address:   (attrs.PRIMARY_ADDRESS ?? "").trim() || undefined,
+  };
+}
+
+// Cincinnati — Socrata Open Data API
+async function checkCincinnati(permitNumber: string): Promise<CheckResult> {
+  const url =
+    "https://data.cincinnati-oh.gov/resource/uhjb-xac9.json" +
+    `?permitnum=${encodeURIComponent(permitNumber.trim())}&$limit=1`;
+
+  const res = await fetch(url, {
+    headers: { "Accept": "application/json" },
+    signal: AbortSignal.timeout(10_000),
+  });
+
+  if (!res.ok) throw new Error(`Cincinnati API ${res.status}`);
+
+  const rows = await res.json() as Array<Record<string, string>>;
+  const row  = rows[0];
+  if (!row) return { found: false };
+
+  // statuscurrentmapped is the human label but omits some codes, so the raw
+  // statuscurrent is the fallback rather than the other way round.
+  const rawStatus = (row.statuscurrentmapped ?? "").trim()
+                 || (row.statuscurrent       ?? "").trim();
+
+  const address = [row.originaladdress1, row.originalcity, row.originalstate]
+    .filter(Boolean)
+    .join(", ") || undefined;
+
+  return {
+    found:     true,
+    status:    rawStatus ? resolveStatus("cincinnati", rawStatus) : "UNKNOWN",
+    rawStatus,
+    address,
+  };
+}
+
+// Pittsburgh — WPRDC CKAN datastore.
+// `filters` passes the permit number as data, so no SQL escaping is needed.
+async function checkPittsburgh(permitNumber: string): Promise<CheckResult> {
+  const params = new URLSearchParams({
+    resource_id: "f4d1177a-f597-4c32-8cbf-7885f56253f6",
+    filters:     JSON.stringify({ permit_id: permitNumber.trim() }),
+    limit:       "1",
+  });
+  const url = `https://data.wprdc.org/api/3/action/datastore_search?${params.toString()}`;
+
+  const res = await fetch(url, {
+    headers: { "Accept": "application/json" },
+    signal: AbortSignal.timeout(10_000),
+  });
+
+  if (!res.ok) throw new Error(`Pittsburgh API ${res.status}`);
+
+  const data = await res.json() as {
+    success?: boolean;
+    error?: { message?: string };
+    result?: { records?: Record<string, string | null>[] };
+  };
+
+  // CKAN signals failure with success:false, not an HTTP error code.
+  if (data.success === false) {
+    throw new Error(`Pittsburgh API: ${data.error?.message ?? "unknown"}`);
+  }
+
+  const record = data.result?.records?.[0];
+  if (!record) return { found: false };
+
+  const rawStatus = (record.status ?? "").trim();
+
+  return {
+    found:     true,
+    status:    rawStatus ? resolveStatus("pittsburgh", rawStatus) : "UNKNOWN",
+    rawStatus,
+    address:   (record.address ?? "").trim() || undefined,
   };
 }
 
@@ -245,7 +314,10 @@ async function checkPhiladelphia(permitNumber: string): Promise<CheckResult> {
 const CITY_CHECKERS: Record<string, (permitNumber: string) => Promise<CheckResult>> = {
   austin:       checkAustin,
   columbus:     checkColumbus,
+  cleveland:    checkCleveland,
+  cincinnati:   checkCincinnati,
   philadelphia: checkPhiladelphia,
+  pittsburgh:   checkPittsburgh,
 };
 
 // ── City router ───────────────────────────────────────────────────────────────

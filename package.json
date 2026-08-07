@@ -10,7 +10,8 @@
     "build:scraper": "tsc --project tsconfig.scripts.json",
     "outreach": "ts-node --project tsconfig.scripts.json outreach/index.ts",
     "poll:replies": "node dist/scraper/outreach/gmail-poll.js",
-    "check:replies": "node dist/scraper/outreach/check-replies.js"
+    "check:replies": "node dist/scraper/outreach/check-replies.js",
+    "verify:status-maps": "ts-node --project tsconfig.scripts.json scrapers/verify-status-maps.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.0",

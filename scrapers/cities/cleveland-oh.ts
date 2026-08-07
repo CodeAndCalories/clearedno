@@ -1,59 +1,60 @@
-// Columbus, OH — Building & Zoning Services permit lookup (ArcGIS Feature Service)
+// Cleveland, OH — Department of Building & Housing permit lookup (ArcGIS)
 //
 // API-ONLY. There is no browser path and there must not be one.
 //
-// The previous implementation called https://aca.columbus.gov/apis/v1/... and
-// fell back to Playwright against https://aca.columbus.gov. Both were dead:
-// that host does not resolve, so every Columbus check burned a browser launch
-// and returned UNKNOWN. It is replaced by the city's published open-data
-// Feature Service, which answers in ~200ms with no auth.
+// Service: City of Cleveland Open Data → "Issued Building Permits"
+//   https://services3.arcgis.com/dty2kHktVXHrqO8i/arcgis/rest/services/Building_Permits/FeatureServer/0
 //
-// Service: City of Columbus Maps & Apps → "Building Permits"
-//   https://services1.arcgis.com/9yy6msODkIBzkUXU/arcgis/rest/services/Building_Permits/FeatureServer/0
+// Lookup field:  PERMIT_ID                  — e.g. "BCH26-032235"
+// Status fields: CURRENT_TASK_STATUS        — where the permit sits right now
+//                CURRENT_TASK               — which workflow stage that status
+//                                             belongs to (logged for context)
+// Deep link:     ACCELA_CITIZEN_ACCESS_URL  — real aca-prod.accela.com record
 //
-// Lookup field:  B1_ALT_ID       — the permit number as printed on the permit
-// Status fields: PERMIT_STATUS   — lifecycle status ("Permit Issued")
-//                B1_APPL_STATUS  — application status ("Issued"), used as
-//                                  fallback when PERMIT_STATUS is empty
-// Deep link:     ACA_URL         — real Citizen Access record URL, surfaced to
-//                                  the user as scrape_url
+// Verified 2026-08-07: BCH26-032235 → CURRENT_TASK "Inspection",
+// CURRENT_TASK_STATUS "Inspection Pending", 2165 E 89TH ST.
 //
-// Verified 2026-08-07: RES permit RSWDR2611829 →
-//   PERMIT_STATUS "Permit Issued", B1_APPL_STATUS "Issued",
-//   SITE_ADDRESS "853 BLUFFWAY DR"
+// ── A NOTE ON WHAT THIS STATUS MEANS ─────────────────────────────────────────
+// CURRENT_TASK_STATUS is the status of the *current workflow task*, not a
+// single permit-level state. "Inspection Approved" means the inspection passed;
+// "Permit Closed" means the record is finished. Intermediate review approvals
+// ("Plan Review Approved", "Fire Review Approved") are deliberately mapped to
+// UNDER_REVIEW rather than APPROVED — one sub-review passing does not mean the
+// permit is approved, and telling a contractor otherwise is the kind of
+// confidently-wrong answer this codebase exists to avoid.
 //
 // ── QUERY FORM ────────────────────────────────────────────────────────────────
-// ArcGIS `where` is SQL. The permit number MUST be quoted, and embedded single
+// ArcGIS `where` is SQL. The permit id MUST be quoted, and embedded single
 // quotes doubled, or the value parses as a column name and the service 400s.
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { BaseScraper, type ScraperConfig } from "../base-scraper";
 import type { ScrapeResult, PermitStatus } from "../../types";
-import { COLUMBUS_STATUS_MAP } from "../../lib/permit-status";
+import { CLEVELAND_STATUS_MAP } from "../../lib/permit-status";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
 const CONFIG: ScraperConfig = {
-  cityName: "Columbus, OH",
+  cityName: "Cleveland, OH",
   state:    "OH",
-  handles:  ["columbus"],
+  handles:  ["cleveland"],
 };
 
 const API_URL =
-  "https://services1.arcgis.com/9yy6msODkIBzkUXU/arcgis/rest/services/Building_Permits/FeatureServer/0/query";
+  "https://services3.arcgis.com/dty2kHktVXHrqO8i/arcgis/rest/services/Building_Permits/FeatureServer/0/query";
 
-/** Public portal — used for scrape_url when ACA_URL is absent, and in logs. */
-const PORTAL_URL = "https://www.columbus.gov/bzs";
+/** Public portal — used for scrape_url when the Accela link is absent. */
+const PORTAL_URL =
+  "https://www.clevelandohio.gov/CityofCleveland/Home/Government/CityAgencies/BuildingAndHousing";
 
-/** Fields we ask for. Keep narrow — the layer has 24 columns we don't need. */
 const OUT_FIELDS = [
-  "B1_ALT_ID",
-  "PERMIT_STATUS",
-  "B1_APPL_STATUS",
-  "B1_PER_TYPE",
-  "SITE_ADDRESS",
-  "ISSUED_DT",
-  "ACA_URL",
+  "PERMIT_ID",
+  "CURRENT_TASK",
+  "CURRENT_TASK_STATUS",
+  "PERMIT_TYPE",
+  "PRIMARY_ADDRESS",
+  "ISSUE_DATE",
+  "ACCELA_CITIZEN_ACCESS_URL",
 ].join(",");
 
 /** Escape a value for safe interpolation into a single-quoted SQL literal. */
@@ -64,13 +65,13 @@ function sqlQuote(value: string): string {
 // ── ArcGIS response shape ─────────────────────────────────────────────────────
 
 interface ArcGisAttributes {
-  B1_ALT_ID?:      string | null;
-  PERMIT_STATUS?:  string | null;
-  B1_APPL_STATUS?: string | null;
-  B1_PER_TYPE?:    string | null;
-  SITE_ADDRESS?:   string | null;
-  ISSUED_DT?:      number | null;
-  ACA_URL?:        string | null;
+  PERMIT_ID?:                 string | null;
+  CURRENT_TASK?:              string | null;
+  CURRENT_TASK_STATUS?:       string | null;
+  PERMIT_TYPE?:               string | null;
+  PRIMARY_ADDRESS?:           string | null;
+  ISSUE_DATE?:                number | null;
+  ACCELA_CITIZEN_ACCESS_URL?: string | null;
 }
 
 interface ArcGisResponse {
@@ -80,7 +81,7 @@ interface ArcGisResponse {
 
 // ── Scraper class ─────────────────────────────────────────────────────────────
 
-export class ColumbusOhScraper extends BaseScraper {
+export class ClevelandOhScraper extends BaseScraper {
   constructor() {
     super(CONFIG);
   }
@@ -95,14 +96,14 @@ export class ColumbusOhScraper extends BaseScraper {
 
       return this.indeterminate(
         permitNumber,
-        "Permit not found in Columbus Building Permits feature service"
+        "Permit not found in Cleveland Building Permits feature service"
       );
     } catch (apiErr) {
       const msg = apiErr instanceof Error ? apiErr.message : String(apiErr);
       console.error(
         JSON.stringify({
           level: "warn",
-          scraper: "Columbus, OH",
+          scraper: "Cleveland, OH",
           method: "api",
           permit_number: permitNumber,
           message: "ArcGIS query failed, returning UNKNOWN",
@@ -115,16 +116,14 @@ export class ColumbusOhScraper extends BaseScraper {
   }
 
   // ── ArcGIS Feature Service ─────────────────────────────────────────────────
-  // Returns null if the permit isn't in the layer.
-  // Throws on network / HTTP / service-level errors.
 
   private async scrapeViaApi(permitNumber: string): Promise<ScrapeResult | null> {
     const params = new URLSearchParams({
-      where:          `B1_ALT_ID=${sqlQuote(permitNumber)}`,
-      outFields:      OUT_FIELDS,
-      returnGeometry: "false",
+      where:             `PERMIT_ID=${sqlQuote(permitNumber)}`,
+      outFields:         OUT_FIELDS,
+      returnGeometry:    "false",
       resultRecordCount: "1",
-      f:              "json",
+      f:                 "json",
     });
     const url = `${API_URL}?${params.toString()}`;
 
@@ -151,56 +150,47 @@ export class ColumbusOhScraper extends BaseScraper {
     }
 
     const attrs = data.features?.[0]?.attributes;
-    if (!attrs) {
-      // Not in the layer — caller reports UNKNOWN.
-      return null;
-    }
+    if (!attrs) return null;
 
-    // PERMIT_STATUS is the lifecycle status and is preferred. B1_APPL_STATUS is
-    // the application status, used only when the former is blank.
-    const permitStatus = (attrs.PERMIT_STATUS  ?? "").trim();
-    const applStatus   = (attrs.B1_APPL_STATUS ?? "").trim();
-    const rawText      = permitStatus || applStatus;
+    const rawText     = (attrs.CURRENT_TASK_STATUS ?? "").trim();
+    const currentTask = (attrs.CURRENT_TASK        ?? "").trim();
+    const scrapeUrl   = (attrs.ACCELA_CITIZEN_ACCESS_URL ?? "").trim() || PORTAL_URL;
 
-    // "None" is Columbus's literal placeholder for "no status recorded" — it is
-    // not a status, and must not be mapped to one.
-    if (!rawText || rawText.toUpperCase() === "NONE") {
+    if (!rawText) {
       return {
         permit_number: permitNumber,
         status:        "UNKNOWN",
-        raw_text:      "found in layer, no status recorded",
-        scrape_url:    (attrs.ACA_URL ?? "").trim() || PORTAL_URL,
+        raw_text:      "found in layer, no current task status recorded",
+        scrape_url:    scrapeUrl,
       };
     }
 
     const status = this.mapStatus(rawText);
 
-    // Prefer the city's own Citizen Access deep link so the UI points at the
-    // real record rather than a raw ArcGIS query URL.
-    const scrapeUrl = (attrs.ACA_URL ?? "").trim() || PORTAL_URL;
-
     console.error(
       JSON.stringify({
-        level:          "info",
-        scraper:        "Columbus, OH",
-        method:         "api",
-        permit_number:  permitNumber,
-        permit_status:  permitStatus || null,
-        appl_status:    applStatus   || null,
-        permit_type:    (attrs.B1_PER_TYPE  ?? "").trim() || null,
-        site_address:   (attrs.SITE_ADDRESS ?? "").trim() || null,
-        issued_date:    attrs.ISSUED_DT
-          ? new Date(attrs.ISSUED_DT).toISOString().slice(0, 10)
+        level:         "info",
+        scraper:       "Cleveland, OH",
+        method:        "api",
+        permit_number: permitNumber,
+        current_task:  currentTask || null,
+        task_status:   rawText,
+        permit_type:   (attrs.PERMIT_TYPE     ?? "").trim() || null,
+        site_address:  (attrs.PRIMARY_ADDRESS ?? "").trim() || null,
+        issue_date:    attrs.ISSUE_DATE
+          ? new Date(attrs.ISSUE_DATE).toISOString().slice(0, 10)
           : null,
         status,
-        timestamp:      new Date().toISOString(),
+        timestamp:     new Date().toISOString(),
       })
     );
 
     return {
       permit_number: permitNumber,
       status,
-      raw_text:   rawText,
+      // Include the workflow stage — "Inspection / Inspection Pending" is far
+      // more legible in the UI and in status_history than the status alone.
+      raw_text:   currentTask ? `${currentTask} / ${rawText}` : rawText,
       scrape_url: scrapeUrl,
     };
   }
@@ -211,7 +201,7 @@ export class ColumbusOhScraper extends BaseScraper {
     console.error(
       JSON.stringify({
         level: "warn",
-        scraper: "Columbus, OH",
+        scraper: "Cleveland, OH",
         permit_number: permitNumber,
         message: "Scrape indeterminate — returning UNKNOWN so health tracking counts it as a failure",
         reason,
@@ -231,7 +221,7 @@ export class ColumbusOhScraper extends BaseScraper {
 
   private mapStatus(rawText: string): PermitStatus {
     // Exact match first, then longest-substring — see BaseScraper.matchStatus().
-    return this.matchStatus(rawText, COLUMBUS_STATUS_MAP)
+    return this.matchStatus(rawText, CLEVELAND_STATUS_MAP)
         ?? this.normalizeStatus(rawText);
   }
 }

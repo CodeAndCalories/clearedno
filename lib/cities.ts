@@ -305,17 +305,30 @@ export const cities: CityData[] = [
  *
  *   austin        Socrata      data.austintexas.gov/resource/3syk-w9eu
  *   columbus      ArcGIS FS    services1.arcgis.com/9yy6msODkIBzkUXU/…/Building_Permits/0
+ *   cleveland     ArcGIS FS    services3.arcgis.com/dty2kHktVXHrqO8i/…/Building_Permits/0
+ *   cincinnati    Socrata      data.cincinnati-oh.gov/resource/uhjb-xac9
  *   philadelphia  Carto SQL    phl.carto.com/api/v2/sql (table `permits`)
+ *   pittsburgh    CKAN         data.wprdc.org datastore, resource f4d1177a…
+ *
+ * Adding a city here requires BOTH a scraper in scrapers/cities/ (registered in
+ * scrapers/index.ts) AND an entry in CITY_CHECKERS in app/api/check-permit.
+ * Without the latter the route rejects the city rather than falling through to
+ * another city's dataset.
  *
  * Do NOT add a city whose scraper depends on Playwright. Browser scrapers here
  * were reporting UNKNOWN on every run while the UI advertised them as live —
  * users waited for alerts that could never fire. If a city can't be served by
- * an API, it belongs on the waitlist, not in this set.
+ * an API, it belongs on the waitlist, not in this set. Houston and Grand Rapids
+ * publish no per-permit API at all; Dallas, San Antonio and Detroit publish
+ * permits but no status field.
  */
 export const LIVE_CHECKER_CITIES = new Set<string>([
   "austin",
   "columbus",
+  "cleveland",
+  "cincinnati",
   "philadelphia",
+  "pittsburgh",
 ]);
 
 /** Look up a city by state slug + city slug */

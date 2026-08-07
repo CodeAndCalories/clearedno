@@ -27,6 +27,7 @@
 
 import { BaseScraper, type ScraperConfig } from "../base-scraper";
 import type { ScrapeResult, PermitStatus } from "../../types";
+import { PHILADELPHIA_STATUS_MAP } from "../../lib/permit-status";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -46,77 +47,6 @@ const PORTAL_URL = "https://li.phila.gov/license-inspections/verify";
 function sqlQuote(value: string): string {
   return `'${value.trim().replace(/'/g, "''")}'`;
 }
-
-// ── Status mapping ────────────────────────────────────────────────────────────
-
-// Matched exact-first by BaseScraper.matchStatus(), then longest-substring.
-
-const PHILADELPHIA_STATUS_MAP: Record<string, PermitStatus> = {
-  // ── Live values missing from the original map ─────────────────────────────
-  // Verified against `SELECT status, count(*) FROM permits GROUP BY status`
-  // (2026-08-07). Without these, every one of these rows fell through to
-  // normalizeStatus() and came back UNKNOWN — i.e. counted as a scrape failure.
-
-  "ABANDONED":                         "REJECTED",     // 1,907
-  "REFUSED":                           "REJECTED",     // 1,308
-  "STOP WORK":                         "UNDER_REVIEW", // 305
-  "AMENDMENT APPLICATION INCOMPLETE":  "UNDER_REVIEW", // 217
-  "AMENDMENT APPLICANT REVISIONS":     "UNDER_REVIEW", // 149
-  "AMENDMENT READY FOR ISSUE":         "PENDING",      // 99
-  "AMENDMENT REVIEW":                  "UNDER_REVIEW", // 78
-  "AMENDMENT REQUESTED":               "UNDER_REVIEW", // 37
-  "AMENDMENT DENIED":                  "REJECTED",     // 8
-  "READY FOR ISSUE":                   "PENDING",      // 1
-  "EXPIRED DENIAL":                    "REJECTED",     // 1
-
-  // ── Primary mappings ──────────────────────────────────────────────────────
-
-  // Permit issued and active — work may proceed
-  "ISSUED":                    "APPROVED",
-  "APPROVED":                  "APPROVED",
-  "ACTIVE":                    "APPROVED",
-  "PERMIT ISSUED":             "APPROVED",
-
-  // Work finished / final inspection passed
-  "COMPLETED":                 "CLEARED",
-  "FINALED":                   "CLEARED",
-  "FINAL":                     "CLEARED",
-  "CLOSED":                    "CLEARED",
-  "CERTIFICATE OF OCCUPANCY":  "CLEARED",
-  "CO ISSUED":                 "CLEARED",
-  "FINAL INSPECTION":          "CLEARED",
-
-  // Application received, not yet reviewed / under review
-  "UNDER REVIEW":              "PENDING",
-  "IN REVIEW":                 "PENDING",
-  "PENDING":                   "PENDING",
-  "SUBMITTED":                 "PENDING",
-  "APPLICATION":               "PENDING",
-  "APPLICATION RECEIVED":      "PENDING",
-  "IN QUEUE":                  "PENDING",
-  "INTAKE":                    "PENDING",
-  "PLAN REVIEW":               "PENDING",
-  "PLAN CHECK":                "PENDING",
-  "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
-  "ON HOLD":                   "UNDER_REVIEW",
-  "HOLD":                      "UNDER_REVIEW",
-  "ZONING REVIEW":             "UNDER_REVIEW",
-  "ZONING":                    "UNDER_REVIEW",
-  "L&I REVIEW":                "UNDER_REVIEW",
-
-  // Permit lapsed
-  "EXPIRED":                   "EXPIRED",
-  "LAPSED":                    "EXPIRED",
-
-  // Denied / cancelled
-  "DENIED":                    "REJECTED",
-  "REJECTED":                  "REJECTED",
-  "WITHDRAWN":                 "REJECTED",
-  "REVOKED":                   "REJECTED",
-  "CANCELLED":                 "REJECTED",
-  "VOID":                      "REJECTED",
-  "VOIDED":                    "REJECTED",
-};
 
 // ── Scraper class ─────────────────────────────────────────────────────────────
 

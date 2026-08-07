@@ -31,19 +31,30 @@ import { DallasTxScraper }      from "./cities/dallas-tx";
 import { HoustonTxScraper }     from "./cities/houston-tx";
 import { SanAntonioTxScraper }  from "./cities/san-antonio-tx";
 import { ColumbusOhScraper }      from "./cities/columbus-oh";
+import { ClevelandOhScraper }     from "./cities/cleveland-oh";
+import { CincinnatiOhScraper }    from "./cities/cincinnati-oh";
 import { PhiladelphiaPaScraper }  from "./cities/philadelphia-pa";
+import { PittsburghPaScraper }    from "./cities/pittsburgh-pa";
 import { GrandRapidsMiScraper }   from "./cities/grand-rapids-mi";
 import type { BaseScraper } from "./base-scraper";
 
 const SCRAPERS: BaseScraper[] = [
-  new AustinTxScraper(),
+  // ── API-only (no browser) — the supported set ───────────────────────────
+  new AustinTxScraper(),        // Socrata
+  new ColumbusOhScraper(),      // ArcGIS
+  new ClevelandOhScraper(),     // ArcGIS
+  new CincinnatiOhScraper(),    // Socrata
+  new PhiladelphiaPaScraper(),  // Carto SQL
+  new PittsburghPaScraper(),    // CKAN
+
+  // ── Browser-based, unsupported ──────────────────────────────────────────
+  // These remain registered so an existing permit row still routes somewhere
+  // and is logged, but none of these cities are in LIVE_CHECKER_CITIES, so no
+  // new permits can be added for them. See lib/cities.ts.
   new DallasTxScraper(),
   new HoustonTxScraper(),
   new SanAntonioTxScraper(),
-  new ColumbusOhScraper(),
-  new PhiladelphiaPaScraper(),
   new GrandRapidsMiScraper(),
-  // new PhoenixAzScraper(),
 ];
 
 // ── Configuration ──────────────────────────────────────────────────────────

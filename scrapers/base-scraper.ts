@@ -16,6 +16,10 @@
 //   - Fallback normalizeStatus() if you don't override mapStatus()
 
 import type { ScrapeResult, PermitStatus } from "../types";
+import {
+  matchStatus as sharedMatchStatus,
+  normalizeStatus as sharedNormalizeStatus,
+} from "../lib/permit-status";
 
 export interface ScraperConfig {
   cityName: string;   // Human-readable, e.g. "Austin, TX"
@@ -101,37 +105,15 @@ export abstract class BaseScraper {
   /**
    * Look up a raw status string in a city's status map.
    *
-   * Exact match wins over substring match, ALWAYS. Substring matching alone is
-   * order-dependent and silently wrong: iterating a map that happens to list
-   * "ACTIVE" before "INACTIVE PENDING REVISION" maps the latter to APPROVED,
-   * and "CLOSED" before "DENIED" maps "Denied but Closed" to CLEARED. Both are
-   * real values in the live Austin dataset.
-   *
-   * So: try the whole string first. Only if nothing matches exactly do we fall
-   * back to substring, and then longest-key-first so the most specific phrase
-   * ("FINAL INSPECTION" over "FINAL") wins regardless of declaration order.
-   *
-   * Returns null if neither pass matches, so the caller can decide whether to
-   * try normalizeStatus() or report UNKNOWN.
+   * Delegates to lib/permit-status so the scraper engine and the public
+   * checker (app/api/check-permit) can never disagree about what a status
+   * means. See that module for why exact match must win over substring.
    */
   protected matchStatus(
     rawText: string,
     map: Record<string, PermitStatus>
   ): PermitStatus | null {
-    const key = rawText.toUpperCase().trim();
-    if (!key) return null;
-
-    // Pass 1 — exact match on the full status string.
-    const exact = map[key];
-    if (exact) return exact;
-
-    // Pass 2 — substring, longest key first (most specific wins).
-    const bySpecificity = Object.keys(map).sort((a, b) => b.length - a.length);
-    for (const portalText of bySpecificity) {
-      if (key.includes(portalText)) return map[portalText];
-    }
-
-    return null;
+    return sharedMatchStatus(rawText, map);
   }
 
   /**
@@ -145,28 +127,7 @@ export abstract class BaseScraper {
    * what let a dead scraper report healthy runs for months.
    */
   protected normalizeStatus(rawText: string): PermitStatus {
-    const t = rawText.toUpperCase().trim();
-
-    if (t.includes("FINAL") || t.includes("CLEARED") || t.includes("COMPLETE") || t.includes("CO ISSUED")) {
-      return "CLEARED";
-    }
-    if (t.includes("ISSUED") || t.includes("APPROVED") || t.includes("ACTIVE")) {
-      return "APPROVED";
-    }
-    if (t.includes("UNDER REVIEW") || t.includes("IN REVIEW") || t.includes("HOLD") || t.includes("HOLD")) {
-      return "UNDER_REVIEW";
-    }
-    if (t.includes("DENIED") || t.includes("REJECTED") || t.includes("REVOKED") || t.includes("WITHDRAWN")) {
-      return "REJECTED";
-    }
-    if (t.includes("EXPIRED") || t.includes("LAPSED")) {
-      return "EXPIRED";
-    }
-    if (t.includes("PENDING") || t.includes("INTAKE") || t.includes("SUBMITTED") || t.includes("RECEIVED")) {
-      return "PENDING";
-    }
-
-    return "UNKNOWN";
+    return sharedNormalizeStatus(rawText);
   }
 
   // ── Private ─────────────────────────────────────────────────────────────
