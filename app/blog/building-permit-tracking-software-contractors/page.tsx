@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Building Permit Tracking Software: What Contractors Actually Need in 2026 | ClearedNo",
@@ -150,7 +151,7 @@ export default function BuildingPermitTrackingSoftwarePost() {
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">WHAT WE BUILT AT CLEAREDNO</h2>
           <p>
-            ClearedNo monitors your building permits in Austin, Dallas, Houston, and San Antonio — checking every 2 hours, around the clock. When a status changes, you get an email immediately with the permit number, address, and new status.
+            ClearedNo monitors your building permits in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} — checking every 2 hours, around the clock. When a status changes, you get an email immediately with the permit number, address, and new status.
           </p>
           <p className="mt-3">
             No portal login. No manual checking. No spreadsheet to update. Add a permit number, get an alert when it moves. That&apos;s the whole product.
@@ -166,7 +167,7 @@ export default function BuildingPermitTrackingSoftwarePost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">STOP CHECKING PORTALS. START GETTING ALERTS.</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo monitors your permits in Austin, Dallas, Houston, and San Antonio — every 2 hours, 24/7.
+            ClearedNo monitors your permits in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} — every 2 hours, 24/7.
             The moment your permit status changes, you know. First month free.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">

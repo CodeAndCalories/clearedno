@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Best Building Permit Monitoring Service for Contractors in 2026 | ClearedNo",
@@ -145,7 +146,7 @@ export default function BestPermitMonitoringServicePost() {
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">OUR TAKE</h2>
           <p>
-            ClearedNo was built specifically for contractors in Texas who needed permit status alerts without the overhead of enterprise software. One plan, flat rate, unlimited permits, checks every 2 hours. Austin, Dallas, Houston, and San Antonio supported — more cities added weekly.
+            ClearedNo was built specifically for contractors in Texas who needed permit status alerts without the overhead of enterprise software. One plan, flat rate, unlimited permits, checks every 2 hours. Automated tracking is live in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.
           </p>
           <p className="mt-3">
             It&apos;s not the only option, but it&apos;s the one we think gets the core job done with the least friction.
@@ -158,7 +159,7 @@ export default function BestPermitMonitoringServicePost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">TRY THE NO-NONSENSE OPTION FREE</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            Add a permit, get an email when it moves. That&apos;s it. ClearedNo monitors Austin, Dallas, Houston, and San Antonio — every 2 hours, 24/7. First month free.
+            Add a permit, get an email when it moves. That&apos;s it. ClearedNo monitors {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} — every 2 hours, 24/7. First month free.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

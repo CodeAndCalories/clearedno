@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Dallas TX Permit Status Alerts for Contractors | ClearedNo",
@@ -119,13 +120,13 @@ export default function DallasTxPermitStatusAlertsPost() {
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">HOW INSTANT ALERTS CLOSE THE GAP</h2>
           <p>
-            ClearedNo monitors your Dallas permits every 2 hours. The moment eDevelopment shows a status change — permit issued, correction required, permit cleared — you get an email. Permit number, address, new status, direct link to the portal record.
+            Automated Dallas tracking isn&apos;t available yet — Dallas publishes permit records but no status field ClearedNo can poll. In the cities where tracking is live ({liveCityList({ separator: ", ", conjunction: "and", format: "city" })}), the moment the portal shows a status change — permit issued, correction required, permit cleared — you get an email with the permit number, address, new status, and a direct link to the portal record.
           </p>
           <p className="mt-3">
             You don&apos;t log into eDevelopment every morning. You wait for the email. When it comes, you act. When it doesn&apos;t come, you know nothing has changed and you can focus entirely on your active jobs.
           </p>
           <p className="mt-3">
-            Dallas is one of four Texas cities supported natively. If you operate in Austin, Houston, or San Antonio as well, one account covers all of them at the same flat rate.
+            Automated Dallas tracking isn't available yet. Tracking is live in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} — if you operate in any of those markets, one account covers all of them at the same flat rate.
           </p>
         </section>
 
@@ -135,7 +136,7 @@ export default function DallasTxPermitStatusAlertsPost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">NEVER MISS A DALLAS PERMIT CHANGE AGAIN</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo monitors your Dallas permits every 2 hours. When your status changes, you get an alert immediately.
+            Automated Dallas tracking isn&apos;t live yet. Get notified when it launches — tracking is already running in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.
             Stop checking eDevelopment every morning. First month free.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">

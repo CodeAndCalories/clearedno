@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { routeCityMeta, routeCitySlugs, liveCityList, LIVE_CITY_COUNT } from "@/lib/cities";
+import { CityWaitlistCTA } from "@/app/components/city-waitlist-cta";
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 
@@ -14,19 +16,7 @@ const TRADES = [
   "remodeling",
 ];
 
-const CITIES = [
-  "austin-tx",
-  "dallas-tx",
-  "houston-tx",
-  "san-antonio-tx",
-  "columbus-oh",
-  "philadelphia-pa",
-  "grand-rapids-mi",
-  "cleveland-oh",
-  "pittsburgh-pa",
-  "detroit-mi",
-  "cincinnati-oh",
-];
+const CITIES = routeCitySlugs;
 
 type TradeMeta = {
   label: string;
@@ -74,19 +64,9 @@ const TRADE_META: Record<string, TradeMeta> = {
   },
 };
 
-const CITY_META: Record<string, { name: string; state: string; stateFull: string }> = {
-  "austin-tx":       { name: "Austin",       state: "TX", stateFull: "Texas" },
-  "dallas-tx":       { name: "Dallas",       state: "TX", stateFull: "Texas" },
-  "houston-tx":      { name: "Houston",      state: "TX", stateFull: "Texas" },
-  "san-antonio-tx":  { name: "San Antonio",  state: "TX", stateFull: "Texas" },
-  "columbus-oh":     { name: "Columbus",     state: "OH", stateFull: "Ohio" },
-  "philadelphia-pa": { name: "Philadelphia", state: "PA", stateFull: "Pennsylvania" },
-  "grand-rapids-mi": { name: "Grand Rapids", state: "MI", stateFull: "Michigan" },
-  "cleveland-oh":    { name: "Cleveland",    state: "OH", stateFull: "Ohio" },
-  "pittsburgh-pa":   { name: "Pittsburgh",   state: "PA", stateFull: "Pennsylvania" },
-  "detroit-mi":      { name: "Detroit",      state: "MI", stateFull: "Michigan" },
-  "cincinnati-oh":   { name: "Cincinnati",   state: "OH", stateFull: "Ohio" },
-};
+// Derived from lib/cities so `trackingLive` — which decides whether this page
+// may promise monitoring at all — can't drift from the actual checker set.
+const CITY_META = routeCityMeta;
 
 const PERMIT_TYPES = [
   { slug: "deck-permit",       label: "Deck Permit" },
@@ -122,8 +102,12 @@ export async function generateMetadata(
   const cityMeta = CITY_META[params.city];
   if (!tradeMeta || !cityMeta) return {};
 
-  const title = `${cityMeta.name} ${tradeMeta.plural} — Track Your Permits 24/7 | ClearedNo`;
-  const description = `${cityMeta.name} ${tradeMeta.adjective} contractors: stop manually checking the permit portal. ClearedNo monitors permit status 24/7 and sends an instant alert the moment your permit is approved.`;
+  const title = cityMeta.trackingLive
+    ? `${cityMeta.name} ${tradeMeta.plural} — Track Your Permits 24/7 | ClearedNo`
+    : `${cityMeta.name} ${tradeMeta.plural} — Permit Status Guide | ClearedNo`;
+  const description = cityMeta.trackingLive
+    ? `${cityMeta.name} ${tradeMeta.adjective} contractors: stop manually checking the permit portal. ClearedNo monitors permit status 24/7 and sends an instant alert the moment your permit is approved.`
+    : `${cityMeta.name} ${tradeMeta.adjective} contractors: permit types, timelines, and how to check status. Automated tracking isn't available in ${cityMeta.name} yet — join the waitlist.`;
 
   return {
     title,
@@ -208,18 +192,29 @@ export default async function ContractorCityPage(
           </h1>
 
           <p className="text-sm text-[#F5F0E8]/60 leading-relaxed max-w-2xl mb-10">
-            If you&apos;re a {tradeMeta.trade} in {cityMeta.name}, permit delays cost
-            you money. ClearedNo monitors your permit status 24/7 and sends an instant
-            email alert the moment your permit is approved or updated — so you can
-            schedule your crew without refreshing the portal.
+            {cityMeta.trackingLive ? (
+              <>
+                If you&apos;re a {tradeMeta.trade} in {cityMeta.name}, permit delays cost
+                you money. ClearedNo monitors your permit status 24/7 and sends an instant
+                email alert the moment your permit is approved or updated — so you can
+                schedule your crew without refreshing the portal.
+              </>
+            ) : (
+              <>
+                If you&apos;re a {tradeMeta.trade} in {cityMeta.name}, permit delays cost
+                you money — and {cityMeta.name} gives you no way to be notified. Automated
+                tracking isn&apos;t available in {cityMeta.name} yet. Get notified when it
+                launches, and use the guides below in the meantime.
+              </>
+            )}
           </p>
 
-          {/* 3-stat grid */}
+          {/* 3-stat grid — the city count is derived so it can't outrun the checker. */}
           <div className="grid grid-cols-3 gap-4 max-w-lg">
             <div className="border border-[#FF6B00]/20 p-5 text-center">
-              <div className="font-mono text-xl font-bold text-[#FF6B00]">11</div>
+              <div className="font-mono text-xl font-bold text-[#FF6B00]">{LIVE_CITY_COUNT}</div>
               <div className="text-[10px] tracking-widest text-[#F5F0E8]/40 uppercase mt-1 font-mono">
-                Cities Covered
+                Cities Tracked
               </div>
             </div>
             <div className="border border-[#FF6B00]/20 p-5 text-center">
@@ -238,28 +233,34 @@ export default async function ContractorCityPage(
         </div>
       </section>
 
-      {/* Primary CTA */}
-      <section className="py-16 px-6 border-t border-[#FF6B00]/10 bg-[#FF6B00]/3">
-        <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div>
-            <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase font-mono mb-2">
-              Free for 30 Days
+      {/* Primary CTA — signup where tracking works, waitlist where it doesn't. */}
+      {cityMeta.trackingLive ? (
+        <section className="py-16 px-6 border-t border-[#FF6B00]/10 bg-[#FF6B00]/3">
+          <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
+            <div>
+              <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase font-mono mb-2">
+                Free for 30 Days
+              </div>
+              <p className="font-heading text-2xl tracking-widest text-[#F5F0E8]">
+                TRACK YOUR {cityMeta.name.toUpperCase()} PERMITS
+              </p>
+              <p className="text-sm text-[#F5F0E8]/50 mt-1">
+                First month free · No charge for 30 days · Cancel anytime
+              </p>
             </div>
-            <p className="font-heading text-2xl tracking-widest text-[#F5F0E8]">
-              TRACK YOUR {cityMeta.name.toUpperCase()} PERMITS
-            </p>
-            <p className="text-sm text-[#F5F0E8]/50 mt-1">
-              First month free · No charge for 30 days · Cancel anytime
-            </p>
+            <Link
+              href="/signup"
+              className="shrink-0 inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-8 py-4 hover:bg-[#F5F0E8] transition-colors"
+            >
+              Track Your {cityMeta.name} Permits Free <span>→</span>
+            </Link>
           </div>
-          <Link
-            href="/signup"
-            className="shrink-0 inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-8 py-4 hover:bg-[#F5F0E8] transition-colors"
-          >
-            Track Your {cityMeta.name} Permits Free <span>→</span>
-          </Link>
+        </section>
+      ) : (
+        <div id="waitlist" className="scroll-mt-20 border-t border-[#FF6B00]/10">
+          <CityWaitlistCTA cityName={cityMeta.name} citySlug={cityMeta.slug} />
         </div>
-      </section>
+      )}
 
       {/* Internal links — permit guides for this city */}
       <section className="py-16 px-6 border-t border-[#FF6B00]/10">
@@ -301,12 +302,16 @@ export default async function ContractorCityPage(
               {
                 step: "01",
                 title: "Add Your Permit",
-                detail: `Enter your ${cityMeta.name} permit number. ClearedNo starts monitoring immediately.`,
+                detail: cityMeta.trackingLive
+                  ? `Enter your ${cityMeta.name} permit number. ClearedNo starts monitoring immediately.`
+                  : `Enter a permit number from any tracked city — ${liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.`,
               },
               {
                 step: "02",
                 title: "We Check Every 2 Hours",
-                detail: `ClearedNo polls the ${cityMeta.name} permit portal around the clock so you don't have to.`,
+                detail: cityMeta.trackingLive
+                  ? `ClearedNo polls the ${cityMeta.name} permit portal around the clock so you don't have to.`
+                  : `ClearedNo polls each tracked city's permit portal around the clock. ${cityMeta.name} isn't one of them yet.`,
               },
               {
                 step: "03",
@@ -327,23 +332,31 @@ export default async function ContractorCityPage(
       </section>
 
       {/* Bottom CTA */}
-      <section className="py-20 px-6 border-t border-[#FF6B00]/10 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="font-heading text-4xl tracking-widest text-[#F5F0E8] mb-4">
-            STOP CHECKING.<br />
-            <span className="text-[#FF6B00]">START BUILDING.</span>
-          </h2>
-          <p className="text-sm text-[#F5F0E8]/50 mb-8">
-            First month free. Card required, not charged for 30 days. Cancel anytime.
+      {cityMeta.trackingLive ? (
+        <section className="py-20 px-6 border-t border-[#FF6B00]/10 text-center">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="font-heading text-4xl tracking-widest text-[#F5F0E8] mb-4">
+              STOP CHECKING.<br />
+              <span className="text-[#FF6B00]">START BUILDING.</span>
+            </h2>
+            <p className="text-sm text-[#F5F0E8]/50 mb-8">
+              First month free. Card required, not charged for 30 days. Cancel anytime.
+            </p>
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
+            >
+              MONITOR MY {cityMeta.name.toUpperCase()} PERMITS FREE <span>→</span>
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <section className="py-20 px-6 border-t border-[#FF6B00]/10 text-center">
+          <p className="text-[10px] text-[#F5F0E8]/25 tracking-widest">
+            Automated tracking is live in: {liveCityList()}
           </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
-          >
-            MONITOR MY {cityMeta.name.toUpperCase()} PERMITS FREE <span>→</span>
-          </Link>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Back nav */}
       <section className="py-8 px-6 border-t border-[#FF6B00]/10">

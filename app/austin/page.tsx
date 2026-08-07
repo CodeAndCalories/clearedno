@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { PermitChecker } from "@/app/components/permit-checker";
+import { liveCheckerCities } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Austin TX Building Permit Tracking | ClearedNo",
@@ -173,7 +174,11 @@ export default function AustinPage() {
             MONITOR MY AUSTIN PERMITS FREE <span>→</span>
           </Link>
           <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest">
-            Also monitoring: Dallas · Houston · San Antonio
+            Also monitoring:{" "}
+            {liveCheckerCities
+              .filter((c) => c.slug !== "austin")
+              .map((c) => c.name)
+              .join(" · ")}
           </p>
         </div>
       </section>

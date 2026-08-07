@@ -5,6 +5,7 @@ import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import StickyPermitCTA from "./sticky-cta";
 import PermitAlertSignup from "../../../permit-alert-signup";
+import { routeCityMeta, routeCitySlugs, liveCityList } from "@/lib/cities";
 
 // Revalidate daily so Supabase-sourced fees/timelines refresh without a redeploy.
 export const revalidate = 86400;
@@ -12,19 +13,7 @@ export const revalidate = 86400;
 // ─── Static param sets ────────────────────────────────────────────────────────
 // All 7 project types × 11 cities = 77 pre-rendered pages.
 
-const CITIES = [
-  "austin-tx",
-  "dallas-tx",
-  "houston-tx",
-  "san-antonio-tx",
-  "columbus-oh",
-  "philadelphia-pa",
-  "grand-rapids-mi",
-  "cleveland-oh",
-  "pittsburgh-pa",
-  "detroit-mi",
-  "cincinnati-oh",
-];
+const CITIES = routeCitySlugs;
 
 const PROJECT_TYPES = [
   "deck-permit",
@@ -48,19 +37,8 @@ export function generateStaticParams() {
 
 // ─── City display map ─────────────────────────────────────────────────────────
 
-const CITY_META: Record<string, { name: string; state: string }> = {
-  "austin-tx":       { name: "Austin",       state: "TX" },
-  "dallas-tx":       { name: "Dallas",       state: "TX" },
-  "houston-tx":      { name: "Houston",      state: "TX" },
-  "san-antonio-tx":  { name: "San Antonio",  state: "TX" },
-  "columbus-oh":     { name: "Columbus",     state: "OH" },
-  "philadelphia-pa": { name: "Philadelphia", state: "PA" },
-  "grand-rapids-mi": { name: "Grand Rapids", state: "MI" },
-  "cleveland-oh":    { name: "Cleveland",    state: "OH" },
-  "pittsburgh-pa":   { name: "Pittsburgh",   state: "PA" },
-  "detroit-mi":      { name: "Detroit",      state: "MI" },
-  "cincinnati-oh":   { name: "Cincinnati",   state: "OH" },
-};
+// Derived from lib/cities — `trackingLive` gates every monitoring claim.
+const CITY_META = routeCityMeta;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -145,7 +123,16 @@ export default async function ProjectTypePermitPage(
   if (error || !permit) notFound();
 
   const row = permit as PermitRow;
-  const cityMeta = CITY_META[params.city] ?? { name: row.city_name, state: row.state };
+  // An unmapped slug can't be a tracked city, so the fallback is never live.
+  const cityMeta =
+    CITY_META[params.city] ??
+    {
+      slug: params.city,
+      name: row.city_name,
+      state: row.state,
+      stateFull: row.state,
+      trackingLive: false,
+    };
 
   // ── FAQ JSON-LD (uses live DB data — unique per page) ──────────────────────
   const faqSchema = {
@@ -173,7 +160,9 @@ export default async function ProjectTypePermitPage(
         name: `Where do I apply for a ${row.project_type_label} in ${row.city_name}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `You can apply for a ${row.project_type_label} at the official ${row.city_name} permit portal. ClearedNo can monitor your permit status 24/7 and alert you the moment it's approved.`,
+          text: cityMeta.trackingLive
+            ? `You can apply for a ${row.project_type_label} at the official ${row.city_name} permit portal. ClearedNo can monitor your permit status 24/7 and alert you the moment it's approved.`
+            : `You can apply for a ${row.project_type_label} at the official ${row.city_name} permit portal, and you'll need to check the status there yourself — ClearedNo doesn't offer automated ${row.city_name} tracking yet.`,
         },
       },
     ],
@@ -332,33 +321,53 @@ export default async function ProjectTypePermitPage(
         </section>
       )}
 
-      {/* Track CTA */}
-      <section className="py-20 px-6 border-t border-[#FF6B00]/10 bg-[#FF6B00]/3">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-4 font-mono">
-            After You Submit
+      {/* Track CTA — only where we can actually track it. */}
+      {cityMeta.trackingLive ? (
+        <section className="py-20 px-6 border-t border-[#FF6B00]/10 bg-[#FF6B00]/3">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-4 font-mono">
+              After You Submit
+            </div>
+            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] mb-4">
+              TRACK THIS PERMIT<br />
+              <span className="text-[#FF6B00]">AUTOMATICALLY.</span>
+            </h2>
+            <p className="text-sm text-[#F5F0E8]/50 leading-relaxed mb-8 max-w-xl mx-auto">
+              Once you&apos;ve submitted your {row.project_type_label.toLowerCase()},
+              ClearedNo watches the {cityMeta.name} portal and sends you an instant alert
+              the moment your status changes — so you can schedule your crew without
+              manually checking.
+            </p>
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
+            >
+              TRACK THIS PERMIT FREE <span>→</span>
+            </Link>
+            <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest">
+              First month free · Card required, not charged for 30 days · Cancel anytime
+            </p>
           </div>
-          <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] mb-4">
-            TRACK THIS PERMIT<br />
-            <span className="text-[#FF6B00]">AUTOMATICALLY.</span>
-          </h2>
-          <p className="text-sm text-[#F5F0E8]/50 leading-relaxed mb-8 max-w-xl mx-auto">
-            Once you&apos;ve submitted your {row.project_type_label.toLowerCase()},
-            ClearedNo watches the {cityMeta.name} portal and sends you an instant alert
-            the moment your status changes — so you can schedule your crew without
-            manually checking.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
-          >
-            TRACK THIS PERMIT FREE <span>→</span>
-          </Link>
-          <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest">
-            First month free · Card required, not charged for 30 days · Cancel anytime
-          </p>
-        </div>
-      </section>
+        </section>
+      ) : (
+        <section className="py-20 px-6 border-t border-[#FF6B00]/10 bg-[#FF6B00]/3">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-4 font-mono">
+              After You Submit
+            </div>
+            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] mb-4">
+              {cityMeta.name.toUpperCase()} TRACKING<br />
+              <span className="text-[#FF6B00]">ISN&apos;T LIVE YET.</span>
+            </h2>
+            <p className="text-sm text-[#F5F0E8]/50 leading-relaxed mb-8 max-w-xl mx-auto">
+              Automated tracking isn&apos;t available in {cityMeta.name} yet, so
+              you&apos;ll need to check the city portal yourself. It&apos;s live in{" "}
+              {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} —
+              and you can get notified below when {cityMeta.name} launches.
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Back link */}
       <section className="py-8 px-6 border-t border-[#FF6B00]/10">
@@ -378,11 +387,25 @@ export default async function ProjectTypePermitPage(
         </div>
       </section>
 
-      {/* Email capture — permit alert leads for the $79 tracker upsell */}
-      <PermitAlertSignup
-        city={`${cityMeta.name}, ${cityMeta.state}`}
-        projectType={row.project_type_label}
-      />
+      {/* Email capture — permit alert leads for the $79 tracker upsell. In
+          untracked cities the same capture becomes a launch waitlist, because
+          "we'll alert you when this permit changes" isn't true there. */}
+      {cityMeta.trackingLive ? (
+        <PermitAlertSignup
+          city={`${cityMeta.name}, ${cityMeta.state}`}
+          projectType={row.project_type_label}
+        />
+      ) : (
+        <PermitAlertSignup
+          city={`${cityMeta.name}, ${cityMeta.state}`}
+          projectType={row.project_type_label}
+          eyebrow="Coming Soon"
+          headline={`Automated tracking isn't available in ${cityMeta.name} yet`}
+          subtext={`Get notified when it launches. We'll email you the day ${cityMeta.name} permit monitoring goes live — nothing else.`}
+          success={`You're on the ${cityMeta.name} waitlist. We'll email you the day it launches.`}
+          buttonLabel="Join Waitlist"
+        />
+      )}
 
       <footer className="border-t border-[#FF6B00]/10 px-6 py-8 text-center">
         <p className="text-[10px] text-[#F5F0E8]/20 tracking-widest">

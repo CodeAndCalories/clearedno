@@ -553,7 +553,7 @@ export default function PennsylvaniaRoofingPermitRequirementsPost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">TRACK YOUR PENNSYLVANIA PERMITS AUTOMATICALLY</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            Philadelphia, Pittsburgh, Allentown, Erie — one place, one email feed. ClearedNo watches
+            Philadelphia and Pittsburgh — one place, one email feed. ClearedNo watches
             every permit you have open and tells you the second it issues, passes, fails, or nears
             expiration. Unlimited permits, flat monthly price, first month free.
           </p>

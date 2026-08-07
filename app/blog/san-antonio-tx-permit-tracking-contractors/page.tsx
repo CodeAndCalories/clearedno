@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "San Antonio TX Permit Tracking for Contractors: 2026 Guide | ClearedNo",
   description:
-    "San Antonio is one of the fastest-growing cities in Texas. High permit volume, a slow portal, and no notifications mean contractors lose days waiting. ClearedNo monitors San Antonio permits 24/7.",
+    "San Antonio is one of the fastest-growing cities in Texas. High permit volume, a slow portal, and no notifications mean contractors lose days waiting. Automated San Antonio tracking is not available yet - join the waitlist.",
   keywords: [
     "San Antonio TX permit tracking",
     "San Antonio building permit status",
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "https://www.clearedno.com/blog/san-antonio-tx-permit-tracking-contractors" },
   openGraph: {
     title: "San Antonio TX Permit Tracking for Contractors: 2026 Guide",
-    description: "How ClearedNo monitors San Antonio permits 24/7 so contractors never lose days to notification lag.",
+    description: "Why San Antonio permits still have to be checked by hand, and how to be notified when automated tracking launches.",
     url: "https://www.clearedno.com/blog/san-antonio-tx-permit-tracking-contractors",
     type: "article",
   },
@@ -127,13 +128,13 @@ export default function SanAntonioPermitTrackingPost() {
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">HOW CLEAREDNO MONITORS SAN ANTONIO PERMITS</h2>
           <p>
-            ClearedNo checks your San Antonio permits every 2 hours, around the clock. The moment SAconnect shows a status change — corrections issued, permit released, permit cleared — you get an email with the permit number, address, old status, new status, and a direct link to the SAconnect record.
+            Automated San Antonio tracking isn&apos;t available yet — the city publishes permit records but no status field ClearedNo can poll. In the cities where tracking is live ({liveCityList({ separator: ", ", conjunction: "and", format: "city" })}), ClearedNo checks every 2 hours around the clock, and the moment the portal shows a status change you get an email with the permit number, address, old status, new status, and a direct link to the record.
           </p>
           <p className="mt-3">
             You don&apos;t log into SAconnect every morning. You add your permit number once and wait for the alert. When it comes, you know immediately what changed and you can take action within minutes.
           </p>
           <p className="mt-3">
-            San Antonio is one of four Texas cities supported natively alongside Austin, Dallas, and Houston. One flat monthly rate covers all four. Unlimited permits per company.
+            Automated San Antonio tracking isn't available yet. Tracking is live in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}. One flat monthly rate covers all of them, unlimited permits per company.
           </p>
         </section>
 
@@ -143,7 +144,7 @@ export default function SanAntonioPermitTrackingPost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">MONITOR YOUR SAN ANTONIO PERMITS — FIRST MONTH FREE</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo checks San Antonio permits every 2 hours. The moment your status changes, you get an email.
+            Automated San Antonio tracking isn&apos;t live yet. Get notified when it launches — tracking already runs in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.
             Stop logging into SAconnect every morning. First month free.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">

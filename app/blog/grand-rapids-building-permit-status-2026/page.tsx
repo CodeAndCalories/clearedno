@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import PermitAlertSignup from "@/app/permit-alert-signup";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Grand Rapids MI Building Permit Status — 2026 Guide | ClearedNo",
@@ -501,12 +502,13 @@ export default function GrandRapidsPermitStatus2026Post() {
 
         {/* Tracking */}
         <section>
-          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">TRACKING GRAND RAPIDS PERMITS AUTOMATICALLY</h2>
+          <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">TRACKING GRAND RAPIDS PERMITS</h2>
           <p>
             For contractors managing multiple Grand Rapids projects across city and county
-            jurisdictions, automatic tracking eliminates daily manual status checks. ClearedNo
-            monitors your permits and emails you the moment any status changes — no more opening
-            the portal every morning to see whether plan review moved.
+            jurisdictions, automatic tracking would eliminate daily manual status checks — but it
+            isn&apos;t available in Grand Rapids yet. Grand Rapids publishes no per-permit status
+            API, so ClearedNo can&apos;t poll it. Automated tracking is live in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.
+            Get notified below when Grand Rapids launches.
           </p>
           <p className="mt-3">Contractors use it to:</p>
           <ul className="space-y-3 mt-3 ml-4">
@@ -540,18 +542,18 @@ export default function GrandRapidsPermitStatus2026Post() {
         <div className="border border-[#FF6B00]/40 bg-[#FF6B00]/5 p-6 relative">
           <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-[#FF6B00] -translate-x-px -translate-y-px" />
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
-          <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">TRACK YOUR GRAND RAPIDS PERMITS AUTOMATICALLY</h3>
+          <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">GET NOTIFIED WHEN GRAND RAPIDS LAUNCHES</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo watches your permits for you and emails you the second plan review clears, an
-            inspection passes or fails, or a hold lands. Unlimited permits, flat monthly price,
-            first month free. Stop refreshing the Building Safety portal every morning.
+            Automated tracking isn&apos;t available in Grand Rapids yet. It&apos;s live in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })},
+            where ClearedNo emails you the second plan review clears, an inspection passes or fails,
+            or a hold lands. Get notified when Grand Rapids goes live.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              href="/permits/landing"
+              href="/locations/mi/grand-rapids#waitlist"
               className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-8 py-3 hover:bg-[#F5F0E8] transition-colors text-center"
             >
-              TRACK YOUR PERMITS →
+              NOTIFY ME WHEN GRAND RAPIDS LAUNCHES →
             </Link>
             <Link
               href="/tools/permit-timeline-estimator"

@@ -2,19 +2,24 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { PermitChecker } from "@/app/components/permit-checker";
+import { CityWaitlistCTA } from "@/app/components/city-waitlist-cta";
+import { liveCityList } from "@/lib/cities";
 
+// Dallas has no permit-status API — Dallas publishes permits but no status
+// field — so nothing on this page may promise automated tracking. It stays a
+// guide page plus a waitlist capture until that changes.
 export const metadata: Metadata = {
-  title: "Dallas TX Building Permit Tracking | ClearedNo",
+  title: "Dallas TX Building Permit Status — How to Check | ClearedNo",
   description:
-    "Track your Dallas building permits automatically. Get instant alerts when your Dallas permit status changes. Built for Texas contractors.",
+    "How to check a Dallas building permit status through Planning and Development, plus typical approval timelines. Automated tracking isn't available in Dallas yet — join the waitlist.",
   keywords: [
     "Dallas permit tracking", "Dallas building permit status", "check permit status Dallas",
     "Dallas TX permit monitoring", "Dallas Planning and Development", "Dallas Development Services", "Dallas permit cleared",
   ],
   alternates: { canonical: "https://www.clearedno.com/dallas" },
   openGraph: {
-    title: "Dallas TX Building Permit Tracking | ClearedNo",
-    description: "Stop manually checking Dallas Planning and Development. Get instant alerts when your permit clears.",
+    title: "Dallas TX Building Permit Status — How to Check | ClearedNo",
+    description: "How to check a Dallas building permit status, and how long Dallas approvals actually take.",
     url: "https://www.clearedno.com/dallas",
     type: "website",
     images: [{ url: "/clearedno-icon.png", width: 512, height: 512 }],
@@ -24,11 +29,12 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  name: "ClearedNo — Dallas TX Permit Monitoring",
-  description: "Automated building permit status monitoring for Dallas, Texas contractors.",
+  name: "ClearedNo — Dallas TX Permit Guide",
+  description:
+    "Building permit status guide and approval timelines for Dallas, Texas contractors. Automated monitoring is not yet available in Dallas.",
   url: "https://www.clearedno.com/dallas",
   areaServed: { "@type": "City", name: "Dallas", containedInPlace: { "@type": "State", name: "Texas" } },
-  serviceType: "Building Permit Monitoring",
+  serviceType: "Building Permit Information",
 };
 
 export default function DallasPage() {
@@ -62,20 +68,21 @@ export default function DallasPage() {
             <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Dallas, TX</span>
           </div>
           <h1 className="font-heading text-5xl sm:text-7xl tracking-wider text-[#F5F0E8] leading-[0.9] mb-6">
-            TRACK YOUR DALLAS<br />
-            <span className="text-[#FF6B00]">BUILDING PERMITS</span><br />
-            AUTOMATICALLY.
+            DALLAS<br />
+            <span className="text-[#FF6B00]">BUILDING PERMIT</span><br />
+            STATUS GUIDE.
           </h1>
           <p className="text-sm text-[#F5F0E8]/60 leading-relaxed max-w-2xl mb-8">
-            Dallas Planning and Development doesn&apos;t send permit status alerts. ClearedNo watches
-            the portal for you — checking daily and alerting you the moment your permit status changes,
-            so your crew starts work the same day it clears.
+            Dallas Planning and Development doesn&apos;t send permit status alerts, so Dallas
+            permits have to be checked by hand. Automated tracking isn&apos;t available in Dallas
+            yet — Dallas publishes permit records but no status field we can poll. Get notified
+            when it launches.
           </p>
           <Link
-            href="/signup"
+            href="#waitlist"
             className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
           >
-            START MONITORING MY DALLAS PERMITS <span>→</span>
+            NOTIFY ME WHEN DALLAS LAUNCHES <span>→</span>
           </Link>
         </div>
       </section>
@@ -84,10 +91,11 @@ export default function DallasPage() {
       <section className="py-16 px-6 border-t border-[#FF6B00]/10">
         <div className="max-w-3xl mx-auto">
           <h2 className="font-heading text-3xl sm:text-4xl tracking-widest text-[#F5F0E8] mb-2">
-            CHECK ANY DALLAS PERMIT — FREE
+            PERMIT LOOKUP
           </h2>
           <p className="text-sm text-[#F5F0E8]/50 mb-8">
-            No signup needed. Enter your permit number to see its current status.
+            Live Dallas status data isn&apos;t wired up yet. Our free lookup covers{" "}
+            {liveCityList({ separator: ", ", conjunction: "and" })}.
           </p>
           <PermitChecker defaultCity="dallas" />
         </div>
@@ -142,39 +150,16 @@ export default function DallasPage() {
         </div>
       </section>
 
-      {/* Testimonial */}
-      <section className="py-16 px-6 border-t border-[#FF6B00]/10 bg-[#FF6B00]/3">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="font-heading text-5xl text-[#FF6B00] mb-6">&ldquo;</div>
-          <p className="text-lg text-[#F5F0E8]/80 leading-relaxed mb-6">
-            The Dallas permit portal is painful to navigate. With ClearedNo I just get
-            a text when my permit clears and my crew gets moving. Simple as that.
-          </p>
-          <div className="text-xs tracking-widest text-[#F5F0E8]/40 uppercase font-mono">
-            James T. — Commercial Contractor, Dallas TX
-          </div>
-        </div>
-      </section>
+      {/* Waitlist — the testimonial that sat here quoted a Dallas contractor
+          getting alerts we have never been able to send. */}
+      <div id="waitlist" className="scroll-mt-20 border-t border-[#FF6B00]/10">
+        <CityWaitlistCTA cityName="Dallas" citySlug="dallas" />
+      </div>
 
-      {/* CTA */}
-      <section className="py-20 px-6 border-t border-[#FF6B00]/10 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="font-heading text-5xl tracking-widest text-[#F5F0E8] mb-4">
-            STOP CHECKING.<br /><span className="text-[#FF6B00]">START BUILDING.</span>
-          </h2>
-          <p className="text-sm text-[#F5F0E8]/50 mb-8">
-            First month free. Card required, not charged for 30 days. Cancel anytime.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-12 py-5 hover:bg-[#F5F0E8] transition-colors"
-          >
-            MONITOR MY DALLAS PERMITS FREE <span>→</span>
-          </Link>
-          <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest">
-            Also monitoring: Austin · Houston · San Antonio
-          </p>
-        </div>
+      <section className="pb-20 px-6 text-center">
+        <p className="text-[10px] text-[#F5F0E8]/25 tracking-widest">
+          Automated tracking is live in: {liveCityList()}
+        </p>
       </section>
 
       <footer className="border-t border-[#FF6B00]/10 px-6 py-8 text-center">

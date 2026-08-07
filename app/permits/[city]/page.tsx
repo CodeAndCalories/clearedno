@@ -3,67 +3,37 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getCitiesByState, liveCityList, routeCityMeta } from "@/lib/cities";
+import { CityWaitlistCTA } from "@/app/components/city-waitlist-cta";
 
 // Revalidate daily so Supabase-sourced permit data refreshes without a redeploy.
 export const revalidate = 86400;
 
 // ─── Static city config ───────────────────────────────────────────────────────
 
-const CITY_META: Record<string, { name: string; state: string; stateFull: string }> = {
-  "austin-tx":       { name: "Austin",       state: "TX", stateFull: "Texas" },
-  "dallas-tx":       { name: "Dallas",       state: "TX", stateFull: "Texas" },
-  "houston-tx":      { name: "Houston",      state: "TX", stateFull: "Texas" },
-  "san-antonio-tx":  { name: "San Antonio",  state: "TX", stateFull: "Texas" },
-  "columbus-oh":     { name: "Columbus",     state: "OH", stateFull: "Ohio" },
-  "philadelphia-pa": { name: "Philadelphia", state: "PA", stateFull: "Pennsylvania" },
-  "grand-rapids-mi": { name: "Grand Rapids", state: "MI", stateFull: "Michigan" },
-  "cleveland-oh":    { name: "Cleveland",    state: "OH", stateFull: "Ohio" },
-  "pittsburgh-pa":   { name: "Pittsburgh",   state: "PA", stateFull: "Pennsylvania" },
-  "detroit-mi":      { name: "Detroit",      state: "MI", stateFull: "Michigan" },
-  "cincinnati-oh":   { name: "Cincinnati",   state: "OH", stateFull: "Ohio" },
-};
+// Derived from lib/cities. `trackingLive` gates the claims on this page that
+// only hold for cities with a working checker.
+const CITY_META = routeCityMeta;
 
-// ─── Static state config ──────────────────────────────────────────────────────
+// ─── State config, grouped from the same source ───────────────────────────────
 
 type CityEntry = { slug: string; name: string };
 
-const STATE_META: Record<string, { name: string; abbr: string; cities: CityEntry[] }> = {
-  texas: {
-    name: "Texas",
-    abbr: "TX",
-    cities: [
-      { slug: "austin-tx",       name: "Austin" },
-      { slug: "dallas-tx",       name: "Dallas" },
-      { slug: "houston-tx",      name: "Houston" },
-      { slug: "san-antonio-tx",  name: "San Antonio" },
-    ],
-  },
-  ohio: {
-    name: "Ohio",
-    abbr: "OH",
-    cities: [
-      { slug: "columbus-oh",   name: "Columbus" },
-      { slug: "cleveland-oh",  name: "Cleveland" },
-      { slug: "cincinnati-oh", name: "Cincinnati" },
-    ],
-  },
-  pennsylvania: {
-    name: "Pennsylvania",
-    abbr: "PA",
-    cities: [
-      { slug: "philadelphia-pa", name: "Philadelphia" },
-      { slug: "pittsburgh-pa",   name: "Pittsburgh" },
-    ],
-  },
-  michigan: {
-    name: "Michigan",
-    abbr: "MI",
-    cities: [
-      { slug: "grand-rapids-mi", name: "Grand Rapids" },
-      { slug: "detroit-mi",      name: "Detroit" },
-    ],
-  },
-};
+const STATE_META: Record<string, { name: string; abbr: string; cities: CityEntry[] }> =
+  getCitiesByState().reduce<Record<string, { name: string; abbr: string; cities: CityEntry[] }>>(
+    (acc, group) => {
+      acc[group.state.toLowerCase()] = {
+        name: group.state,
+        abbr: group.stateAbbr,
+        cities: group.cities.map((c) => ({
+          slug: `${c.slug}-${c.stateSlug}`,
+          name: c.name,
+        })),
+      };
+      return acc;
+    },
+    {}
+  );
 
 // ─── Pre-render all slugs (cities + states) at build time ─────────────────────
 
@@ -128,6 +98,11 @@ type PermitRow = {
 
 async function StatePermitsPage({ slug }: { slug: string }) {
   const meta = STATE_META[slug];
+
+  // Cities in this state that actually have a working checker.
+  const trackedInState = meta.cities
+    .filter((c) => CITY_META[c.slug]?.trackingLive)
+    .map((c) => c.name);
 
   const citySlugs = meta.cities.map((c) => c.slug);
   const { data: permits } = await supabaseAdmin
@@ -254,23 +229,44 @@ async function StatePermitsPage({ slug }: { slug: string }) {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* CTA — names only the cities in this state we actually watch. */}
       <section className="py-20 px-6 border-t border-[#FF6B00]/10 text-center">
         <div className="max-w-2xl mx-auto">
-          <h2 className="font-heading text-4xl tracking-widest text-[#F5F0E8] mb-4">
-            TRACK ANY {meta.abbr}<br />
-            <span className="text-[#FF6B00]">PERMIT — FREE.</span>
-          </h2>
-          <p className="text-sm text-[#F5F0E8]/50 mb-8">
-            ClearedNo watches {meta.name} permit portals multiple times daily and
-            texts you the moment your status changes. First month free.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
-          >
-            MONITOR MY {meta.name.toUpperCase()} PERMITS <span>→</span>
-          </Link>
+          {trackedInState.length > 0 ? (
+            <>
+              <h2 className="font-heading text-4xl tracking-widest text-[#F5F0E8] mb-4">
+                TRACK YOUR {meta.abbr}<br />
+                <span className="text-[#FF6B00]">PERMIT — FREE.</span>
+              </h2>
+              <p className="text-sm text-[#F5F0E8]/50 mb-8">
+                ClearedNo watches {trackedInState.join(", ")} permit portals multiple times
+                daily and emails you the moment your status changes. First month free.
+              </p>
+              <Link
+                href="/signup"
+                className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
+              >
+                MONITOR MY {trackedInState[0].toUpperCase()} PERMITS <span>→</span>
+              </Link>
+            </>
+          ) : (
+            <>
+              <h2 className="font-heading text-4xl tracking-widest text-[#F5F0E8] mb-4">
+                {meta.name.toUpperCase()} TRACKING<br />
+                <span className="text-[#FF6B00]">ISN&apos;T LIVE YET.</span>
+              </h2>
+              <p className="text-sm text-[#F5F0E8]/50 mb-8">
+                We publish {meta.name} permit guides, but automated tracking isn&apos;t
+                available in any {meta.name} city yet. It&apos;s live in {liveCityList()}.
+              </p>
+              <Link
+                href="/suggest-city"
+                className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
+              >
+                REQUEST YOUR CITY <span>→</span>
+              </Link>
+            </>
+          )}
         </div>
       </section>
 
@@ -432,24 +428,30 @@ export default async function CityPermitsPage(props: { params: Promise<{ city: s
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6 border-t border-[#FF6B00]/10 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="font-heading text-4xl tracking-widest text-[#F5F0E8] mb-4">
-            TRACK ANY {meta.name.toUpperCase()}<br />
-            <span className="text-[#FF6B00]">PERMIT — FREE.</span>
-          </h2>
-          <p className="text-sm text-[#F5F0E8]/50 mb-8">
-            ClearedNo checks the {meta.name} permit portal multiple times daily and
-            texts you the moment your status changes. First month free.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
-          >
-            MONITOR MY {meta.name.toUpperCase()} PERMITS <span>→</span>
-          </Link>
+      {meta.trackingLive ? (
+        <section className="py-20 px-6 border-t border-[#FF6B00]/10 text-center">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="font-heading text-4xl tracking-widest text-[#F5F0E8] mb-4">
+              TRACK ANY {meta.name.toUpperCase()}<br />
+              <span className="text-[#FF6B00]">PERMIT — FREE.</span>
+            </h2>
+            <p className="text-sm text-[#F5F0E8]/50 mb-8">
+              ClearedNo checks the {meta.name} permit portal multiple times daily and
+              emails you the moment your status changes. First month free.
+            </p>
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
+            >
+              MONITOR MY {meta.name.toUpperCase()} PERMITS <span>→</span>
+            </Link>
+          </div>
+        </section>
+      ) : (
+        <div id="waitlist" className="scroll-mt-20 border-t border-[#FF6B00]/10">
+          <CityWaitlistCTA cityName={meta.name} citySlug={meta.slug} />
         </div>
-      </section>
+      )}
 
       <footer className="border-t border-[#FF6B00]/10 px-6 py-8 text-center">
         <p className="text-[10px] text-[#F5F0E8]/20 tracking-widest">

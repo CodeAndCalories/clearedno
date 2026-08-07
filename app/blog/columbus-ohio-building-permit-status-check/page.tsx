@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Columbus Ohio Building Permit Status Check: A Complete Guide (2026) | ClearedNo",
@@ -278,7 +279,7 @@ export default function ColumbusOhioPermitStatusPost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">GET NOTIFIED WHEN COLUMBUS ADDS SUPPORT</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo currently monitors permits in Texas cities. Columbus, OH support is in development.
+            ClearedNo currently monitors permits in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} — Columbus included.
             Request your city to move it up the priority list and get notified the moment it launches.
           </p>
           <Link

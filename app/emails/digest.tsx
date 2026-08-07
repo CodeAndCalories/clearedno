@@ -403,7 +403,7 @@ export function DigestEmail({
                 margin: "0 0 6px",
               }}
             >
-              ClearedNo · Permit monitoring for Texas contractors
+              ClearedNo · Permit monitoring for contractors
             </Text>
             <Text
               style={{

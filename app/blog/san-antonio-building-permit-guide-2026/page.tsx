@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "San Antonio Building Permit Guide for Contractors (2026) | ClearedNo",
@@ -272,7 +273,7 @@ export default function SanAntonioPermitGuidePost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">LET CLEAREDNO MONITOR YOUR SAN ANTONIO PERMITS</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo monitors Texas permits 24/7 and sends instant alerts when status changes.
+            ClearedNo monitors {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} permits 24/7 and sends instant alerts when status changes.
             No more manual portal checks — know the moment your San Antonio permit moves.
           </p>
           <Link

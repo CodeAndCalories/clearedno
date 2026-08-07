@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { cities, isLiveCheckerCity, liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Building Permit Encyclopedia — Requirements, Fees & Timelines | ClearedNo",
@@ -17,19 +18,14 @@ export const metadata: Metadata = {
   },
 };
 
-const CITIES = [
-  { slug: "austin-tx",        name: "Austin",        state: "TX", types: 7 },
-  { slug: "dallas-tx",        name: "Dallas",        state: "TX", types: 7 },
-  { slug: "houston-tx",       name: "Houston",       state: "TX", types: 7 },
-  { slug: "san-antonio-tx",   name: "San Antonio",   state: "TX", types: 7 },
-  { slug: "columbus-oh",      name: "Columbus",      state: "OH", types: 7 },
-  { slug: "philadelphia-pa",  name: "Philadelphia",  state: "PA", types: 7 },
-  { slug: "grand-rapids-mi",  name: "Grand Rapids",  state: "MI", types: 7 },
-  { slug: "cleveland-oh",     name: "Cleveland",     state: "OH", types: 7 },
-  { slug: "pittsburgh-pa",    name: "Pittsburgh",    state: "PA", types: 7 },
-  { slug: "detroit-mi",       name: "Detroit",       state: "MI", types: 7 },
-  { slug: "cincinnati-oh",    name: "Cincinnati",    state: "OH", types: 7 },
-];
+// Guides exist for every city; `live` marks the ones we can also track.
+const CITIES = cities.map((c) => ({
+  slug:  `${c.slug}-${c.stateSlug}`,
+  name:  c.name,
+  state: c.stateAbbr,
+  types: 7,
+  live:  isLiveCheckerCity(c.slug),
+}));
 
 const PROJECT_TYPES = [
   "Deck Permit",
@@ -116,8 +112,17 @@ export default function PermitsIndexPage() {
                 href={`/permits/${city.slug}`}
                 className="group border border-[#FF6B00]/20 p-6 hover:border-[#FF6B00]/60 hover:bg-[#FF6B00]/5 transition-all"
               >
-                <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-2 font-mono">
-                  {city.state}
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase font-mono">
+                    {city.state}
+                  </span>
+                  <span
+                    className={`text-[9px] font-mono uppercase tracking-widest ${
+                      city.live ? "text-[#16A34A]/70" : "text-[#F5F0E8]/25"
+                    }`}
+                  >
+                    {city.live ? "tracked" : "guide only"}
+                  </span>
                 </div>
                 <div className="font-heading text-2xl tracking-widest text-[#F5F0E8] group-hover:text-[#FF6B00] transition-colors mb-3">
                   {city.name.toUpperCase()}
@@ -140,7 +145,9 @@ export default function PermitsIndexPage() {
           </h2>
           <p className="text-sm text-[#F5F0E8]/50 mb-8">
             Once you&apos;ve submitted, ClearedNo watches the portal and alerts you the
-            moment your status changes. First month free.
+            moment your status changes. Automated tracking is live in{" "}
+            {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.
+            First month free.
           </p>
           <Link
             href="/signup"

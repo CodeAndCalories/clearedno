@@ -4,6 +4,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import StickyPermitCTA from "../sticky-cta";
+import { routeCityMeta, routeCitySlugs, liveCityList } from "@/lib/cities";
+import { CityWaitlistCTA } from "@/app/components/city-waitlist-cta";
 
 // Revalidate daily so Supabase-sourced fees/timelines refresh without a redeploy.
 export const revalidate = 86400;
@@ -12,19 +14,7 @@ const YEAR = 2026;
 
 // ─── Static params ────────────────────────────────────────────────────────────
 
-const CITIES = [
-  "austin-tx",
-  "dallas-tx",
-  "houston-tx",
-  "san-antonio-tx",
-  "columbus-oh",
-  "philadelphia-pa",
-  "grand-rapids-mi",
-  "cleveland-oh",
-  "pittsburgh-pa",
-  "detroit-mi",
-  "cincinnati-oh",
-];
+const CITIES = routeCitySlugs;
 
 const PROJECT_TYPES = [
   "deck-permit",
@@ -48,19 +38,8 @@ export function generateStaticParams() {
 
 // ─── City display map ─────────────────────────────────────────────────────────
 
-const CITY_META: Record<string, { name: string; state: string }> = {
-  "austin-tx":       { name: "Austin",       state: "TX" },
-  "dallas-tx":       { name: "Dallas",       state: "TX" },
-  "houston-tx":      { name: "Houston",      state: "TX" },
-  "san-antonio-tx":  { name: "San Antonio",  state: "TX" },
-  "columbus-oh":     { name: "Columbus",     state: "OH" },
-  "philadelphia-pa": { name: "Philadelphia", state: "PA" },
-  "grand-rapids-mi": { name: "Grand Rapids", state: "MI" },
-  "cleveland-oh":    { name: "Cleveland",    state: "OH" },
-  "pittsburgh-pa":   { name: "Pittsburgh",   state: "PA" },
-  "detroit-mi":      { name: "Detroit",      state: "MI" },
-  "cincinnati-oh":   { name: "Cincinnati",   state: "OH" },
-};
+// Derived from lib/cities — `trackingLive` gates every monitoring claim.
+const CITY_META = routeCityMeta;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -176,7 +155,16 @@ export default async function PermitTimelinePage(
   if (error || !permit) notFound();
 
   const row = permit as PermitRow;
-  const cityMeta = CITY_META[params.city] ?? { name: row.city_name, state: row.state };
+  // An unmapped slug can't be a tracked city, so the fallback is never live.
+  const cityMeta =
+    CITY_META[params.city] ??
+    {
+      slug: params.city,
+      name: row.city_name,
+      state: row.state,
+      stateFull: row.state,
+      trackingLive: false,
+    };
   const label = row.project_type_label;
   const avgDays = row.avg_approval_days ?? 14;
   const parentUrl = `/permits/${params.city}/${params["project-type"]}`;
@@ -208,7 +196,9 @@ export default async function PermitTimelinePage(
         name: `How do I check my permit status in ${cityMeta.name}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `You can check your ${cityMeta.name} permit status through the city's official online portal. For automatic updates without manual checking, ClearedNo (clearedno.com) monitors your permit 24/7 and sends an instant alert the moment your status changes — so you never miss an approval or a correction notice.`,
+          text: cityMeta.trackingLive
+            ? `You can check your ${cityMeta.name} permit status through the city's official online portal. For automatic updates without manual checking, ClearedNo (clearedno.com) monitors your permit 24/7 and sends an instant alert the moment your status changes — so you never miss an approval or a correction notice.`
+            : `You can check your ${cityMeta.name} permit status through the city's official online portal. It has to be checked manually — ClearedNo doesn't offer automated ${cityMeta.name} tracking yet, though you can join the waitlist to be notified when it launches.`,
         },
       },
     ],
@@ -476,14 +466,28 @@ export default async function PermitTimelinePage(
                 How do I check my permit status in {cityMeta.name}?
               </h3>
               <p className="text-sm text-[#F5F0E8]/60 leading-relaxed">
-                You can check through the {cityMeta.name} city portal directly. For
-                hands-free monitoring,{" "}
-                <Link href="/signup" className="text-[#FF6B00] hover:underline">
-                  ClearedNo
-                </Link>{" "}
-                watches your {cityMeta.name} permit 24/7 and sends an instant text or
-                email the moment your status changes — so you catch correction notices
-                immediately and never miss an approval.
+                {cityMeta.trackingLive ? (
+                  <>
+                    You can check through the {cityMeta.name} city portal directly. For
+                    hands-free monitoring,{" "}
+                    <Link href="/signup" className="text-[#FF6B00] hover:underline">
+                      ClearedNo
+                    </Link>{" "}
+                    watches your {cityMeta.name} permit 24/7 and sends an instant email
+                    the moment your status changes — so you catch correction notices
+                    immediately and never miss an approval.
+                  </>
+                ) : (
+                  <>
+                    Through the {cityMeta.name} city portal, checked manually — automated
+                    tracking isn&apos;t available in {cityMeta.name} yet.{" "}
+                    <Link href="/suggest-city" className="text-[#FF6B00] hover:underline">
+                      ClearedNo
+                    </Link>{" "}
+                    currently monitors{" "}
+                    {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -491,31 +495,37 @@ export default async function PermitTimelinePage(
       </section>
 
       {/* CTA */}
-      <section className="py-20 px-6 border-t border-[#FF6B00]/10 bg-[#FF6B00]/3">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-4 font-mono">
-            Stop Checking Manually
+      {cityMeta.trackingLive ? (
+        <section className="py-20 px-6 border-t border-[#FF6B00]/10 bg-[#FF6B00]/3">
+          <div className="max-w-3xl mx-auto text-center">
+            <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-4 font-mono">
+              Stop Checking Manually
+            </div>
+            <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] mb-4">
+              GET ALERTED THE MOMENT<br />
+              <span className="text-[#FF6B00]">YOUR PERMIT CLEARS.</span>
+            </h2>
+            <p className="text-sm text-[#F5F0E8]/50 leading-relaxed mb-8 max-w-xl mx-auto">
+              ClearedNo monitors the {cityMeta.name} permit portal multiple times a day
+              and emails you instantly when your {label.toLowerCase()} status changes —
+              approved, correction required, or rejected. Catch issues in hours, not days.
+            </p>
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
+            >
+              TRACK THIS PERMIT FREE <span>→</span>
+            </Link>
+            <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest">
+              First month free · Card required, not charged for 30 days · Cancel anytime
+            </p>
           </div>
-          <h2 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] mb-4">
-            GET ALERTED THE MOMENT<br />
-            <span className="text-[#FF6B00]">YOUR PERMIT CLEARS.</span>
-          </h2>
-          <p className="text-sm text-[#F5F0E8]/50 leading-relaxed mb-8 max-w-xl mx-auto">
-            ClearedNo monitors the {cityMeta.name} permit portal multiple times a day
-            and texts you instantly when your {label.toLowerCase()} status changes —
-            approved, correction required, or rejected. Catch issues in hours, not days.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
-          >
-            TRACK THIS PERMIT FREE <span>→</span>
-          </Link>
-          <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest">
-            First month free · Card required, not charged for 30 days · Cancel anytime
-          </p>
+        </section>
+      ) : (
+        <div id="waitlist" className="scroll-mt-20 border-t border-[#FF6B00]/10">
+          <CityWaitlistCTA cityName={cityMeta.name} citySlug={cityMeta.slug} />
         </div>
-      </section>
+      )}
 
       {/* Back links */}
       <section className="py-8 px-6 border-t border-[#FF6B00]/10">

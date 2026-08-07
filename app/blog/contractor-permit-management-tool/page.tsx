@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "The Contractor Permit Management Tool That Runs While You Sleep | ClearedNo",
@@ -141,7 +142,7 @@ export default function ContractorPermitManagementToolPost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">LET IT RUN WHILE YOU BUILD</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo monitors your permits in Austin, Dallas, Houston, and San Antonio every 2 hours.
+            ClearedNo monitors your permits in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} every 2 hours.
             Unlimited permits per company. First month free.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">

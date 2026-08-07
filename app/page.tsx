@@ -2,11 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import PermitLookupForm from "./permit-lookup-form";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Check Any Building Permit Status — Free Lookup Tool | ClearedNo",
-  description:
-    "Look up building permit approval times, fees, and requirements for any major US city — free, no signup. Austin, Dallas, Houston, Columbus, Cleveland, Cincinnati & more.",
+  description: `Look up building permit approval times, fees, and requirements for any major US city — free, no signup. Live permit status tracking in ${liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.`,
   alternates: {
     canonical: "https://www.clearedno.com",
   },

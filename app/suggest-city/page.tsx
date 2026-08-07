@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { liveCheckerCities } from "@/lib/cities";
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
@@ -11,7 +12,9 @@ const US_STATES = [
   "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY",
 ];
 
-const SUPPORTED_CITIES = ["austin", "dallas", "houston", "san antonio"];
+// Lower-cased names of cities we actually monitor, derived so the
+// "✓ Already monitoring" confirmation can never fire for an untracked city.
+const SUPPORTED_CITIES = liveCheckerCities.map((c) => c.name.toLowerCase());
 
 type CityRequest = { id: string; city: string; state: string; votes: number };
 
@@ -135,13 +138,14 @@ export default function SuggestCityPage() {
         <div className="mb-8 border border-[#16A34A]/30 bg-[#16A34A]/5 px-5 py-4">
           <div className="text-[10px] tracking-[0.2em] text-[#16A34A] uppercase mb-3">✓ Already Monitoring</div>
           <div className="flex flex-wrap gap-2">
-            {["Austin, TX", "Dallas, TX", "Houston, TX", "San Antonio, TX"].map((c) => (
+            {/* Derived from LIVE_CHECKER_CITIES — this badge is a promise. */}
+            {liveCheckerCities.map((c) => (
               <Link
-                key={c}
-                href={`/${c.split(",")[0].toLowerCase().replace(" ", "-")}`}
+                key={c.slug}
+                href={`/locations/${c.stateSlug}/${c.slug}`}
                 className="text-xs font-mono text-[#16A34A] border border-[#16A34A]/40 px-3 py-1 hover:bg-[#16A34A]/10 transition-colors"
               >
-                {c}
+                {c.name}, {c.stateAbbr}
               </Link>
             ))}
           </div>

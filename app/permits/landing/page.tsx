@@ -7,6 +7,12 @@ import Image from "next/image";
 import { ScrollRevealInit, StickyMobileCTA } from "../../components/landing-client";
 import { PermitDelayCalculator } from "../../components/permit-delay-calculator";
 import MarketingNav from "../../components/MarketingNav";
+import {
+  liveCheckerCities,
+  liveCityList,
+  liveStateList,
+  LIVE_CITY_COUNT,
+} from "@/lib/cities";
 
 // ── Page-specific metadata (overrides layout defaults) ───────────────────────
 export const metadata: Metadata = {
@@ -267,17 +273,17 @@ export default function LandingPage() {
           <div className="flex items-center gap-2">
             <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] animate-pulse flex-shrink-0" />
             <span className="text-[10px] tracking-[0.2em] text-[#F5F0E8]/45 uppercase font-mono">
-              Trusted by contractors in 4 Texas cities
+              Trusted by contractors in {LIVE_CITY_COUNT} cities across {liveStateList()}
             </span>
           </div>
+          {/* Derived from LIVE_CHECKER_CITIES — never hardcode this list. */}
           <div className="hidden sm:flex items-center gap-5 text-[10px] tracking-widest text-[#FF6B00]/50 uppercase font-mono">
-            <span>Austin</span>
-            <span className="text-[#FF6B00]/20">·</span>
-            <span>Dallas</span>
-            <span className="text-[#FF6B00]/20">·</span>
-            <span>Houston</span>
-            <span className="text-[#FF6B00]/20">·</span>
-            <span>San Antonio</span>
+            {liveCheckerCities.map((c, i) => (
+              <span key={c.slug} className="flex items-center gap-5">
+                {i > 0 && <span className="text-[#FF6B00]/20">·</span>}
+                <span>{c.name}</span>
+              </span>
+            ))}
           </div>
         </div>
       </div>
@@ -337,7 +343,7 @@ export default function LandingPage() {
       <section className="py-10 px-6">
         <div className="max-w-3xl mx-auto text-center">
           <p className="text-xs text-[#F5F0E8]/40 tracking-widest uppercase font-mono">
-            Currently monitoring: Austin TX · Dallas TX · Houston TX · San Antonio TX · More cities weekly
+            Currently monitoring: {liveCityList({ format: "abbr" })}
           </p>
         </div>
       </section>
@@ -489,7 +495,7 @@ export default function LandingPage() {
                   "Checks every 2 hours, 24 hours a day, 7 days a week",
                   "Instant email alert the moment any status changes",
                   "Full status history and audit trail",
-                  "All supported cities, new cities added weekly",
+                  `All ${LIVE_CITY_COUNT} tracked cities`,
                   "Priority email support",
                 ].map((f) => (
                   <li key={f} className="flex items-start gap-3 text-sm text-[#F5F0E8]/80">
@@ -593,7 +599,7 @@ export default function LandingPage() {
             {[
               {
                 q: "What cities do you support?",
-                a: "Currently Austin, TX, Dallas, TX, Houston, TX, and San Antonio, TX. Columbus OH, Philadelphia PA, and Grand Rapids MI are also supported. More cities added weekly — request yours at /suggest-city.",
+                a: `Automated tracking is live in ${liveCityList({ separator: ", ", conjunction: "and" })}. Other cities aren't tracked yet — request yours at /suggest-city and we'll email you when it launches.`,
               },
               {
                 q: "How often do you check my permit?",
@@ -605,7 +611,7 @@ export default function LandingPage() {
               },
               {
                 q: "What if my city isn't supported?",
-                a: "Submit a request at /suggest-city and we'll prioritize based on demand. New cities are added weekly — most requests go live within 1–2 weeks.",
+                a: "Submit a request at /suggest-city and we'll prioritize based on demand. We only launch a city once its permit portal exposes a status feed we can poll reliably, so we can't promise a date — but we'll email you the day it goes live.",
               },
               {
                 q: "Can I cancel anytime?",
@@ -709,11 +715,11 @@ export default function LandingPage() {
             <div className="flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-[#16A34A] flex-shrink-0" />
               <span className="text-[10px] text-[#F5F0E8]/40 tracking-widest uppercase">
-                Currently monitoring Austin, TX · Dallas, TX · Houston, TX · San Antonio, TX · Columbus OH soon · Philadelphia PA soon · Grand Rapids MI soon
+                Currently monitoring {liveCityList()}
               </span>
             </div>
             <span className="text-[10px] text-[#FF6B00]/50 tracking-widest uppercase">
-              More cities added weekly
+              More cities as their portals open up
             </span>
           </div>
 

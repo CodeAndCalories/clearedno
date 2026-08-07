@@ -2,19 +2,23 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import { PermitChecker } from "@/app/components/permit-checker";
+import { CityWaitlistCTA } from "@/app/components/city-waitlist-cta";
+import { liveCityList } from "@/lib/cities";
 
+// Houston publishes no per-permit status API, so there is no automated Houston
+// tracking to sell. This page is a guide plus a waitlist capture.
 export const metadata: Metadata = {
-  title: "Houston TX Building Permit Status — Check Any Permit Free | ClearedNo",
+  title: "Houston TX Building Permit Status — How to Check | ClearedNo",
   description:
-    "Look up any Houston building permit status instantly. Search by address or permit number. Roofing, electrical, plumbing, new construction. Free 24/7 lookup.",
+    "How to check a Houston building permit status through the Houston Permitting Center, plus typical approval timelines. Automated tracking isn't available in Houston yet — join the waitlist.",
   keywords: [
     "Houston permit tracking", "Houston building permit status", "check permit status Houston",
     "Houston TX permit monitoring", "Houston permitting center", "Houston permit cleared",
   ],
   alternates: { canonical: "https://www.clearedno.com/houston" },
   openGraph: {
-    title: "Houston TX Building Permit Tracking | ClearedNo",
-    description: "Stop manually checking Houston's permitting portal. Get instant alerts when your permit clears.",
+    title: "Houston TX Building Permit Status — How to Check | ClearedNo",
+    description: "How to check a Houston building permit status, and how long Houston approvals actually take.",
     url: "https://www.clearedno.com/houston",
     type: "website",
     images: [{ url: "/clearedno-icon.png", width: 512, height: 512 }],
@@ -24,11 +28,12 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  name: "ClearedNo — Houston TX Permit Monitoring",
-  description: "Automated building permit status monitoring for Houston, Texas contractors.",
+  name: "ClearedNo — Houston TX Permit Guide",
+  description:
+    "Building permit status guide and approval timelines for Houston, Texas contractors. Automated monitoring is not yet available in Houston.",
   url: "https://www.clearedno.com/houston",
   areaServed: { "@type": "City", name: "Houston", containedInPlace: { "@type": "State", name: "Texas" } },
-  serviceType: "Building Permit Monitoring",
+  serviceType: "Building Permit Information",
 };
 
 export default function HoustonPage() {
@@ -62,20 +67,21 @@ export default function HoustonPage() {
             <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Houston, TX</span>
           </div>
           <h1 className="font-heading text-5xl sm:text-7xl tracking-wider text-[#F5F0E8] leading-[0.9] mb-6">
-            TRACK YOUR HOUSTON<br />
-            <span className="text-[#FF6B00]">BUILDING PERMITS</span><br />
-            AUTOMATICALLY.
+            HOUSTON<br />
+            <span className="text-[#FF6B00]">BUILDING PERMIT</span><br />
+            STATUS GUIDE.
           </h1>
           <p className="text-sm text-[#F5F0E8]/60 leading-relaxed max-w-2xl mb-8">
-            Houston&apos;s permitting center handles one of the largest construction markets in the U.S.
-            ClearedNo monitors your permits around the clock — so you know the second your status
-            changes and your crew can start immediately.
+            Houston&apos;s permitting center handles one of the largest construction markets in the
+            U.S., and it doesn&apos;t push status alerts. Automated tracking isn&apos;t available in
+            Houston yet — the city publishes no per-permit status API we can poll. Get notified
+            when it launches.
           </p>
           <Link
-            href="/signup"
+            href="#waitlist"
             className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
           >
-            START MONITORING MY HOUSTON PERMITS <span>→</span>
+            NOTIFY ME WHEN HOUSTON LAUNCHES <span>→</span>
           </Link>
         </div>
       </section>
@@ -84,10 +90,11 @@ export default function HoustonPage() {
       <section className="py-16 px-6 border-t border-[#FF6B00]/10">
         <div className="max-w-3xl mx-auto">
           <h2 className="font-heading text-3xl sm:text-4xl tracking-widest text-[#F5F0E8] mb-2">
-            CHECK ANY HOUSTON PERMIT — FREE
+            PERMIT LOOKUP
           </h2>
           <p className="text-sm text-[#F5F0E8]/50 mb-8">
-            No signup needed. Enter your permit number to see its current status.
+            Live Houston status data isn&apos;t wired up yet. Our free lookup covers{" "}
+            {liveCityList({ separator: ", ", conjunction: "and" })}.
           </p>
           <PermitChecker defaultCity="houston" />
         </div>
@@ -140,40 +147,16 @@ export default function HoustonPage() {
         </div>
       </section>
 
-      {/* Testimonial */}
-      <section className="py-16 px-6 border-t border-[#FF6B00]/10 bg-[#FF6B00]/3">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="font-heading text-5xl text-[#FF6B00] mb-6">&ldquo;</div>
-          <p className="text-lg text-[#F5F0E8]/80 leading-relaxed mb-6">
-            Houston moves fast and my business has to move faster. ClearedNo means I&apos;m never
-            sitting on a cleared permit for two days before I find out. The moment it&apos;s done,
-            I know — and my guys are rolling.
-          </p>
-          <div className="text-xs tracking-widest text-[#F5F0E8]/40 uppercase font-mono">
-            Carlos M. — Residential Contractor, Houston TX
-          </div>
-        </div>
-      </section>
+      {/* Waitlist — the testimonial that sat here quoted a Houston contractor
+          getting alerts we have never been able to send. */}
+      <div id="waitlist" className="scroll-mt-20 border-t border-[#FF6B00]/10">
+        <CityWaitlistCTA cityName="Houston" citySlug="houston" />
+      </div>
 
-      {/* CTA */}
-      <section className="py-20 px-6 border-t border-[#FF6B00]/10 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="font-heading text-5xl tracking-widest text-[#F5F0E8] mb-4">
-            STOP CHECKING.<br /><span className="text-[#FF6B00]">START BUILDING.</span>
-          </h2>
-          <p className="text-sm text-[#F5F0E8]/50 mb-8">
-            First month free. Card required, not charged for 30 days. Cancel anytime.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-12 py-5 hover:bg-[#F5F0E8] transition-colors"
-          >
-            MONITOR MY HOUSTON PERMITS FREE <span>→</span>
-          </Link>
-          <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest">
-            Also monitoring: Austin · Dallas · San Antonio
-          </p>
-        </div>
+      <section className="pb-20 px-6 text-center">
+        <p className="text-[10px] text-[#F5F0E8]/25 tracking-widest">
+          Automated tracking is live in: {liveCityList()}
+        </p>
       </section>
 
       <footer className="border-t border-[#FF6B00]/10 px-6 py-8 text-center">

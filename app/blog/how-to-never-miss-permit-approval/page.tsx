@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "How Contractors Never Miss a Permit Approval (Without Checking Every Day) | ClearedNo",
@@ -176,7 +177,7 @@ export default function HowToNeverMissPermitApprovalPost() {
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">NEVER MISS ANOTHER PERMIT APPROVAL</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo checks your permits every 2 hours. The moment your approval lands, you get an email.
-            Austin, Dallas, Houston, and San Antonio. First month free.
+            {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}. First month free.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

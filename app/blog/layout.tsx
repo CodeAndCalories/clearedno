@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import { cities, liveCheckerCities, liveCityList, LIVE_CHECKER_CITIES } from "@/lib/cities";
 
 const RECENT_POSTS = [
   { title: "Grand Rapids MI Building Permit Status — 2026 Guide", href: "/blog/grand-rapids-building-permit-status-2026" },
@@ -123,10 +124,9 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
               <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-3">Stop Checking Manually</div>
               <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-                Get instant alerts when your Austin, Dallas, Houston, or San Antonio permit status changes.
-                Permit guides for Austin, Houston, Dallas, San Antonio, Columbus, Cleveland,
-                Cincinnati, Akron, Philadelphia, Pittsburgh, Grand Rapids, and Detroit — more
-                cities added regularly.
+                Get instant alerts when your{" "}
+                {liveCityList({ separator: ", ", conjunction: "or", format: "city" })} permit
+                status changes. Permit guides cover more cities — automated tracking covers these.
               </p>
               <Link
                 href="/signup"
@@ -139,43 +139,39 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
 
             {/* City links */}
             <div className="mt-6 border border-[#FF6B00]/10 p-6">
-              <div className="text-[10px] tracking-[0.3em] text-[#FF6B00]/60 uppercase mb-4">Permit Tracking By City</div>
+              <div className="text-[10px] tracking-[0.3em] text-[#FF6B00]/60 uppercase mb-4">Automated Tracking — Live Cities</div>
               <ul className="space-y-2">
-                {[
-                  { label: "Austin, TX", href: "/austin" },
-                  { label: "Dallas, TX", href: "/dallas" },
-                  { label: "Houston, TX", href: "/houston" },
-                  { label: "San Antonio, TX", href: "/san-antonio" },
-                ].map((city) => (
-                  <li key={city.href}>
+                {/* Both lists split on LIVE_CHECKER_CITIES so the "tracking"
+                    heading above can never cover a city we only have a guide for. */}
+                {liveCheckerCities.map((city) => (
+                  <li key={city.slug}>
                     <Link
-                      href={city.href}
+                      href={`/locations/${city.stateSlug}/${city.slug}`}
                       className="text-xs text-[#F5F0E8]/50 hover:text-[#FF6B00] transition-colors font-mono"
                     >
-                      → {city.label}
+                      → {city.name}, {city.stateAbbr}
                     </Link>
                   </li>
                 ))}
                 <li className="pt-2 border-t border-[#FF6B00]/10">
-                  <span className="text-[9px] tracking-[0.2em] text-[#FF6B00]/40 uppercase font-mono">Tracking Coming Soon</span>
+                  <span className="text-[9px] tracking-[0.2em] text-[#FF6B00]/40 uppercase font-mono">Guides Only — Tracking Not Yet Available</span>
                   <p className="mt-1.5 text-[10px] text-[#F5F0E8]/25 leading-relaxed">
-                    Guides are live for these cities — automated permit tracking is expanding next.
+                    We publish permit guides for these cities. Automated tracking isn&apos;t
+                    available in them yet — join a city waitlist to be notified.
                   </p>
                 </li>
-                {[
-                  { label: "Columbus, OH", href: "/suggest-city" },
-                  { label: "Philadelphia, PA", href: "/suggest-city" },
-                  { label: "Grand Rapids, MI", href: "/suggest-city" },
-                ].map((city) => (
-                  <li key={city.label}>
-                    <Link
-                      href={city.href}
-                      className="text-xs text-[#F5F0E8]/30 hover:text-[#FF6B00] transition-colors font-mono"
-                    >
-                      → {city.label}
-                    </Link>
-                  </li>
-                ))}
+                {cities
+                  .filter((c) => !LIVE_CHECKER_CITIES.has(c.slug))
+                  .map((city) => (
+                    <li key={city.slug}>
+                      <Link
+                        href={`/locations/${city.stateSlug}/${city.slug}`}
+                        className="text-xs text-[#F5F0E8]/30 hover:text-[#FF6B00] transition-colors font-mono"
+                      >
+                        → {city.name}, {city.stateAbbr}
+                      </Link>
+                    </li>
+                  ))}
               </ul>
             </div>
           </aside>

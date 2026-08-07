@@ -15,12 +15,27 @@ const SUCCESS = "You're on the list. We'll email you when status changes.";
 
 type Status = "idle" | "loading" | "success" | "error";
 
+/**
+ * Copy overrides exist for the city-waitlist variant: cities without a working
+ * checker must not be told we're already watching their permit, so those pages
+ * pass launch-notification copy instead of the default alert copy.
+ */
 export default function PermitAlertSignup({
   city,
   projectType,
+  eyebrow = "Free Alert",
+  headline = HEADLINE,
+  subtext = SUBTEXT,
+  success = SUCCESS,
+  buttonLabel = "Notify Me",
 }: {
   city?: string;
   projectType?: string;
+  eyebrow?: string;
+  headline?: string;
+  subtext?: string;
+  success?: string;
+  buttonLabel?: string;
 }) {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
@@ -67,19 +82,19 @@ export default function PermitAlertSignup({
             <div className="py-2">
               <div className="text-[#FF6B00] text-2xl mb-3">✓</div>
               <p className="font-heading text-2xl tracking-widest text-[#F5F0E8] uppercase">
-                {SUCCESS}
+                {success}
               </p>
             </div>
           ) : (
             <>
               <p className="text-[9px] tracking-[0.35em] text-[#FF6B00]/60 uppercase mb-3">
-                Free Alert
+                {eyebrow}
               </p>
               <h2 className="font-heading text-2xl sm:text-3xl tracking-widest text-[#F5F0E8] uppercase mb-3">
-                {HEADLINE}
+                {headline}
               </h2>
               <p className="text-sm text-[#F5F0E8]/50 leading-relaxed max-w-md mx-auto mb-7">
-                {SUBTEXT}
+                {subtext}
               </p>
 
               <form
@@ -101,7 +116,7 @@ export default function PermitAlertSignup({
                   disabled={status === "loading"}
                   className="bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-6 py-3 hover:bg-[#F5F0E8] transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-[#FF6B00] whitespace-nowrap"
                 >
-                  {status === "loading" ? "Sending…" : "Notify Me"}
+                  {status === "loading" ? "Sending…" : buttonLabel}
                 </button>
               </form>
 

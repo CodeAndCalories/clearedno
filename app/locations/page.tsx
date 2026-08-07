@@ -1,14 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
-import { cities, getCitiesByState } from "@/lib/cities";
+import { cities, getCitiesByState, isLiveCheckerCity, liveStateList, LIVE_CITY_COUNT } from "@/lib/cities";
 
 const PAGE_URL = "https://www.clearedno.com/locations";
 
 export const metadata: Metadata = {
-  title: "Building Permit Status by City — Track Permits in 11 Cities | ClearedNo",
-  description:
-    "Check building permit status and typical approval timelines by city. Building department contacts, portal links, and automated permit tracking for 11 US cities across Texas, Ohio, Michigan, and Pennsylvania.",
+  title: `Building Permit Status by City — Track Permits in ${LIVE_CITY_COUNT} Cities | ClearedNo`,
+  description: `Check building permit status and typical approval timelines by city. Building department contacts, portal links, and automated permit tracking in ${LIVE_CITY_COUNT} US cities across ${liveStateList()}.`,
   keywords: [
     "building permit status by city",
     "permit tracking by city",
@@ -19,8 +18,7 @@ export const metadata: Metadata = {
   alternates: { canonical: PAGE_URL },
   openGraph: {
     title: "Building Permit Status by City | ClearedNo",
-    description:
-      "Permit timelines, building department contacts, and automated status tracking for 11 cities across Texas, Ohio, Michigan, and Pennsylvania.",
+    description: `Permit timelines, building department contacts, and automated status tracking in ${LIVE_CITY_COUNT} cities across ${liveStateList()}.`,
     url: PAGE_URL,
     type: "website",
     images: [{ url: "/clearedno-icon.png", width: 512, height: 512 }],
@@ -28,7 +26,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary",
     title: "Building Permit Status by City | ClearedNo",
-    description: "Permit timelines and building department contacts for 11 US cities.",
+    description: `Permit timelines and building department contacts, with automated tracking in ${LIVE_CITY_COUNT} US cities.`,
     images: ["/clearedno-icon.png"],
   },
 };
@@ -163,8 +161,18 @@ export default function LocationsHubPage() {
                       <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] group-hover:text-[#FF6B00] transition-colors">
                         {city.name.toUpperCase()}
                       </h3>
-                      <span className="text-[10px] tracking-[0.25em] text-[#FF6B00] font-mono uppercase flex-shrink-0">
-                        {city.stateAbbr}
+                      <span className="text-[10px] tracking-[0.25em] font-mono uppercase flex-shrink-0 flex items-center gap-2">
+                        {/* Derived badge — a card must never imply tracking we lack. */}
+                        <span
+                          className={
+                            isLiveCheckerCity(city.slug)
+                              ? "text-[#16A34A]/80 text-[9px]"
+                              : "text-[#F5F0E8]/25 text-[9px]"
+                          }
+                        >
+                          {isLiveCheckerCity(city.slug) ? "tracked" : "guide only"}
+                        </span>
+                        <span className="text-[#FF6B00]">{city.stateAbbr}</span>
                       </span>
                     </div>
 

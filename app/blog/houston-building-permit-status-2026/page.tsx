@@ -373,7 +373,7 @@ export default function HoustonPermitStatus2026Post() {
             yesterday and you haven&apos;t seen it yet.
           </p>
           <p className="mt-3">
-            ClearedNo&apos;s Permit Tracker monitors your Houston permits automatically and sends email
+            Automated Houston tracking isn&apos;t available yet. Where it is live, ClearedNo&apos;s Permit Tracker monitors permits automatically and sends email
             alerts when any status changes — inspection passes, failures, holds, or finals.
           </p>
           <p className="mt-3">Contractors use it to:</p>
@@ -422,7 +422,7 @@ export default function HoustonPermitStatus2026Post() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">TRACK YOUR HOUSTON PERMITS AUTOMATICALLY</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo checks your Houston permits every 2 hours. The second an inspection passes,
+            Automated Houston tracking isn&apos;t available yet. Where it is live, ClearedNo checks every 2 hours — the second an inspection passes,
             fails, or a hold lands — you get an email. Stop checking houstonpermittingcenter.org
             every morning. First month free.
           </p>

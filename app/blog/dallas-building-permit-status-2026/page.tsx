@@ -460,7 +460,7 @@ export default function DallasPermitStatus2026Post() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">TRACK YOUR DALLAS PERMITS AUTOMATICALLY</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo checks your Dallas permits every 2 hours. The second an inspection passes,
+            Automated Dallas tracking isn&apos;t available yet. Where it is live, ClearedNo checks every 2 hours — the second an inspection passes,
             fails, or a hold lands — you get an email. Stop manually checking dallascityhall.com
             every morning. First month free.
           </p>

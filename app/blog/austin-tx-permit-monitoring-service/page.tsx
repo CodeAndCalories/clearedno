@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Austin TX Permit Monitoring: Get Alerted the Second Your Permit Clears | ClearedNo",
@@ -125,7 +126,7 @@ export default function AustinTxPermitMonitoringPost() {
             You don&apos;t need to log into ABC. You don&apos;t need to remember to check. You add your permit number once, and the system handles everything else.
           </p>
           <p className="mt-3">
-            Austin is one of four Texas cities we support natively — Austin, Dallas, Houston, and San Antonio. If you work across multiple Texas markets, one account covers all of them. One flat monthly rate, unlimited permits.
+            Austin is one of the cities we support natively — {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}. If you work across several of those markets, one account covers all of them. One flat monthly rate, unlimited permits.
           </p>
         </section>
 

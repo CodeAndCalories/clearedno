@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "What Does 'Permit Cleared' Actually Mean? A Contractor's Guide | ClearedNo",
@@ -175,7 +176,7 @@ export default function PermitClearedMeaningPost() {
             GET ALERTED THE MOMENT YOUR STATUS CHANGES
           </h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo monitors your Austin, Dallas, Houston, or San Antonio permits and sends an
+            ClearedNo monitors your {liveCityList({ separator: ", ", conjunction: "or", format: "city" })} permits and sends an
             instant alert — email or browser push — when any status changes. Know before your crew
             shows up. No more morning portal checks.
           </p>

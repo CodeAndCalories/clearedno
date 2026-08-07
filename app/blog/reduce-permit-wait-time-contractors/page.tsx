@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "How Contractors Reduce the Real Cost of Permit Wait Time in 2026 | ClearedNo",
@@ -129,7 +130,7 @@ export default function ReducePermitWaitTimePost() {
             You can&apos;t completely eliminate notification lag with manual checking — someone still has to log in at some point. But you can reduce it to under 2 hours with automatic monitoring.
           </p>
           <p className="mt-3">
-            ClearedNo checks every permit in your account every 2 hours, 24/7. The moment a status changes in Austin, Dallas, Houston, or San Antonio, you get an email. Permit number, address, old status, new status, portal link. You read it, you act. No lag.
+            ClearedNo checks every permit in your account every 2 hours, 24/7. The moment a status changes in {liveCityList({ separator: ", ", conjunction: "or", format: "city" })}, you get an email. Permit number, address, old status, new status, portal link. You read it, you act. No lag.
           </p>
           <p className="mt-3">
             One plan, flat rate, unlimited permits. The math is simple: one avoided day of crew idle time more than covers the annual cost.

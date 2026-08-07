@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { cities, getCityData, getCityDisplayName, LIVE_CHECKER_CITIES } from "@/lib/cities";
 import { PermitDelayCalculator } from "@/app/components/permit-delay-calculator";
 import { PermitChecker } from "@/app/components/permit-checker";
+import { CityWaitlistCTA } from "@/app/components/city-waitlist-cta";
 
 type Props = {
   params: Promise<{ state: string; city: string }>;
@@ -22,13 +23,16 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
   const city = getCityData(params.state, params.city);
   if (!city) return {};
 
-  const isHouston = city.stateSlug === "tx" && city.slug === "houston";
-  const title = isHouston
-    ? "Houston TX Building Permit Status Check | ClearedNo"
-    : `${city.name} Building Permit Status Tracker | ClearedNo`;
-  const description = isHouston
-    ? "Check Houston building permit status instantly. Search by address or permit number. Updated daily."
-    : `Track ${city.name} building permits automatically. Get instant alerts when your ${city.name}, ${city.stateAbbr} permit status changes. Built for contractors.`;
+  // Cities without a working checker get guide-shaped metadata. Promising
+  // automated tracking in the description is the same false claim as promising
+  // it on the page — search results are marketing copy too.
+  const trackingLive = LIVE_CHECKER_CITIES.has(city.slug);
+  const title = trackingLive
+    ? `${city.name} Building Permit Status Tracker | ClearedNo`
+    : `${city.name} ${city.stateAbbr} Building Permit Status — How to Check | ClearedNo`;
+  const description = trackingLive
+    ? `Track ${city.name} building permits automatically. Get instant alerts when your ${city.name}, ${city.stateAbbr} permit status changes. Built for contractors.`
+    : `How to check a ${city.name}, ${city.stateAbbr} building permit status, plus typical approval timelines by project type. Automated tracking isn't available in ${city.name} yet — join the waitlist.`;
   const url = `https://www.clearedno.com/locations/${city.stateSlug}/${city.slug}`;
 
   return {
@@ -46,7 +50,9 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
     alternates: { canonical: url },
     openGraph: {
       title,
-      description: `Stop manually checking ${city.name}'s permit portal. Get instant alerts when your permit clears.`,
+      description: trackingLive
+        ? `Stop manually checking ${city.name}'s permit portal. Get instant alerts when your permit clears.`
+        : `How to check a ${city.name} building permit status, and how long approvals actually take.`,
       url,
       type: "website",
       images: [{ url: "/clearedno-icon.png", width: 512, height: 512 }],
@@ -74,8 +80,12 @@ export default async function LocationCityPage(props: Props) {
   const localBusinessSchema = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
-    name: `ClearedNo — ${city.name} ${city.stateAbbr} Permit Monitoring`,
-    description: `Automated building permit status monitoring for ${city.name}, ${city.state} contractors.`,
+    name: checkerLive
+      ? `ClearedNo — ${city.name} ${city.stateAbbr} Permit Monitoring`
+      : `ClearedNo — ${city.name} ${city.stateAbbr} Permit Guide`,
+    description: checkerLive
+      ? `Automated building permit status monitoring for ${city.name}, ${city.state} contractors.`
+      : `Building permit status guide and approval timelines for ${city.name}, ${city.state} contractors. Automated monitoring is not yet available in ${city.name}.`,
     url: pageUrl,
     telephone: city.buildingDeptPhone,
     areaServed: {
@@ -95,7 +105,9 @@ export default async function LocationCityPage(props: Props) {
         name: `How do I check a permit in ${city.name}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `You can check a ${city.name} building permit status by visiting the ${city.buildingDeptName} portal or using ClearedNo to get automatic alerts when your permit status changes — no manual checking required.`,
+          text: checkerLive
+            ? `You can check a ${city.name} building permit status by visiting the ${city.buildingDeptName} portal or using ClearedNo to get automatic alerts when your permit status changes — no manual checking required.`
+            : `Check a ${city.name} building permit status through the ${city.buildingDeptName} portal at ${city.buildingDeptUrl}. ClearedNo does not offer automated ${city.name} tracking yet — you can join the waitlist to be notified when it launches.`,
         },
       },
       {
@@ -111,7 +123,9 @@ export default async function LocationCityPage(props: Props) {
         name: `How do I track building permit status in ${city.name}, ${city.stateAbbr}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `ClearedNo monitors your ${city.name} permits around the clock and sends an instant alert the moment your permit status changes. Sign up free — first month is on us.`,
+          text: checkerLive
+            ? `ClearedNo monitors your ${city.name} permits around the clock and sends an instant alert the moment your permit status changes. Sign up free — first month is on us.`
+            : `Automated tracking isn't available in ${city.name} yet, so ${city.name} permits have to be checked manually through the ${city.buildingDeptName} portal. Join the waitlist and we'll email you when ${city.name} monitoring launches.`,
         },
       },
       {
@@ -119,7 +133,9 @@ export default async function LocationCityPage(props: Props) {
         name: `What happens when a permit clears in ${city.name}?`,
         acceptedAnswer: {
           "@type": "Answer",
-          text: `When a ${city.name} building permit clears, you can begin construction. ClearedNo sends an immediate notification so you can mobilize your crew the same day — avoiding costly delays.`,
+          text: checkerLive
+            ? `When a ${city.name} building permit clears, you can begin construction. ClearedNo sends an immediate notification so you can mobilize your crew the same day — avoiding costly delays.`
+            : `When a ${city.name} building permit clears, you can begin construction. ${city.buildingDeptName} does not push notifications, so the status has to be checked manually until automated ${city.name} monitoring launches.`,
         },
       },
     ],
@@ -168,22 +184,45 @@ export default async function LocationCityPage(props: Props) {
               {city.name}, {city.stateAbbr}
             </span>
           </div>
-          <h1 className="font-heading text-5xl sm:text-7xl tracking-wider text-[#F5F0E8] leading-[0.9] mb-6">
-            TRACK YOUR {city.name.toUpperCase()}<br />
-            <span className="text-[#FF6B00]">BUILDING PERMITS</span><br />
-            IN REAL-TIME.
-          </h1>
-          <p className="text-sm text-[#F5F0E8]/60 leading-relaxed max-w-2xl mb-8">
-            {city.buildingDeptName} doesn&apos;t send alerts when your permit status changes.
-            ClearedNo watches it for you — checking around the clock and sending an instant
-            notification the moment anything updates.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
-          >
-            AVOID {city.name.toUpperCase()} LATE FEES AND PROJECT DELAYS — START FREE TRIAL <span>→</span>
-          </Link>
+          {checkerLive ? (
+            <>
+              <h1 className="font-heading text-5xl sm:text-7xl tracking-wider text-[#F5F0E8] leading-[0.9] mb-6">
+                TRACK YOUR {city.name.toUpperCase()}<br />
+                <span className="text-[#FF6B00]">BUILDING PERMITS</span><br />
+                IN REAL-TIME.
+              </h1>
+              <p className="text-sm text-[#F5F0E8]/60 leading-relaxed max-w-2xl mb-8">
+                {city.buildingDeptName} doesn&apos;t send alerts when your permit status changes.
+                ClearedNo watches it for you — checking around the clock and sending an instant
+                notification the moment anything updates.
+              </p>
+              <Link
+                href="/signup"
+                className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
+              >
+                AVOID {city.name.toUpperCase()} LATE FEES AND PROJECT DELAYS — START FREE TRIAL <span>→</span>
+              </Link>
+            </>
+          ) : (
+            <>
+              <h1 className="font-heading text-5xl sm:text-7xl tracking-wider text-[#F5F0E8] leading-[0.9] mb-6">
+                {city.name.toUpperCase()}<br />
+                <span className="text-[#FF6B00]">BUILDING PERMIT</span><br />
+                STATUS GUIDE.
+              </h1>
+              <p className="text-sm text-[#F5F0E8]/60 leading-relaxed max-w-2xl mb-8">
+                How to check a permit with {city.buildingDeptName}, and how long approvals
+                actually take by project type. Automated tracking isn&apos;t available in{" "}
+                {city.name} yet — get notified when it launches.
+              </p>
+              <Link
+                href="#waitlist"
+                className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
+              >
+                NOTIFY ME WHEN {city.name.toUpperCase()} LAUNCHES <span>→</span>
+              </Link>
+            </>
+          )}
         </div>
       </section>
 
@@ -273,10 +312,11 @@ export default async function LocationCityPage(props: Props) {
 
           <div>
             <h2 className="font-heading text-3xl tracking-widest text-[#F5F0E8] mb-6">
-              WHY CONTRACTORS USE CLEAREDNO
+              {checkerLive ? "WHY CONTRACTORS USE CLEAREDNO" : `CHECKING ${city.name.toUpperCase()} PERMITS TODAY`}
             </h2>
             <div className="space-y-4">
-              {[
+              {(checkerLive
+                ? [
                 {
                   tip: "Stop checking the portal manually",
                   detail: `${city.buildingDeptName} doesn't push updates. ClearedNo polls it around the clock and alerts you within hours of any change.`,
@@ -293,7 +333,26 @@ export default async function LocationCityPage(props: Props) {
                   tip: "First month completely free",
                   detail: "Start tracking today. Card required but not charged for 30 days. Cancel anytime with one click.",
                 },
-              ].map((item) => (
+                  ]
+                : [
+                    {
+                      tip: `Use the ${city.buildingDeptName} portal`,
+                      detail: `${city.buildingDeptUrl} is the authoritative source for ${city.name} permit status. You'll need to log in and check it yourself — the city doesn't push notifications.`,
+                    },
+                    {
+                      tip: "Check on the city's processing rhythm",
+                      detail: "Status changes are usually posted on business days. Checking once each morning catches most updates without burning time.",
+                    },
+                    {
+                      tip: `Automated ${city.name} tracking isn't live yet`,
+                      detail: `${city.name} doesn't publish a permit-status API we can poll reliably, so we don't offer monitoring here. We'd rather say that than sell you alerts that never fire.`,
+                    },
+                    {
+                      tip: "Get told the day that changes",
+                      detail: `Join the ${city.name} waitlist below and we'll email you once — when automated tracking launches.`,
+                    },
+                  ]
+              ).map((item) => (
                 <div key={item.tip} className="border-l-2 border-[#FF6B00]/40 pl-4">
                   <div className="text-xs font-mono font-bold text-[#FF6B00] mb-1">{item.tip}</div>
                   <div className="text-xs text-[#F5F0E8]/50 leading-relaxed">{item.detail}</div>
@@ -309,21 +368,33 @@ export default async function LocationCityPage(props: Props) {
         <div className="max-w-4xl mx-auto">
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-px bg-[#FF6B00]" />
-            <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Also Monitoring</span>
+            <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Nearby</span>
           </div>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-6">
-            PERMIT TRACKING IN NEARBY CITIES
+            PERMIT GUIDES IN NEARBY CITIES
           </h2>
+          {/* "Tracked" badges come from LIVE_CHECKER_CITIES so a neighbour link
+              can never imply monitoring we don't have. */}
           <div className="flex flex-wrap gap-3">
-            {city.neighbors.map((neighborPath) => (
-              <Link
-                key={neighborPath}
-                href={neighborPath}
-                className="border border-[#FF6B00]/30 text-[#F5F0E8]/70 text-xs font-mono tracking-widest uppercase px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors"
-              >
-                {getCityDisplayName(neighborPath)} Permits →
-              </Link>
-            ))}
+            {city.neighbors.map((neighborPath) => {
+              const neighborSlug = neighborPath.split("/").pop() ?? "";
+              const neighborLive = LIVE_CHECKER_CITIES.has(neighborSlug);
+              return (
+                <Link
+                  key={neighborPath}
+                  href={neighborPath}
+                  className="border border-[#FF6B00]/30 text-[#F5F0E8]/70 text-xs font-mono tracking-widest uppercase px-4 py-2 hover:border-[#FF6B00] hover:text-[#FF6B00] transition-colors inline-flex items-center gap-2"
+                >
+                  {getCityDisplayName(neighborPath)} Permits
+                  {neighborLive && (
+                    <span className="text-[9px] text-[#16A34A]/80 normal-case tracking-normal">
+                      tracked
+                    </span>
+                  )}
+                  <span>→</span>
+                </Link>
+              );
+            })}
             <Link
               href="/suggest-city"
               className="border border-[#FF6B00]/10 text-[#F5F0E8]/30 text-xs font-mono tracking-widest uppercase px-4 py-2 hover:border-[#FF6B00]/40 hover:text-[#F5F0E8]/60 transition-colors"
@@ -348,7 +419,9 @@ export default async function LocationCityPage(props: Props) {
             {[
               {
                 q: `How do I check a permit in ${city.name}?`,
-                a: `Visit the ${city.buildingDeptName} at ${city.buildingDeptUrl} to look up a permit manually, or sign up for ClearedNo to get automatic alerts — no manual checking required.`,
+                a: checkerLive
+                  ? `Visit the ${city.buildingDeptName} at ${city.buildingDeptUrl} to look up a permit manually, or sign up for ClearedNo to get automatic alerts — no manual checking required.`
+                  : `Visit the ${city.buildingDeptName} at ${city.buildingDeptUrl}. That's the only way to check a ${city.name} permit right now — ClearedNo doesn't offer automated ${city.name} tracking yet.`,
               },
               {
                 q: `How long are permit delays in ${city.name}?`,
@@ -356,11 +429,15 @@ export default async function LocationCityPage(props: Props) {
               },
               {
                 q: `How do I track building permit status in ${city.name}, ${city.stateAbbr}?`,
-                a: `ClearedNo monitors your ${city.name} permits around the clock and sends an instant alert the moment your permit status changes. Sign up free — first month is on us, no charge for 30 days.`,
+                a: checkerLive
+                  ? `ClearedNo monitors your ${city.name} permits around the clock and sends an instant alert the moment your permit status changes. Sign up free — first month is on us, no charge for 30 days.`
+                  : `Manually, for now — ${city.name} has to be checked through the ${city.buildingDeptName} portal. Automated tracking isn't available in ${city.name} yet. Join the waitlist on this page and we'll email you when it launches.`,
               },
               {
                 q: `What happens when a permit clears in ${city.name}?`,
-                a: `When a ${city.name} building permit clears, you have authorization to begin construction. ClearedNo sends you an immediate notification so you can mobilize your crew the same day — not 48 hours later.`,
+                a: checkerLive
+                  ? `When a ${city.name} building permit clears, you have authorization to begin construction. ClearedNo sends you an immediate notification so you can mobilize your crew the same day — not 48 hours later.`
+                  : `When a ${city.name} building permit clears, you have authorization to begin construction. The city won't notify you, so you'll need to watch the portal yourself until automated ${city.name} monitoring launches.`,
               },
             ].map((item, i) => (
               <details key={i} className="group border-b border-[#FF6B00]/20 first:border-t">
@@ -378,26 +455,33 @@ export default async function LocationCityPage(props: Props) {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="py-20 px-6 border-t border-[#FF6B00]/10 text-center">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="font-heading text-5xl tracking-widest text-[#F5F0E8] mb-4">
-            STOP CHECKING.<br /><span className="text-[#FF6B00]">START BUILDING.</span>
-          </h2>
-          <p className="text-sm text-[#F5F0E8]/50 mb-8">
-            First month free. Card required, not charged for 30 days. Cancel anytime.
-          </p>
-          <Link
-            href="/signup"
-            className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-12 py-5 hover:bg-[#F5F0E8] transition-colors"
-          >
-            AVOID {city.name.toUpperCase()} LATE FEES — START FREE <span>→</span>
-          </Link>
-          <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest">
-            Monitoring contractors in {city.state} and beyond
-          </p>
+      {/* CTA — a signup pitch only where we can actually deliver tracking.
+          Everywhere else this is the honest waitlist capture. */}
+      {checkerLive ? (
+        <section className="py-20 px-6 border-t border-[#FF6B00]/10 text-center">
+          <div className="max-w-2xl mx-auto">
+            <h2 className="font-heading text-5xl tracking-widest text-[#F5F0E8] mb-4">
+              STOP CHECKING.<br /><span className="text-[#FF6B00]">START BUILDING.</span>
+            </h2>
+            <p className="text-sm text-[#F5F0E8]/50 mb-8">
+              First month free. Card required, not charged for 30 days. Cancel anytime.
+            </p>
+            <Link
+              href="/signup"
+              className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-12 py-5 hover:bg-[#F5F0E8] transition-colors"
+            >
+              AVOID {city.name.toUpperCase()} LATE FEES — START FREE <span>→</span>
+            </Link>
+            <p className="mt-4 text-[10px] text-[#F5F0E8]/25 tracking-widest">
+              Monitoring contractors in {city.name}, {city.stateAbbr}
+            </p>
+          </div>
+        </section>
+      ) : (
+        <div id="waitlist" className="scroll-mt-20 border-t border-[#FF6B00]/10">
+          <CityWaitlistCTA cityName={city.name} citySlug={city.slug} />
         </div>
-      </section>
+      )}
 
       <footer className="border-t border-[#FF6B00]/10 px-6 py-8 text-center">
         <p className="text-[10px] text-[#F5F0E8]/20 tracking-widest">

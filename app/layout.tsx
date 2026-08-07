@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Bebas_Neue, DM_Mono } from "next/font/google";
 import "./globals.css";
+import { liveCheckerCities, liveCityList } from "@/lib/cities";
 
 const bebasNeue = Bebas_Neue({
   weight: "400",
@@ -92,12 +93,13 @@ const jsonLd = {
         "email": "support@clearedno.com",
         "contactType": "customer support",
       },
-      "areaServed": [
-        { "@type": "City", "name": "Austin", "containedInPlace": { "@type": "State", "name": "Texas" } },
-        { "@type": "City", "name": "Dallas", "containedInPlace": { "@type": "State", "name": "Texas" } },
-        { "@type": "City", "name": "Houston", "containedInPlace": { "@type": "State", "name": "Texas" } },
-        { "@type": "City", "name": "San Antonio", "containedInPlace": { "@type": "State", "name": "Texas" } },
-      ],
+      // Derived from LIVE_CHECKER_CITIES — structured data is a public claim
+      // about where the service works, so it tracks the same source as the copy.
+      "areaServed": liveCheckerCities.map((c) => ({
+        "@type": "City",
+        "name": c.name,
+        "containedInPlace": { "@type": "State", "name": c.state },
+      })),
     },
     {
       "@type": "FAQPage",
@@ -108,7 +110,7 @@ const jsonLd = {
           "name": "What cities do you support?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Currently Austin, TX and Dallas, TX — plus Houston, TX and San Antonio, TX in early access. We add new cities based on demand. Request yours at clearedno.com/suggest-city.",
+            "text": `Automated tracking is live in ${liveCityList({ separator: ", ", conjunction: "and" })}. Other cities aren't tracked yet — request yours at clearedno.com/suggest-city and we'll email you when it launches.`,
           },
         },
         {

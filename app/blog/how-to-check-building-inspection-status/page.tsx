@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "How to Check Building Inspection Status Online (OH, TX, IL, PA) | ClearedNo",
@@ -485,7 +486,7 @@ export default function BuildingInspectionStatusPost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">STOP CHECKING PORTALS EVERY MORNING</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo monitors your permits across Ohio, Texas, Illinois, and Pennsylvania automatically.
+            ClearedNo monitors your permits in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} automatically.
             The second any inspection status changes — passed, failed, or put on hold — you get an email.
             No more logging into five different portals. First month free.
           </p>

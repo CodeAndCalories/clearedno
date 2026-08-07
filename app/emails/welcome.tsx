@@ -10,6 +10,7 @@ import {
   Hr,
   Font,
 } from "@react-email/components";
+import { liveCityList } from "@/lib/cities";
 
 interface Props {
   userName: string;
@@ -196,7 +197,7 @@ export function WelcomeEmail({ userName }: Props) {
                 paddingTop: "20px",
               }}
             >
-              Join contractors in Austin, Dallas, Houston, and San Antonio who
+              Join contractors in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} who
               stopped checking permit portals manually.
             </Text>
           </Section>
@@ -212,7 +213,7 @@ export function WelcomeEmail({ userName }: Props) {
                 margin: "0 0 6px",
               }}
             >
-              ClearedNo · Permit monitoring for Texas contractors
+              ClearedNo · Permit monitoring for contractors
             </Text>
             <Text
               style={{

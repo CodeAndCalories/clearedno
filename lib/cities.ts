@@ -331,6 +331,114 @@ export const LIVE_CHECKER_CITIES = new Set<string>([
   "pittsburgh",
 ]);
 
+/**
+ * The CityData records for every live-checker city, in declaration order.
+ * Marketing copy must derive its city list from here (or one of the helpers
+ * below) rather than hardcoding names — hardcoded lists are what let the site
+ * advertise Houston, Dallas and San Antonio long after we knew we couldn't
+ * track them.
+ */
+export const liveCheckerCities: CityData[] = cities.filter((c) =>
+  LIVE_CHECKER_CITIES.has(c.slug)
+);
+
+/** True when the city slug has a working permit-status checker. */
+export function isLiveCheckerCity(slug: string): boolean {
+  return LIVE_CHECKER_CITIES.has(slug);
+}
+
+/**
+ * Human-readable list of the cities we actually monitor.
+ *
+ * @param separator  joined between entries — " · " for footers, ", " for prose
+ * @param format     "abbr" → "Austin TX", "comma" → "Austin, TX", "city" → "Austin"
+ * @param conjunction  when set (e.g. "and"), the last entry is joined with it
+ *                     instead of the separator, for sentence-shaped copy
+ */
+export function liveCityList(
+  {
+    separator = " · ",
+    format = "comma",
+    conjunction,
+  }: {
+    separator?: string;
+    format?: "abbr" | "comma" | "city";
+    conjunction?: string;
+  } = {}
+): string {
+  const names = liveCheckerCities.map((c) =>
+    format === "city"
+      ? c.name
+      : format === "abbr"
+        ? `${c.name} ${c.stateAbbr}`
+        : `${c.name}, ${c.stateAbbr}`
+  );
+
+  if (conjunction && names.length > 1) {
+    const last = names[names.length - 1];
+    return `${names.slice(0, -1).join(separator)}${separator}${conjunction} ${last}`;
+  }
+
+  return names.join(separator);
+}
+
+/**
+ * Cities keyed by the "<city>-<state>" slug the /contractors and /permits
+ * routes use in their URLs (e.g. "san-antonio-tx"). Those routes used to keep
+ * their own copies of this table, which is how they kept advertising tracking
+ * in cities the checker never supported.
+ */
+export const citiesByHyphenSlug: Record<string, CityData> = Object.fromEntries(
+  cities.map((c) => [`${c.slug}-${c.stateSlug}`, c])
+);
+
+export type RouteCityMeta = {
+  /** Canonical city slug, e.g. "san-antonio". */
+  slug: string;
+  name: string;
+  /** Two-letter abbreviation, e.g. "TX". */
+  state: string;
+  /** Full state name, e.g. "Texas". */
+  stateFull: string;
+  /** Whether the city has a working permit-status checker. Gate every
+   *  "we track this for you" claim on this — never on the city being listed. */
+  trackingLive: boolean;
+};
+
+/**
+ * Display metadata for the "<city>-<state>" route slugs, shared by /permits and
+ * /contractors. Each of those routes previously kept its own copy of this
+ * table with no notion of which cities were actually tracked.
+ */
+export const routeCityMeta: Record<string, RouteCityMeta> = Object.fromEntries(
+  Object.entries(citiesByHyphenSlug).map(([key, c]) => [
+    key,
+    {
+      slug: c.slug,
+      name: c.name,
+      state: c.stateAbbr,
+      stateFull: c.state,
+      trackingLive: LIVE_CHECKER_CITIES.has(c.slug),
+    },
+  ])
+);
+
+/** The "<city>-<state>" slugs, for generateStaticParams. */
+export const routeCitySlugs = Object.keys(routeCityMeta);
+
+/** Number of cities with live tracking — for "N cities" copy. */
+export const LIVE_CITY_COUNT = liveCheckerCities.length;
+
+/**
+ * States represented by the live cities, deduped in declaration order.
+ * e.g. "Texas, Ohio, and Pennsylvania".
+ */
+export function liveStateList(conjunction = "and"): string {
+  const states = [...new Set(liveCheckerCities.map((c) => c.state))];
+  if (states.length < 2) return states.join("");
+  return `${states.slice(0, -1).join(", ")}, ${conjunction} ${states[states.length - 1]}`;
+}
+
 /** Look up a city by state slug + city slug */
 export function getCityData(
   stateSlug: string,

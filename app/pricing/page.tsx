@@ -1,10 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
+import { liveCityList, LIVE_CITY_COUNT } from "@/lib/cities";
 
 const FAQ = [
   {
     q: "What cities do you support?",
-    a: "Currently Austin, TX and Dallas, TX. We add cities weekly based on demand. Request yours at clearedno.com/suggest-city.",
+    a: `Automated tracking is live in ${liveCityList({ separator: ", ", conjunction: "and" })}. Other cities aren't tracked yet — request yours at clearedno.com/suggest-city and we'll email you when it launches.`,
   },
   {
     q: "What permit types do you track?",
@@ -24,7 +25,7 @@ const FAQ = [
   },
   {
     q: "What if my city isn't supported?",
-    a: "Request it at clearedno.com/suggest-city. We add cities based on demand — most requests go live within 1–2 weeks.",
+    a: "Request it at clearedno.com/suggest-city. We add cities based on demand, but only once the city's portal exposes a status feed we can poll reliably — so we can't promise a date. We'll email you the day it launches.",
   },
   {
     q: "Do you offer a free trial?",
@@ -98,7 +99,7 @@ export default function PricingPage() {
                 "Checks every 2 hours, 24 hours a day, 7 days a week",
                 "Instant email alert the moment any status changes",
                 "Full status history and audit trail",
-                "All supported cities, new cities added weekly",
+                `All ${LIVE_CITY_COUNT} tracked cities`,
                 "Priority email support",
               ].map((f) => (
                 <li key={f} className="flex items-start gap-3 text-sm text-[#F5F0E8]/80">

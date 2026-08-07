@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
+import { cities, isLiveCheckerCity, LIVE_CITY_COUNT } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Contractor Permit Tracking by Trade & City | ClearedNo",
-  description:
-    "ClearedNo monitors building permit status 24/7 for roofing, electrical, plumbing, HVAC, general, and remodeling contractors across 11 cities. Get instant alerts when your permit is approved.",
+  description: `ClearedNo monitors building permit status 24/7 for roofing, electrical, plumbing, HVAC, general, and remodeling contractors across ${LIVE_CITY_COUNT} cities. Get instant alerts when your permit is approved.`,
   alternates: { canonical: "https://www.clearedno.com/contractors" },
   openGraph: {
     title: "Contractor Permit Tracking by Trade & City | ClearedNo",
-    description:
-      "Instant permit status alerts for contractors in 11 cities. Stop manually checking the portal.",
+    description: `Instant permit status alerts for contractors in ${LIVE_CITY_COUNT} cities. Stop manually checking the portal.`,
     url: "https://www.clearedno.com/contractors",
     type: "website",
     images: [{ url: "/clearedno-icon.png", width: 512, height: 512 }],
@@ -26,19 +25,14 @@ const TRADES = [
   { slug: "remodeling",          label: "Remodeling",         plural: "Remodeling Contractors" },
 ];
 
-const CITIES = [
-  { slug: "austin-tx",       name: "Austin",        state: "TX" },
-  { slug: "dallas-tx",       name: "Dallas",        state: "TX" },
-  { slug: "houston-tx",      name: "Houston",       state: "TX" },
-  { slug: "san-antonio-tx",  name: "San Antonio",   state: "TX" },
-  { slug: "columbus-oh",     name: "Columbus",      state: "OH" },
-  { slug: "philadelphia-pa", name: "Philadelphia",  state: "PA" },
-  { slug: "grand-rapids-mi", name: "Grand Rapids",  state: "MI" },
-  { slug: "cleveland-oh",    name: "Cleveland",     state: "OH" },
-  { slug: "pittsburgh-pa",   name: "Pittsburgh",    state: "PA" },
-  { slug: "detroit-mi",      name: "Detroit",       state: "MI" },
-  { slug: "cincinnati-oh",   name: "Cincinnati",    state: "OH" },
-];
+// Every city still gets a page, but `live` decides whether it's presented as
+// tracked or as a guide — derived from LIVE_CHECKER_CITIES, never hardcoded.
+const CITIES = cities.map((c) => ({
+  slug:  `${c.slug}-${c.stateSlug}`,
+  name:  c.name,
+  state: c.stateAbbr,
+  live:  isLiveCheckerCity(c.slug),
+}));
 
 export default function ContractorsIndexPage() {
   return (
@@ -80,9 +74,10 @@ export default function ContractorsIndexPage() {
             <span className="text-[#FF6B00]">BY TRADE.</span>
           </h1>
           <p className="text-sm text-[#F5F0E8]/60 leading-relaxed max-w-2xl mb-8">
-            ClearedNo monitors building permit status 24/7 across 11 cities. Pick your
-            trade and city — get an instant alert the moment your permit is approved or
-            updated. Stop manually checking the portal.
+            ClearedNo monitors building permit status 24/7 across {LIVE_CITY_COUNT} cities. Pick
+            your trade and city — get an instant alert the moment your permit is approved or
+            updated. Cities marked <span className="text-[#F5F0E8]/70">guide only</span> have
+            permit guides but no automated tracking yet.
           </p>
           <div className="flex flex-wrap gap-2">
             {TRADES.map((t) => (
@@ -106,7 +101,7 @@ export default function ContractorsIndexPage() {
                 {trade.plural.toUpperCase()}
               </h2>
               <p className="text-xs text-[#F5F0E8]/40 font-mono mb-6">
-                {CITIES.length} cities — select yours
+                {LIVE_CITY_COUNT} tracked cities — select yours
               </p>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
                 {CITIES.map((city) => (
@@ -115,8 +110,17 @@ export default function ContractorsIndexPage() {
                     href={`/contractors/${trade.slug}/${city.slug}`}
                     className="group border border-[#FF6B00]/20 px-4 py-3 hover:border-[#FF6B00]/60 hover:bg-[#FF6B00]/5 transition-all"
                   >
-                    <div className="text-[10px] tracking-widest text-[#FF6B00] font-mono uppercase mb-1">
-                      {city.state}
+                    <div className="flex items-center justify-between gap-2 mb-1">
+                      <span className="text-[10px] tracking-widest text-[#FF6B00] font-mono uppercase">
+                        {city.state}
+                      </span>
+                      <span
+                        className={`text-[9px] font-mono uppercase tracking-widest ${
+                          city.live ? "text-[#16A34A]/70" : "text-[#F5F0E8]/25"
+                        }`}
+                      >
+                        {city.live ? "tracked" : "guide only"}
+                      </span>
                     </div>
                     <div className="text-sm font-heading tracking-widest text-[#F5F0E8] group-hover:text-[#FF6B00] transition-colors">
                       {city.name}

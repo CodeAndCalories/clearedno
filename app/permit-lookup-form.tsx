@@ -8,21 +8,15 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { cities } from "@/lib/cities";
 
-// Cities we already have permit data for (slugs match /permits/[city]).
-const CITIES = [
-  { slug: "austin-tx", name: "Austin, TX" },
-  { slug: "dallas-tx", name: "Dallas, TX" },
-  { slug: "houston-tx", name: "Houston, TX" },
-  { slug: "san-antonio-tx", name: "San Antonio, TX" },
-  { slug: "columbus-oh", name: "Columbus, OH" },
-  { slug: "cleveland-oh", name: "Cleveland, OH" },
-  { slug: "cincinnati-oh", name: "Cincinnati, OH" },
-  { slug: "philadelphia-pa", name: "Philadelphia, PA" },
-  { slug: "pittsburgh-pa", name: "Pittsburgh, PA" },
-  { slug: "grand-rapids-mi", name: "Grand Rapids, MI" },
-  { slug: "detroit-mi", name: "Detroit, MI" },
-];
+// Cities we have permit *guide* data for (slugs match /permits/[city]). This is
+// deliberately the full list, not LIVE_CHECKER_CITIES — the form routes to fee
+// and timeline guides, which exist everywhere, and makes no tracking promise.
+const CITIES = cities.map((c) => ({
+  slug: `${c.slug}-${c.stateSlug}`,
+  name: `${c.name}, ${c.stateAbbr}`,
+}));
 
 // Project types (slugs match /permits/[city]/[project-type]).
 const PROJECT_TYPES = [

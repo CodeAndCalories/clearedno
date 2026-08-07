@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Houston TX Permit Tracking: Never Miss a Status Change Again | ClearedNo",
@@ -131,7 +132,7 @@ export default function HoustonTxPermitTrackingPost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widests text-[#F5F0E8] mb-3">NEVER MISS A HOUSTON PERMIT CHANGE</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            ClearedNo monitors Houston permits every 2 hours and alerts you the moment anything changes.
+            Automated Houston tracking isn&apos;t live yet — Houston publishes no per-permit status API. Tracking runs every 2 hours in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.
             Stop checking AMANDA manually. First month free.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
