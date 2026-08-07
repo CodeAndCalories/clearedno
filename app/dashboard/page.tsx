@@ -6,6 +6,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { stripe } from "@/lib/stripe";
+import { cities as allCities, LIVE_CHECKER_CITIES } from "@/lib/cities";
 import type { Permit, PermitStatus, Profile } from "@/types";
 import { PermitCard } from "./permit-card";
 import { ReferralSection } from "./referral-section";
@@ -23,14 +24,19 @@ function daysUntil(dateStr: string): number {
 // ── Empty state ───────────────────────────────────────────────────────────────
 
 function EmptyState() {
-  const cities = [
-    { name: "Austin, TX",  status: "live" },
-    { name: "Dallas, TX",  status: "live" },
-    { name: "Houston, TX", status: "live" },
-    { name: "San Antonio, TX", status: "coming" },
-    { name: "Phoenix, AZ", status: "coming" },
-    { name: "Denver, CO",  status: "coming" },
-  ];
+  // Derived from LIVE_CHECKER_CITIES so this panel can never again advertise a
+  // city we don't actually monitor. It previously hardcoded Dallas and Houston
+  // as "live" — neither had a working checker, and Houston has no public API at
+  // all, so both were promises we couldn't keep.
+  const cities = allCities.map((c) => ({
+    name:   `${c.name}, ${c.stateAbbr}`,
+    status: LIVE_CHECKER_CITIES.has(c.slug) ? "live" : "coming",
+  }));
+
+  const liveNames = cities
+    .filter((c) => c.status === "live")
+    .map((c) => c.name)
+    .join(" · ");
 
   return (
     <div className="border border-[#FF6B00]/20 border-dashed p-10 sm:p-16 text-center">
@@ -41,7 +47,7 @@ function EmptyState() {
         Add your first permit and we&apos;ll start watching it immediately.
       </p>
       <p className="text-xs text-[#FF6B00]/60 font-mono mb-8 tracking-widest uppercase">
-        Currently monitoring: Austin TX · Dallas TX
+        Currently monitoring: {liveNames}
       </p>
       <Link
         href="/dashboard/add"

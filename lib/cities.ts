@@ -298,8 +298,25 @@ export const cities: CityData[] = [
  * Cities with a live permit-lookup integration behind /api/check-permit.
  * Everything else renders the checker's honest "coming soon" state, so any
  * copy wrapped around the tool must not promise an instant status result.
+ *
+ * Membership here means ONE thing: the city resolves a permit number to a
+ * status through a public, unauthenticated API — no browser automation. Every
+ * entry below is verified end-to-end against the live endpoint:
+ *
+ *   austin        Socrata      data.austintexas.gov/resource/3syk-w9eu
+ *   columbus      ArcGIS FS    services1.arcgis.com/9yy6msODkIBzkUXU/…/Building_Permits/0
+ *   philadelphia  Carto SQL    phl.carto.com/api/v2/sql (table `permits`)
+ *
+ * Do NOT add a city whose scraper depends on Playwright. Browser scrapers here
+ * were reporting UNKNOWN on every run while the UI advertised them as live —
+ * users waited for alerts that could never fire. If a city can't be served by
+ * an API, it belongs on the waitlist, not in this set.
  */
-export const LIVE_CHECKER_CITIES = new Set<string>(["austin"]);
+export const LIVE_CHECKER_CITIES = new Set<string>([
+  "austin",
+  "columbus",
+  "philadelphia",
+]);
 
 /** Look up a city by state slug + city slug */
 export function getCityData(

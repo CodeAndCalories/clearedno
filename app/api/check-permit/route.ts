@@ -44,29 +44,50 @@ const STATUS_MAP: Record<string, string> = {
   FINAL: "CLEARED", FINALED: "CLEARED", CLOSED: "CLEARED",
   "CO ISSUED": "CLEARED", "CERTIFICATE OF OCCUPANCY": "CLEARED",
   COMPLETED: "CLEARED", "FINAL INSPECTION": "CLEARED", "FINAL INSPECTION APPROVED": "CLEARED",
-  "PERMIT ISSUED": "CLEARED",
+  "CERTIFICATE OF OCCUPANCY ISSUED": "CLEARED",
 
-  // Approved / active
-  ISSUED: "APPROVED", ACTIVE: "APPROVED", APPROVED: "APPROVED", "IN PROGRESS": "APPROVED",
+  // Approved / active.
+  // "PERMIT ISSUED" is Columbus's most common issued state and means work may
+  // proceed — it previously mapped to CLEARED, which told users a permit was
+  // finished when it had only just been issued.
+  "PERMIT ISSUED": "APPROVED",
+  ISSUED: "APPROVED", "ISSUED ONLINE": "APPROVED", ACTIVE: "APPROVED",
+  APPROVED: "APPROVED", "IN PROGRESS": "APPROVED", OPEN: "APPROVED",
 
   // Under review
   "UNDER REVIEW": "UNDER_REVIEW", "IN REVIEW": "UNDER_REVIEW",
   "CORRECTIONS REQUIRED": "UNDER_REVIEW", "PLAN REVIEW": "UNDER_REVIEW",
   HOLD: "UNDER_REVIEW", "ON HOLD": "UNDER_REVIEW", INSPECTION: "UNDER_REVIEW",
+  "INACTIVE PENDING REVISION": "UNDER_REVIEW", "INACTIVE CONTRACTOR": "UNDER_REVIEW",
+  "RE REVIEW": "UNDER_REVIEW", SUSPENDED: "UNDER_REVIEW",
+  "APPLICATION INCOMPLETE": "UNDER_REVIEW", "STOP WORK": "UNDER_REVIEW",
+  "AMENDMENT APPLICATION INCOMPLETE": "UNDER_REVIEW",
+  "AMENDMENT APPLICANT REVISIONS": "UNDER_REVIEW",
+  "AMENDMENT REVIEW": "UNDER_REVIEW", "AMENDMENT REQUESTED": "UNDER_REVIEW",
 
   // Pending
-  PENDING: "PENDING",
+  PENDING: "PENDING", "PENDING PERMIT": "PENDING",
   APPLICATION: "PENDING", SUBMITTED: "PENDING", INTAKE: "PENDING",
   "APPLICATION RECEIVED": "PENDING", "IN QUEUE": "PENDING", "IN INTAKE": "PENDING",
-  RECEIVED: "PENDING",
+  RECEIVED: "PENDING", "APPLIED ONLINE": "PENDING", "ISSUANCE PENDING": "PENDING",
+  "AWAITING UPLOAD": "PENDING", "AWAITING UPDATE": "PENDING",
+  "READY FOR ISSUE": "PENDING", "AMENDMENT READY FOR ISSUE": "PENDING",
 
   // Rejected
   CANCELLED: "REJECTED", CANCELED: "REJECTED", VOID: "REJECTED", VOIDED: "REJECTED",
   WITHDRAWN: "REJECTED", DENIED: "REJECTED", REVOKED: "REJECTED",
-  REJECTED: "REJECTED",
+  REJECTED: "REJECTED", ABORTED: "REJECTED", ABANDONED: "REJECTED",
+  REFUSED: "REJECTED", "AMENDMENT DENIED": "REJECTED",
+  "DENIED BUT CLOSED": "REJECTED", "EXPIRED DENIAL": "REJECTED",
+  "CANCELLED - CONTRACTOR REQUIRED": "REJECTED",
+  "CANCELLED - NEW PERMIT REQUIRED": "REJECTED",
+  "NEW PERMIT REQUIRED": "REJECTED",
+  "VOID - WRONG CAP TYPE": "REJECTED", "VOID - DUPLICATE": "REJECTED",
+  "VOID - ENTERED IN ERROR": "REJECTED", "VOID - TEST": "REJECTED",
 
   // Expired
-  EXPIRED: "EXPIRED", LAPSED: "EXPIRED",
+  EXPIRED: "EXPIRED", LAPSED: "EXPIRED", "EXPIRED PERMIT": "EXPIRED",
+  "EXPIRED - LICENSE": "EXPIRED", "EXPIRED NO PERMIT": "EXPIRED",
 };
 
 // Returns null when the city's status text has no mapping. Callers must
@@ -78,13 +99,27 @@ function normaliseStatus(raw: string): string | null {
   return STATUS_MAP[key] ?? null;
 }
 
-// ── Austin — Open Data API ────────────────────────────────────────────────────
+// ── City checkers ─────────────────────────────────────────────────────────────
+//
+// Every checker below hits a public, unauthenticated API. No browser, no auth.
+// Each one must return { found: false } when the permit is absent rather than
+// inventing a status.
+//
+// NOTE: these deliberately re-implement the lookups in scrapers/cities/*.ts
+// instead of importing them. Those modules pull in `playwright` (Austin still
+// keeps a portal fallback), which must never enter the Next.js bundle.
 
-type AustinResult =
+type CheckResult =
   | { found: false }
   | { found: true; status: string; rawStatus: string; address?: string };
 
-async function checkAustin(permitNumber: string): Promise<AustinResult> {
+/** Escape a value for safe interpolation into a single-quoted SQL literal. */
+function sqlQuote(value: string): string {
+  return `'${value.trim().replace(/'/g, "''")}'`;
+}
+
+// Austin — Socrata Open Data API
+async function checkAustin(permitNumber: string): Promise<CheckResult> {
   const encoded = encodeURIComponent(permitNumber.trim());
   const url     = `https://data.austintexas.gov/resource/3syk-w9eu.json?permit_number=${encoded}&$limit=1`;
 
@@ -118,10 +153,105 @@ async function checkAustin(permitNumber: string): Promise<AustinResult> {
   return { found: true, status, rawStatus, address };
 }
 
+// Columbus — ArcGIS Feature Service (City of Columbus Maps & Apps)
+async function checkColumbus(permitNumber: string): Promise<CheckResult> {
+  const params = new URLSearchParams({
+    where:             `B1_ALT_ID=${sqlQuote(permitNumber)}`,
+    outFields:         "B1_ALT_ID,PERMIT_STATUS,B1_APPL_STATUS,SITE_ADDRESS",
+    returnGeometry:    "false",
+    resultRecordCount: "1",
+    f:                 "json",
+  });
+  const url =
+    "https://services1.arcgis.com/9yy6msODkIBzkUXU/arcgis/rest/services/" +
+    `Building_Permits/FeatureServer/0/query?${params.toString()}`;
+
+  const res = await fetch(url, {
+    headers: { "Accept": "application/json" },
+    signal: AbortSignal.timeout(10_000),
+  });
+
+  if (!res.ok) throw new Error(`Columbus API ${res.status}`);
+
+  const data = await res.json() as {
+    features?: { attributes?: Record<string, string | null> }[];
+    error?: { message?: string };
+  };
+
+  // ArcGIS returns query errors with HTTP 200, so this must be checked
+  // explicitly or a malformed query looks like "permit not found".
+  if (data.error) throw new Error(`Columbus API: ${data.error.message ?? "unknown"}`);
+
+  const attrs = data.features?.[0]?.attributes;
+  if (!attrs) return { found: false };
+
+  // PERMIT_STATUS is the lifecycle status; B1_APPL_STATUS is the fallback.
+  // "None" is Columbus's placeholder for "no status recorded".
+  const permitStatus = (attrs.PERMIT_STATUS  ?? "").trim();
+  const applStatus   = (attrs.B1_APPL_STATUS ?? "").trim();
+  const rawStatus    = permitStatus || applStatus;
+  const usable       = rawStatus && rawStatus.toUpperCase() !== "NONE" ? rawStatus : "";
+
+  const address = (attrs.SITE_ADDRESS ?? "").trim()
+    ? `${(attrs.SITE_ADDRESS ?? "").trim()}, Columbus, OH`
+    : undefined;
+
+  return {
+    found:     true,
+    status:    (usable && normaliseStatus(usable)) || "UNKNOWN",
+    rawStatus: usable,
+    address,
+  };
+}
+
+// Philadelphia — L&I permits via the Carto SQL API.
+// The permit number MUST be quoted; unquoted it parses as a column name and
+// the API returns HTTP 400.
+async function checkPhiladelphia(permitNumber: string): Promise<CheckResult> {
+  const sql =
+    `SELECT permitnumber, status, address FROM permits ` +
+    `WHERE permitnumber=${sqlQuote(permitNumber)} LIMIT 1`;
+  const url = `https://phl.carto.com/api/v2/sql?q=${encodeURIComponent(sql)}`;
+
+  const res = await fetch(url, {
+    headers: { "Accept": "application/json" },
+    signal: AbortSignal.timeout(10_000),
+  });
+
+  if (!res.ok) throw new Error(`Philadelphia API ${res.status}`);
+
+  const data = await res.json() as { rows?: Record<string, string | null>[] };
+  const row  = data.rows?.[0];
+  if (!row) return { found: false };
+
+  const rawStatus = (row.status ?? "").trim();
+  const address   = (row.address ?? "").trim()
+    ? `${(row.address ?? "").trim()}, Philadelphia, PA`
+    : undefined;
+
+  return {
+    found:     true,
+    status:    (rawStatus && normaliseStatus(rawStatus)) || "UNKNOWN",
+    rawStatus,
+    address,
+  };
+}
+
+/**
+ * City slug → checker. Every slug in LIVE_CHECKER_CITIES must appear here, or
+ * the route would fall back to another city's dataset and report a confidently
+ * wrong answer. The guard below enforces that at runtime.
+ */
+const CITY_CHECKERS: Record<string, (permitNumber: string) => Promise<CheckResult>> = {
+  austin:       checkAustin,
+  columbus:     checkColumbus,
+  philadelphia: checkPhiladelphia,
+};
+
 // ── City router ───────────────────────────────────────────────────────────────
 //
-// Only Austin has a live integration (Socrata Open Data API). The remaining
-// city portals don't expose public APIs and would need Playwright scrapers —
+// Austin, Columbus and Philadelphia have live integrations, each backed by a
+// public API. The remaining city portals don't expose public APIs —
 // until those exist, we surface an honest "coming soon" instead of pretending
 // to check.
 //
@@ -187,8 +317,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     );
   }
 
+  // A city can be marked live without a checker wired up only through an
+  // editing mistake. Fail loudly rather than silently querying Austin's
+  // dataset for a Columbus permit number.
+  const checker = CITY_CHECKERS[city];
+  if (!checker) {
+    console.error(`[check-permit] no checker registered for live city "${city}"`);
+    return NextResponse.json(
+      { error: "Failed to check permit. Please try again." },
+      { status: 500 }
+    );
+  }
+
   try {
-    const result = await checkAustin(permitNumber);
+    const result = await checker(permitNumber);
 
     // Permit isn't in the city's public dataset. Say so plainly instead of
     // returning a status we have no basis for.

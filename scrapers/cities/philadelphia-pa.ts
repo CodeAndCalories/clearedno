@@ -1,13 +1,21 @@
-// Philadelphia, PA — eCLIPSE permit scraper
+// Philadelphia, PA — L&I permit lookup (Carto SQL API)
 //
-// PRIMARY:  Philadelphia eCLIPSE public API (no browser required)
-// FALLBACK: indeterminate() — API is public; no Playwright fallback needed
+// API-ONLY. There is no browser path and there must not be one: the endpoint is
+// public, unauthenticated, and answers in ~200ms.
 //
-// The eCLIPSE API is a public endpoint — no auth required.
+// Endpoint: GET https://phl.carto.com/api/v2/sql?q=<SQL>
+// Table:    permits
+// Response: JSON { rows: [...] }; rows[0] is the permit
+// Status:   the `status` column (verified — there is NO `permit_status` column)
 //
-// Endpoint: GET https://phl.carto.com/api/v2/sql?q=SELECT+*+FROM+permits+WHERE+permitnumber={permitNumber}
-// Response: JSON { rows: [...] }; check rows[0] for permit details
-// Status fields: permit_status or status (try both)
+// ── THE PERMIT NUMBER MUST BE QUOTED ──────────────────────────────────────────
+// This is SQL, not a REST path. An unquoted value is parsed as a column name:
+//
+//   WHERE permitnumber=CP-2025-001437   → HTTP 400 {"error":["column \"cp\" does not exist"]}
+//   WHERE permitnumber='CP-2025-001437' → {"permitnumber":"CP-2025-001437","status":"Issued"}
+//
+// Embedded single quotes are doubled ('' ) before interpolation so a permit
+// number can never break out of the string literal.
 //
 // ── PERMIT NUMBER FORMATS ──────────────────────────────────────────────────────
 // Philadelphia permit numbers are typically formatted as:
@@ -28,15 +36,39 @@ const CONFIG: ScraperConfig = {
   handles:  ["philadelphia", "philly"],
 };
 
-// Carto SQL API — primary (and only) method
-const API_URL = "https://phl.carto.com/api/v2/sql?q=SELECT+*+FROM+permits+WHERE+permitnumber=";
+// Carto SQL API — the only method
+const API_BASE = "https://phl.carto.com/api/v2/sql";
 
-// Reference URL for fallback logs (no Playwright fallback; used in indeterminate() only)
+/** Public L&I record page — used for scrape_url and in indeterminate() logs. */
 const PORTAL_URL = "https://li.phila.gov/license-inspections/verify";
+
+/** Escape a value for safe interpolation into a single-quoted SQL literal. */
+function sqlQuote(value: string): string {
+  return `'${value.trim().replace(/'/g, "''")}'`;
+}
 
 // ── Status mapping ────────────────────────────────────────────────────────────
 
+// Matched exact-first by BaseScraper.matchStatus(), then longest-substring.
+
 const PHILADELPHIA_STATUS_MAP: Record<string, PermitStatus> = {
+  // ── Live values missing from the original map ─────────────────────────────
+  // Verified against `SELECT status, count(*) FROM permits GROUP BY status`
+  // (2026-08-07). Without these, every one of these rows fell through to
+  // normalizeStatus() and came back UNKNOWN — i.e. counted as a scrape failure.
+
+  "ABANDONED":                         "REJECTED",     // 1,907
+  "REFUSED":                           "REJECTED",     // 1,308
+  "STOP WORK":                         "UNDER_REVIEW", // 305
+  "AMENDMENT APPLICATION INCOMPLETE":  "UNDER_REVIEW", // 217
+  "AMENDMENT APPLICANT REVISIONS":     "UNDER_REVIEW", // 149
+  "AMENDMENT READY FOR ISSUE":         "PENDING",      // 99
+  "AMENDMENT REVIEW":                  "UNDER_REVIEW", // 78
+  "AMENDMENT REQUESTED":               "UNDER_REVIEW", // 37
+  "AMENDMENT DENIED":                  "REJECTED",     // 8
+  "READY FOR ISSUE":                   "PENDING",      // 1
+  "EXPIRED DENIAL":                    "REJECTED",     // 1
+
   // ── Primary mappings ──────────────────────────────────────────────────────
 
   // Permit issued and active — work may proceed
@@ -134,7 +166,10 @@ export class PhiladelphiaPaScraper extends BaseScraper {
   //   status        — fallback status field
 
   private async scrapeViaApi(permitNumber: string): Promise<ScrapeResult | null> {
-    const url = `${API_URL}${encodeURIComponent(permitNumber)}`;
+    const sql =
+      `SELECT permitnumber, status, permitdescription, permittype, permitissuedate ` +
+      `FROM permits WHERE permitnumber=${sqlQuote(permitNumber)} LIMIT 1`;
+    const url = `${API_BASE}?q=${encodeURIComponent(sql)}`;
 
     const res = await fetch(url, {
       headers: {
@@ -169,11 +204,9 @@ export class PhiladelphiaPaScraper extends BaseScraper {
       return null;
     }
 
-    // Try both field names: permit_status and status
-    const rawText = (
-      ((record.permit_status as string) ?? "").trim() ||
-      ((record.status        as string) ?? "").trim()
-    );
+    // `status` is the only status column on this table (verified against the
+    // live schema — there is no `permit_status`).
+    const rawText = ((record.status as string) ?? "").trim();
 
     if (!rawText) {
       return {
@@ -231,14 +264,8 @@ export class PhiladelphiaPaScraper extends BaseScraper {
   // ── Status mapping ─────────────────────────────────────────────────────────
 
   private mapStatus(rawText: string): PermitStatus {
-    const key = rawText.toUpperCase().trim();
-
-    for (const [portalText, status] of Object.entries(PHILADELPHIA_STATUS_MAP)) {
-      if (key === portalText || key.includes(portalText)) {
-        return status;
-      }
-    }
-
-    return this.normalizeStatus(rawText);
+    // Exact match first, then longest-substring — see BaseScraper.matchStatus().
+    return this.matchStatus(rawText, PHILADELPHIA_STATUS_MAP)
+        ?? this.normalizeStatus(rawText);
   }
 }

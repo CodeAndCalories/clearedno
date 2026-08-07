@@ -114,53 +114,79 @@ const SEL = {
 
 // ── Status mapping ────────────────────────────────────────────────────────────
 
+// Keys are matched exact-first by BaseScraper.matchStatus(), so multi-word
+// values like "DENIED BUT CLOSED" resolve correctly instead of colliding with
+// the shorter "CLOSED" / "ACTIVE" keys under substring matching.
+//
+// The first block is the COMPLETE status_current vocabulary of dataset
+// 3syk-w9eu, verified against the live API (counts as of 2026-08-07). Keeping
+// it exhaustive means exact match handles every real row and the substring
+// pass below is only a safety net for values Austin adds later.
+
 const AUSTIN_STATUS_MAP: Record<string, PermitStatus> = {
-  // ── Confirmed from live API (status_current field values) ─────────────────
+  // ── Complete live vocabulary (status_current) ─────────────────────────────
+
+  // Work finished / permit closed out
+  "FINAL":                            "CLEARED",   // 2,000,252
+  "CLOSED":                           "CLEARED",   // 129
 
   // Permit issued and active — work may proceed
-  "ACTIVE":                    "APPROVED",
-
-  // Work finished / CO issued
-  "CLOSED":                    "CLEARED",
-
-  // Under inspection — awaiting sign-off
-  "INSPECTION":                "UNDER_REVIEW",
+  "ACTIVE":                           "APPROVED",  // 27,673
 
   // Application received, not yet reviewed
-  "APPLICATION":               "PENDING",
-  "INTAKE":                    "PENDING",
+  "PENDING":                          "PENDING",   // 229
+  "PENDING PERMIT":                   "PENDING",   // 65
+  "AWAITING UPLOAD":                  "PENDING",   // 1
+  "AWAITING UPDATE":                  "PENDING",   // 1
+
+  // In review / held — not yet decided
+  "INACTIVE PENDING REVISION":        "UNDER_REVIEW", // 115
+  "ON HOLD":                          "UNDER_REVIEW", // 76
+  "RE REVIEW":                        "UNDER_REVIEW", // 55
+  "SUSPENDED":                        "UNDER_REVIEW", // 26
+  "INACTIVE CONTRACTOR":              "UNDER_REVIEW", // 3
+  "APPLICATION INCOMPLETE":           "UNDER_REVIEW", // 2
 
   // Permit lapsed without final inspection
-  "EXPIRED":                   "EXPIRED",
+  "EXPIRED":                          "EXPIRED",   // 168,987
+  "EXPIRED - LICENSE":                "EXPIRED",   // 12
 
-  // Denied / pulled / voided
-  "CANCELLED":                 "REJECTED",
-  "VOID":                      "REJECTED",
+  // Denied / pulled / voided — terminal, not recoverable
+  "VOID":                             "REJECTED",  // 153,210
+  "WITHDRAWN":                        "REJECTED",  // 17,493
+  "CANCELLED":                        "REJECTED",  // 675
+  "ABORTED":                          "REJECTED",  // 120
+  "CANCELLED - CONTRACTOR REQUIRED":  "REJECTED",  // 119
+  "DENIED BUT CLOSED":                "REJECTED",  // 43  (NOT "CLOSED"/CLEARED)
+  "CANCELLED - NEW PERMIT REQUIRED":  "REJECTED",  // 9
+  "NEW PERMIT REQUIRED":              "REJECTED",  // 3
+  "REVOKED":                          "REJECTED",  // 2
+  "REJECTED":                         "REJECTED",  // 1
 
-  // ── Additional portal values (Playwright fallback) ─────────────────────────
+  // ── Generic fallbacks (substring pass only) ───────────────────────────────
+  // Not present in the current dataset; retained so a future Austin status
+  // string still lands somewhere sensible rather than UNKNOWN.
 
-  "FINAL":                     "CLEARED",
-  "FINALED":                   "CLEARED",
   "CERTIFICATE OF OCCUPANCY":  "CLEARED",
+  "FINAL INSPECTION":          "CLEARED",
   "CO ISSUED":                 "CLEARED",
   "COMPLETED":                 "CLEARED",
-  "FINAL INSPECTION":          "CLEARED",
-  "ISSUED":                    "CLEARED",
+  "FINALED":                   "CLEARED",
+  "ISSUED":                    "APPROVED",
 
-  "SUBMITTED":                 "PENDING",
   "APPLICATION RECEIVED":      "PENDING",
-  "PENDING":                   "PENDING",
+  "SUBMITTED":                 "PENDING",
+  "APPLICATION":               "PENDING",
   "IN QUEUE":                  "PENDING",
+  "INTAKE":                    "PENDING",
 
-  "ON HOLD":                   "UNDER_REVIEW",
-  "HOLD":                      "UNDER_REVIEW",
+  "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
   "UNDER REVIEW":              "UNDER_REVIEW",
   "IN REVIEW":                 "UNDER_REVIEW",
-  "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
+  "INSPECTION":                "UNDER_REVIEW",
+  "HOLD":                      "UNDER_REVIEW",
 
-  "WITHDRAWN":                 "REJECTED",
   "DENIED":                    "REJECTED",
-  "REVOKED":                   "REJECTED",
 };
 
 // ── Scraper class ─────────────────────────────────────────────────────────────
@@ -423,15 +449,9 @@ export class AustinTxScraper extends BaseScraper {
   // ── Status mapping ─────────────────────────────────────────────────────────
 
   private mapStatus(rawText: string): PermitStatus {
-    const key = rawText.toUpperCase().trim();
-
-    for (const [portalText, status] of Object.entries(AUSTIN_STATUS_MAP)) {
-      if (key === portalText || key.includes(portalText)) {
-        return status;
-      }
-    }
-
-    return this.normalizeStatus(rawText);
+    // Exact match first, then longest-substring — see BaseScraper.matchStatus().
+    return this.matchStatus(rawText, AUSTIN_STATUS_MAP)
+        ?? this.normalizeStatus(rawText);
   }
 }
 

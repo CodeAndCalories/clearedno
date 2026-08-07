@@ -1,24 +1,32 @@
-// Columbus, OH — Columbus Accela permit scraper
+// Columbus, OH — Building & Zoning Services permit lookup (ArcGIS Feature Service)
 //
-// PRIMARY:  Columbus Accela REST API
-// FALLBACK: Columbus Accela citizen portal via Playwright
+// API-ONLY. There is no browser path and there must not be one.
 //
-// The Accela REST API is the preferred method — no browser required, fast
-// response times, and no bot-detection issues.
+// The previous implementation called https://aca.columbus.gov/apis/v1/... and
+// fell back to Playwright against https://aca.columbus.gov. Both were dead:
+// that host does not resolve, so every Columbus check burned a browser launch
+// and returned UNKNOWN. It is replaced by the city's published open-data
+// Feature Service, which answers in ~200ms with no auth.
 //
-// API endpoint: GET https://aca.columbus.gov/apis/v1/search/permits/{permitNumber}
-// Status fields: result.status or result.record_status (try both)
+// Service: City of Columbus Maps & Apps → "Building Permits"
+//   https://services1.arcgis.com/9yy6msODkIBzkUXU/arcgis/rest/services/Building_Permits/FeatureServer/0
 //
-// ── HOW TO UPDATE SELECTORS (Playwright fallback) ─────────────────────────────
-// If the portal fallback needs updating:
-//   1. Open https://aca.columbus.gov in Chrome
-//   2. Search for a known permit number manually
-//   3. Right-click the search input → Inspect → copy its id/name/placeholder
-//   4. Right-click the status element → Inspect → copy its selector
-//   5. Update SEL.permitInput and SEL.statusCell below
+// Lookup field:  B1_ALT_ID       — the permit number as printed on the permit
+// Status fields: PERMIT_STATUS   — lifecycle status ("Permit Issued")
+//                B1_APPL_STATUS  — application status ("Issued"), used as
+//                                  fallback when PERMIT_STATUS is empty
+// Deep link:     ACA_URL         — real Citizen Access record URL, surfaced to
+//                                  the user as scrape_url
+//
+// Verified 2026-08-07: RES permit RSWDR2611829 →
+//   PERMIT_STATUS "Permit Issued", B1_APPL_STATUS "Issued",
+//   SITE_ADDRESS "853 BLUFFWAY DR"
+//
+// ── QUERY FORM ────────────────────────────────────────────────────────────────
+// ArcGIS `where` is SQL. The permit number MUST be quoted, and embedded single
+// quotes doubled, or the value parses as a column name and the service 400s.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { chromium } from "playwright";
 import { BaseScraper, type ScraperConfig } from "../base-scraper";
 import type { ScrapeResult, PermitStatus } from "../../types";
 
@@ -30,123 +38,118 @@ const CONFIG: ScraperConfig = {
   handles:  ["columbus"],
 };
 
-// Accela REST API — primary method
-const API_URL = "https://aca.columbus.gov/apis/v1/search/permits";
+const API_URL =
+  "https://services1.arcgis.com/9yy6msODkIBzkUXU/arcgis/rest/services/Building_Permits/FeatureServer/0/query";
 
-// Portal fallback
-const PORTAL_URL = "https://aca.columbus.gov";
+/** Public portal — used for scrape_url when ACA_URL is absent, and in logs. */
+const PORTAL_URL = "https://www.columbus.gov/bzs";
 
-// ── Selectors (Playwright fallback only) ──────────────────────────────────────
-//
-// The Columbus portal is an Accela Citizen Access SPA.
-// Selectors are ordered most-specific-first; the last entry is a broad fallback.
+/** Fields we ask for. Keep narrow — the layer has 24 columns we don't need. */
+const OUT_FIELDS = [
+  "B1_ALT_ID",
+  "PERMIT_STATUS",
+  "B1_APPL_STATUS",
+  "B1_PER_TYPE",
+  "SITE_ADDRESS",
+  "ISSUED_DT",
+  "ACA_URL",
+].join(",");
 
-const SEL = {
-  // Accela Citizen Access permit number field.
-  permitInput: [
-    'input[id*="RecordNum"]',
-    'input[id*="recordNum"]',
-    'input[id*="txtSearch"]',
-    'input[id*="PermitNum"]',
-    'input[id*="permitNum"]',
-    'input[placeholder*="Record Number"]',
-    'input[placeholder*="Permit Number"]',
-    'input[placeholder*="Permit"]',
-    'input[placeholder*="record"]',
-    'input[id*="permit"]',
-    'input[id*="record"]',
-    'input[name*="permit"]',
-    'input[name*="record"]',
-    'input[type="text"]',   // broadest fallback — first visible text input
-  ].join(", "),
-
-  searchButton: [
-    'button[type="submit"]',
-    'input[type="submit"]',
-    'a:has-text("Search")',
-    'button:has-text("Search")',
-    'button:has-text("Find")',
-    'button:has-text("Submit")',
-    'button:has-text("Look Up")',
-  ].join(", "),
-
-  statusCell: [
-    'td[data-label="Status"]',
-    'td[data-label="Record Status"]',
-    'td[data-label="Permit Status"]',
-    '.record-status',
-    '[class*="status-value"]',
-    '[class*="permit-status"]',
-    '[class*="record-status"]',
-    'td:nth-child(5)',
-    'td:nth-child(4)',
-  ].join(", "),
-
-  resultsContainer: [
-    '.search-results',
-    'table[class*="result"]',
-    '[class*="records-table"]',
-    '[class*="permit-list"]',
-    '[id*="searchResults"]',
-    '[id*="searchResult"]',
-    'tbody tr',
-    'table',
-  ].join(", "),
-};
+/** Escape a value for safe interpolation into a single-quoted SQL literal. */
+function sqlQuote(value: string): string {
+  return `'${value.trim().replace(/'/g, "''")}'`;
+}
 
 // ── Status mapping ────────────────────────────────────────────────────────────
+//
+// Matched exact-first by BaseScraper.matchStatus(), then longest-substring.
+//
+// The first two blocks are the COMPLETE live vocabularies of both status
+// columns, verified against the service (counts as of 2026-08-07). Note that
+// "Final Inspection Approved" MUST be an exact key: under substring matching it
+// hits "APPROVED" and reports APPROVED, when it actually means the work passed
+// final inspection and is CLEARED — the single most common status in the layer.
 
 const COLUMBUS_STATUS_MAP: Record<string, PermitStatus> = {
-  // ── Primary mappings ──────────────────────────────────────────────────────
+  // ── PERMIT_STATUS — complete live vocabulary ──────────────────────────────
 
-  // Permit issued and active — work may proceed
-  "ISSUED":                    "APPROVED",
-  "ACTIVE":                    "APPROVED",
-  "APPROVED":                  "APPROVED",
+  "FINAL INSPECTION APPROVED":        "CLEARED",   // 463,992
+  "CERTIFICATE OF OCCUPANCY ISSUED":  "CLEARED",   // 30,994
+  "PERMIT ISSUED":                    "APPROVED",  // 166,784
+  "EXPIRED PERMIT":                   "EXPIRED",   // 15,124
 
-  // Work finished / final inspection passed
+  // ── B1_APPL_STATUS — complete live vocabulary ─────────────────────────────
+
+  "CLOSED":                  "CLEARED",      // 519,919
+  "ISSUED":                  "APPROVED",     // 97,510
+  "ISSUED ONLINE":           "APPROVED",     // 1
+  "ACTIVE":                  "APPROVED",     // 511
+  "OPEN":                    "APPROVED",     // 15
+  "EXPIRED":                 "EXPIRED",      // 5,969
+  "EXPIRED NO PERMIT":       "EXPIRED",      // 9
+  "APPLIED ONLINE":          "PENDING",      // 6
+  "ISSUANCE PENDING":        "PENDING",      // 4
+  "CORRECTIONS REQUIRED":    "UNDER_REVIEW", // 3
+  "UNDER REVIEW":            "UNDER_REVIEW", // 3
+  "VOID":                    "REJECTED",     // 281
+  "VOID - WRONG CAP TYPE":   "REJECTED",     // 715
+  "VOID - DUPLICATE":        "REJECTED",     // 528
+  "VOID - ENTERED IN ERROR": "REJECTED",     // 439
+  "VOID - TEST":             "REJECTED",     // 8
+  "WITHDRAWN":               "REJECTED",     // 39
+
+  // ── Generic fallbacks (substring pass only) ───────────────────────────────
+  // Not currently emitted by either column; retained so a future Columbus
+  // status string lands somewhere sensible rather than UNKNOWN.
+
+  "CERTIFICATE OF OCCUPANCY":  "CLEARED",
+  "FINAL INSPECTION":          "CLEARED",
+  "CO ISSUED":                 "CLEARED",
+  "COMPLETED":                 "CLEARED",
   "FINALED":                   "CLEARED",
   "FINAL":                     "CLEARED",
-  "COMPLETED":                 "CLEARED",
-  "CERTIFICATE OF OCCUPANCY":  "CLEARED",
-  "CO ISSUED":                 "CLEARED",
-  "CLOSED":                    "CLEARED",
-  "FINAL INSPECTION":          "CLEARED",
 
-  // Application received, not yet reviewed
-  "APPLIED":                   "PENDING",
-  "PENDING":                   "PENDING",
-  "SUBMITTED":                 "PENDING",
-  "APPLICATION":               "PENDING",
+  "APPROVED":                  "APPROVED",
+
   "APPLICATION RECEIVED":      "PENDING",
+  "APPLICATION":               "PENDING",
+  "SUBMITTED":                 "PENDING",
+  "PENDING":                   "PENDING",
   "IN QUEUE":                  "PENDING",
+  "APPLIED":                   "PENDING",
   "INTAKE":                    "PENDING",
 
-  // Permit voided / withdrawn
-  "VOIDED":                    "REJECTED",
-  "VOID":                      "REJECTED",
-  "CANCELLED":                 "REJECTED",
-
-  // Under review / on hold
-  "UNDER REVIEW":              "UNDER_REVIEW",
-  "IN REVIEW":                 "UNDER_REVIEW",
-  "PLAN CHECK":                "UNDER_REVIEW",
   "PLAN REVIEW":               "UNDER_REVIEW",
-  "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
+  "PLAN CHECK":                "UNDER_REVIEW",
+  "IN REVIEW":                 "UNDER_REVIEW",
+  "INSPECTION":                "UNDER_REVIEW",
   "ON HOLD":                   "UNDER_REVIEW",
   "HOLD":                      "UNDER_REVIEW",
-  "INSPECTION":                "UNDER_REVIEW",
 
-  // Permit lapsed without final inspection
-  "EXPIRED":                   "EXPIRED",
-  "LAPSED":                    "EXPIRED",
-
-  // Denied / rejected
-  "DENIED":                    "REJECTED",
+  "CANCELLED":                 "REJECTED",
   "REJECTED":                  "REJECTED",
-  "WITHDRAWN":                 "REJECTED",
   "REVOKED":                   "REJECTED",
+  "VOIDED":                    "REJECTED",
+  "DENIED":                    "REJECTED",
+  "LAPSED":                    "EXPIRED",
 };
+
+// ── ArcGIS response shape ─────────────────────────────────────────────────────
+
+interface ArcGisAttributes {
+  B1_ALT_ID?:      string | null;
+  PERMIT_STATUS?:  string | null;
+  B1_APPL_STATUS?: string | null;
+  B1_PER_TYPE?:    string | null;
+  SITE_ADDRESS?:   string | null;
+  ISSUED_DT?:      number | null;
+  ACA_URL?:        string | null;
+}
+
+interface ArcGisResponse {
+  features?: { attributes?: ArcGisAttributes }[];
+  error?:    { code?: number; message?: string };
+}
 
 // ── Scraper class ─────────────────────────────────────────────────────────────
 
@@ -159,35 +162,44 @@ export class ColumbusOhScraper extends BaseScraper {
     permitNumber: string,
     _address: string
   ): Promise<ScrapeResult> {
-    // ── 1. Try Accela REST API first ───────────────────────────────────────
     try {
       const result = await this.scrapeViaApi(permitNumber);
       if (result) return result;
-      // null means permit not found in API — fall through to portal
+
+      return this.indeterminate(
+        permitNumber,
+        "Permit not found in Columbus Building Permits feature service"
+      );
     } catch (apiErr) {
+      const msg = apiErr instanceof Error ? apiErr.message : String(apiErr);
       console.error(
         JSON.stringify({
           level: "warn",
           scraper: "Columbus, OH",
           method: "api",
           permit_number: permitNumber,
-          message: "Accela API failed, falling back to portal",
-          error: apiErr instanceof Error ? apiErr.message : String(apiErr),
+          message: "ArcGIS query failed, returning UNKNOWN",
+          error: msg,
           timestamp: new Date().toISOString(),
         })
       );
+      return this.indeterminate(permitNumber, `ArcGIS API error: ${msg}`);
     }
-
-    // ── 2. Fall back to Playwright portal scrape ───────────────────────────
-    return this.scrapeViaPortal(permitNumber);
   }
 
-  // ── Accela REST API ────────────────────────────────────────────────────────
-  // Returns null if the permit isn't found (caller falls back to portal).
-  // Throws on network / parse errors (caller catches and falls back to portal).
+  // ── ArcGIS Feature Service ─────────────────────────────────────────────────
+  // Returns null if the permit isn't in the layer.
+  // Throws on network / HTTP / service-level errors.
 
   private async scrapeViaApi(permitNumber: string): Promise<ScrapeResult | null> {
-    const url = `${API_URL}/${encodeURIComponent(permitNumber)}`;
+    const params = new URLSearchParams({
+      where:          `B1_ALT_ID=${sqlQuote(permitNumber)}`,
+      outFields:      OUT_FIELDS,
+      returnGeometry: "false",
+      resultRecordCount: "1",
+      f:              "json",
+    });
+    const url = `${API_URL}?${params.toString()}`;
 
     const res = await fetch(url, {
       headers: {
@@ -197,44 +209,64 @@ export class ColumbusOhScraper extends BaseScraper {
       signal: AbortSignal.timeout(15_000),
     });
 
-    if (res.status === 404) {
-      // Permit not found in API — fall back to portal
-      return null;
-    }
-
     if (!res.ok) {
       throw new Error(`API returned HTTP ${res.status}`);
     }
 
-    const data = await res.json() as Record<string, unknown>;
+    const data = await res.json() as ArcGisResponse;
 
-    // Try both status field names: result.status and result.record_status
-    const rawText = (
-      ((data.status         as string) ?? "").trim() ||
-      ((data.record_status  as string) ?? "").trim()
-    );
+    // ArcGIS reports query errors with HTTP 200 and an `error` object, so a
+    // bad request would otherwise look like "permit not found".
+    if (data.error) {
+      throw new Error(
+        `ArcGIS error ${data.error.code ?? "?"}: ${data.error.message ?? "unknown"}`
+      );
+    }
 
-    if (!rawText) {
-      // Record found but status field empty — status is indeterminate, not PENDING
+    const attrs = data.features?.[0]?.attributes;
+    if (!attrs) {
+      // Not in the layer — caller reports UNKNOWN.
+      return null;
+    }
+
+    // PERMIT_STATUS is the lifecycle status and is preferred. B1_APPL_STATUS is
+    // the application status, used only when the former is blank.
+    const permitStatus = (attrs.PERMIT_STATUS  ?? "").trim();
+    const applStatus   = (attrs.B1_APPL_STATUS ?? "").trim();
+    const rawText      = permitStatus || applStatus;
+
+    // "None" is Columbus's literal placeholder for "no status recorded" — it is
+    // not a status, and must not be mapped to one.
+    if (!rawText || rawText.toUpperCase() === "NONE") {
       return {
         permit_number: permitNumber,
         status:        "UNKNOWN",
-        raw_text:      "found in API, status field empty",
-        scrape_url:    url,
+        raw_text:      "found in layer, no status recorded",
+        scrape_url:    (attrs.ACA_URL ?? "").trim() || PORTAL_URL,
       };
     }
 
     const status = this.mapStatus(rawText);
 
+    // Prefer the city's own Citizen Access deep link so the UI points at the
+    // real record rather than a raw ArcGIS query URL.
+    const scrapeUrl = (attrs.ACA_URL ?? "").trim() || PORTAL_URL;
+
     console.error(
       JSON.stringify({
-        level:         "info",
-        scraper:       "Columbus, OH",
-        method:        "api",
-        permit_number: permitNumber,
-        raw_status:    rawText,
+        level:          "info",
+        scraper:        "Columbus, OH",
+        method:         "api",
+        permit_number:  permitNumber,
+        permit_status:  permitStatus || null,
+        appl_status:    applStatus   || null,
+        permit_type:    (attrs.B1_PER_TYPE  ?? "").trim() || null,
+        site_address:   (attrs.SITE_ADDRESS ?? "").trim() || null,
+        issued_date:    attrs.ISSUED_DT
+          ? new Date(attrs.ISSUED_DT).toISOString().slice(0, 10)
+          : null,
         status,
-        timestamp:     new Date().toISOString(),
+        timestamp:      new Date().toISOString(),
       })
     );
 
@@ -242,137 +274,8 @@ export class ColumbusOhScraper extends BaseScraper {
       permit_number: permitNumber,
       status,
       raw_text:   rawText,
-      scrape_url: url,
+      scrape_url: scrapeUrl,
     };
-  }
-
-  // ── Playwright portal fallback ─────────────────────────────────────────────
-
-  private async scrapeViaPortal(permitNumber: string): Promise<ScrapeResult> {
-    const browser = await chromium.launch({
-      headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-
-    try {
-      const context = await browser.newContext({
-        userAgent:
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-        viewport: { width: 1280, height: 800 },
-      });
-      const page = await context.newPage();
-
-      // Step 1: Load search page
-      try {
-        await page.goto(PORTAL_URL, {
-          waitUntil: "domcontentloaded",
-          timeout:   60_000,
-        });
-      } catch (navErr) {
-        return this.indeterminate(
-          permitNumber,
-          `Navigation failed: ${navErr instanceof Error ? navErr.message : String(navErr)}`
-        );
-      }
-
-      // Give the SPA time to hydrate
-      await page.waitForTimeout(3000);
-
-      // Step 2: Fill permit number
-      try {
-        let filled = false;
-
-        // Attempt 1: use the ordered selector list
-        try {
-          const inputEl = await page.waitForSelector(SEL.permitInput, { timeout: 8_000 });
-          await inputEl.fill(permitNumber.trim());
-          filled = true;
-        } catch {
-          // Attempt 2: try any visible text input via Playwright locator
-          const inputs = page.locator('input[type="text"]:visible, input:not([type]):visible');
-          const count  = await inputs.count();
-          if (count > 0) {
-            await inputs.first().fill(permitNumber.trim());
-            filled = true;
-          }
-        }
-
-        if (!filled) {
-          return this.indeterminate(
-            permitNumber,
-            "Permit number input field not found. Check SEL.permitInput selector."
-          );
-        }
-      } catch {
-        return this.indeterminate(
-          permitNumber,
-          "Permit number input field not found. Check SEL.permitInput selector."
-        );
-      }
-
-      await page.waitForTimeout(400);
-
-      // Step 3: Submit
-      try {
-        const searchBtn = await page.waitForSelector(SEL.searchButton, { timeout: 5_000 });
-        await searchBtn.click();
-      } catch {
-        return this.indeterminate(
-          permitNumber,
-          "Search button not found. Check SEL.searchButton selector."
-        );
-      }
-
-      // Step 4: Wait for results
-      try {
-        await page.waitForSelector(
-          `${SEL.resultsContainer}, [class*="no-result"], [class*="error"], [class*="not-found"], [class*="empty"]`,
-          { timeout: 20_000 }
-        );
-      } catch {
-        return this.indeterminate(
-          permitNumber,
-          "Results container did not appear after search."
-        );
-      }
-
-      // Step 5: Extract status
-      let rawText = "";
-
-      try {
-        rawText = await page.locator(SEL.statusCell).first().innerText({ timeout: 5_000 });
-      } catch {
-        try {
-          const bodyText = await page.locator("body").innerText({ timeout: 5_000 });
-          rawText = extractStatusFromBody(bodyText, permitNumber);
-        } catch {
-          return this.indeterminate(
-            permitNumber,
-            "Could not extract page text."
-          );
-        }
-      }
-
-      if (!rawText || rawText.trim() === "") {
-        return this.indeterminate(
-          permitNumber,
-          "Status text not found. Permit may not exist or selectors need updating."
-        );
-      }
-
-      const scrapeUrl = page.url();
-      const status    = this.mapStatus(rawText);
-
-      return {
-        permit_number: permitNumber,
-        status,
-        raw_text:   rawText.trim(),
-        scrape_url: scrapeUrl,
-      };
-
-    } finally {
-      await browser.close().catch(() => {});
-    }
   }
 
   // ── Fallback result ────────────────────────────────────────────────────────
@@ -400,29 +303,8 @@ export class ColumbusOhScraper extends BaseScraper {
   // ── Status mapping ─────────────────────────────────────────────────────────
 
   private mapStatus(rawText: string): PermitStatus {
-    const key = rawText.toUpperCase().trim();
-
-    for (const [portalText, status] of Object.entries(COLUMBUS_STATUS_MAP)) {
-      if (key === portalText || key.includes(portalText)) {
-        return status;
-      }
-    }
-
-    return this.normalizeStatus(rawText);
+    // Exact match first, then longest-substring — see BaseScraper.matchStatus().
+    return this.matchStatus(rawText, COLUMBUS_STATUS_MAP)
+        ?? this.normalizeStatus(rawText);
   }
-}
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
-
-function extractStatusFromBody(bodyText: string, permitNumber: string): string {
-  const escaped = permitNumber.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  const re = new RegExp(`${escaped}[\\s\\S]{0,150}`, "i");
-  const match = bodyText.match(re);
-  if (match) return match[0];
-
-  if (!bodyText.toLowerCase().includes(permitNumber.toLowerCase())) {
-    return "";
-  }
-
-  return "";
 }

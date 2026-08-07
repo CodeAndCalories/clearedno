@@ -99,6 +99,42 @@ export abstract class BaseScraper {
   // ── Helpers available to all city scrapers ───────────────────────────────
 
   /**
+   * Look up a raw status string in a city's status map.
+   *
+   * Exact match wins over substring match, ALWAYS. Substring matching alone is
+   * order-dependent and silently wrong: iterating a map that happens to list
+   * "ACTIVE" before "INACTIVE PENDING REVISION" maps the latter to APPROVED,
+   * and "CLOSED" before "DENIED" maps "Denied but Closed" to CLEARED. Both are
+   * real values in the live Austin dataset.
+   *
+   * So: try the whole string first. Only if nothing matches exactly do we fall
+   * back to substring, and then longest-key-first so the most specific phrase
+   * ("FINAL INSPECTION" over "FINAL") wins regardless of declaration order.
+   *
+   * Returns null if neither pass matches, so the caller can decide whether to
+   * try normalizeStatus() or report UNKNOWN.
+   */
+  protected matchStatus(
+    rawText: string,
+    map: Record<string, PermitStatus>
+  ): PermitStatus | null {
+    const key = rawText.toUpperCase().trim();
+    if (!key) return null;
+
+    // Pass 1 — exact match on the full status string.
+    const exact = map[key];
+    if (exact) return exact;
+
+    // Pass 2 — substring, longest key first (most specific wins).
+    const bySpecificity = Object.keys(map).sort((a, b) => b.length - a.length);
+    for (const portalText of bySpecificity) {
+      if (key.includes(portalText)) return map[portalText];
+    }
+
+    return null;
+  }
+
+  /**
    * Generic status normalizer — covers common portal language.
    * Override mapStatus() in your city scraper for portal-specific strings.
    *
