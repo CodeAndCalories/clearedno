@@ -215,10 +215,10 @@ export class ColumbusOhScraper extends BaseScraper {
     );
 
     if (!rawText) {
-      // Record found but status field empty — report as PENDING
+      // Record found but status field empty — status is indeterminate, not PENDING
       return {
         permit_number: permitNumber,
-        status:        "PENDING",
+        status:        "UNKNOWN",
         raw_text:      "found in API, status field empty",
         scrape_url:    url,
       };
@@ -269,7 +269,7 @@ export class ColumbusOhScraper extends BaseScraper {
           timeout:   60_000,
         });
       } catch (navErr) {
-        return this.pendingFallback(
+        return this.indeterminate(
           permitNumber,
           `Navigation failed: ${navErr instanceof Error ? navErr.message : String(navErr)}`
         );
@@ -298,13 +298,13 @@ export class ColumbusOhScraper extends BaseScraper {
         }
 
         if (!filled) {
-          return this.pendingFallback(
+          return this.indeterminate(
             permitNumber,
             "Permit number input field not found. Check SEL.permitInput selector."
           );
         }
       } catch {
-        return this.pendingFallback(
+        return this.indeterminate(
           permitNumber,
           "Permit number input field not found. Check SEL.permitInput selector."
         );
@@ -317,7 +317,7 @@ export class ColumbusOhScraper extends BaseScraper {
         const searchBtn = await page.waitForSelector(SEL.searchButton, { timeout: 5_000 });
         await searchBtn.click();
       } catch {
-        return this.pendingFallback(
+        return this.indeterminate(
           permitNumber,
           "Search button not found. Check SEL.searchButton selector."
         );
@@ -330,7 +330,7 @@ export class ColumbusOhScraper extends BaseScraper {
           { timeout: 20_000 }
         );
       } catch {
-        return this.pendingFallback(
+        return this.indeterminate(
           permitNumber,
           "Results container did not appear after search."
         );
@@ -346,7 +346,7 @@ export class ColumbusOhScraper extends BaseScraper {
           const bodyText = await page.locator("body").innerText({ timeout: 5_000 });
           rawText = extractStatusFromBody(bodyText, permitNumber);
         } catch {
-          return this.pendingFallback(
+          return this.indeterminate(
             permitNumber,
             "Could not extract page text."
           );
@@ -354,7 +354,7 @@ export class ColumbusOhScraper extends BaseScraper {
       }
 
       if (!rawText || rawText.trim() === "") {
-        return this.pendingFallback(
+        return this.indeterminate(
           permitNumber,
           "Status text not found. Permit may not exist or selectors need updating."
         );
@@ -377,13 +377,13 @@ export class ColumbusOhScraper extends BaseScraper {
 
   // ── Fallback result ────────────────────────────────────────────────────────
 
-  private pendingFallback(permitNumber: string, reason: string): ScrapeResult {
+  private indeterminate(permitNumber: string, reason: string): ScrapeResult {
     console.error(
       JSON.stringify({
         level: "warn",
         scraper: "Columbus, OH",
         permit_number: permitNumber,
-        message: "Using PENDING fallback — manual check may be required",
+        message: "Scrape indeterminate — returning UNKNOWN so health tracking counts it as a failure",
         reason,
         portal_url: PORTAL_URL,
         timestamp: new Date().toISOString(),
@@ -391,8 +391,8 @@ export class ColumbusOhScraper extends BaseScraper {
     );
     return {
       permit_number: permitNumber,
-      status:        "PENDING",
-      raw_text:      "manual check required",
+      status:        "UNKNOWN",
+      raw_text:      reason,
       scrape_url:    PORTAL_URL,
     };
   }

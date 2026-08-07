@@ -189,9 +189,51 @@ async function runScrapers(): Promise<void> {
       continue;
     }
 
+    // ── 2a. UNKNOWN is a failure, not a result ───────────────────────────
+    // A scraper returns UNKNOWN when it ran to completion but could not
+    // determine the real status — broken selectors, a portal redesign, or
+    // status text we have no mapping for.
+    //
+    // This used to be reported as PENDING, which the engine counted as a
+    // success: recordSuccess() reset the health counter, so a completely
+    // broken scraper looked healthy indefinitely and HEALTH_ERROR_THRESHOLD
+    // could never fire. Treat it as the failure it is, and never persist it.
+    if (result.status === "UNKNOWN") {
+      await recordFailure(
+        permit.city,
+        permit.state,
+        permit.permit_number,
+        `Scraper could not determine status — ${result.raw_text}`
+      );
+      failed++;
+      continue;
+    }
+
     // Success — reset the consecutive error counter for this city
     recordSuccess(permit.city, permit.state);
     checked++;
+
+    // ── 2b. Stamp last_checked on EVERY successful check ─────────────────
+    // This must happen before the change check below. It previously lived
+    // inside the "status changed" branch, so a check that found no change
+    // wrote nothing at all — leaving last_checked NULL forever and making
+    // "checked, unchanged" indistinguishable from "never checked". That is
+    // the signal used to detect a silently dead pipeline, so it has to be
+    // written unconditionally.
+    if (!DRY_RUN) {
+      const { error: stampError } = await supabaseAdmin
+        .from("permits")
+        .update({ last_checked: new Date().toISOString() })
+        .eq("id", permit.id);
+
+      if (stampError) {
+        log("error", {
+          ...permitLog,
+          message: "Failed to stamp last_checked",
+          error: stampError.message,
+        });
+      }
+    }
 
     // ── 3. Deduplicated change detection ────────────────────────────────
     // Only proceed if the new status differs from BOTH:
@@ -241,11 +283,12 @@ async function runScrapers(): Promise<void> {
     const updatedHistory: StatusHistoryEntry[] = [...history, newEntry];
 
     // ── 4b. Update permit in Supabase ─────────────────────────────────
+    // last_checked is already stamped in step 2b for every successful
+    // check, changed or not — it deliberately isn't repeated here.
     const { error: updateError } = await supabaseAdmin
       .from("permits")
       .update({
         status:         result.status,
-        last_checked:   new Date().toISOString(),
         status_history: updatedHistory,
         scrape_url:     result.scrape_url,
       })

@@ -101,6 +101,12 @@ export abstract class BaseScraper {
   /**
    * Generic status normalizer — covers common portal language.
    * Override mapStatus() in your city scraper for portal-specific strings.
+   *
+   * Returning "UNKNOWN" means the status could not be determined. The engine
+   * treats that as a scrape failure, not a result: it is never persisted, and
+   * it increments the per-city health counter. Never return a plausible-looking
+   * status (e.g. PENDING) as a stand-in for "we don't know" — that is exactly
+   * what let a dead scraper report healthy runs for months.
    */
   protected normalizeStatus(rawText: string): PermitStatus {
     const t = rawText.toUpperCase().trim();

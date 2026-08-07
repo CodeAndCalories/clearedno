@@ -185,7 +185,7 @@ export class SanAntonioTxScraper extends BaseScraper {
           timeout: 30_000,
         });
       } catch (navErr) {
-        return this.pendingFallback(
+        return this.indeterminate(
           permitNumber,
           `Navigation failed: ${navErr instanceof Error ? navErr.message : String(navErr)}`
         );
@@ -214,13 +214,13 @@ export class SanAntonioTxScraper extends BaseScraper {
         }
 
         if (!filled) {
-          return this.pendingFallback(
+          return this.indeterminate(
             permitNumber,
             "Permit number input not found. Check SEL.permitInput for San Antonio portal."
           );
         }
       } catch {
-        return this.pendingFallback(
+        return this.indeterminate(
           permitNumber,
           "Permit number input not found. Check SEL.permitInput for San Antonio portal."
         );
@@ -237,7 +237,7 @@ export class SanAntonioTxScraper extends BaseScraper {
         try {
           await page.keyboard.press("Enter");
         } catch {
-          return this.pendingFallback(
+          return this.indeterminate(
             permitNumber,
             "Search button not found. Check SEL.searchButton for San Antonio portal."
           );
@@ -251,7 +251,7 @@ export class SanAntonioTxScraper extends BaseScraper {
           { timeout: 15_000 }
         );
       } catch {
-        return this.pendingFallback(
+        return this.indeterminate(
           permitNumber,
           "Results container did not appear. Portal may have changed or is blocking access."
         );
@@ -268,7 +268,7 @@ export class SanAntonioTxScraper extends BaseScraper {
           const bodyText = await page.locator("body").innerText({ timeout: 5_000 });
           rawText = extractStatusFromBody(bodyText, permitNumber);
         } catch {
-          return this.pendingFallback(
+          return this.indeterminate(
             permitNumber,
             "Could not extract page text. Portal may be blocking automated access."
           );
@@ -276,7 +276,7 @@ export class SanAntonioTxScraper extends BaseScraper {
       }
 
       if (!rawText || rawText.trim() === "") {
-        return this.pendingFallback(
+        return this.indeterminate(
           permitNumber,
           "Status text not found. Permit may not exist or SEL.statusCell selector is wrong."
         );
@@ -298,13 +298,13 @@ export class SanAntonioTxScraper extends BaseScraper {
   }
 
   // ── Fallback result ────────────────────────────────────────────────────────
-  private pendingFallback(permitNumber: string, reason: string): ScrapeResult {
+  private indeterminate(permitNumber: string, reason: string): ScrapeResult {
     console.error(
       JSON.stringify({
         level: "warn",
         scraper: "San Antonio, TX",
         permit_number: permitNumber,
-        message: "Using PENDING fallback — manual check may be required",
+        message: "Scrape indeterminate — returning UNKNOWN so health tracking counts it as a failure",
         reason,
         portal_url: PORTAL_URL,
         timestamp: new Date().toISOString(),
@@ -312,8 +312,8 @@ export class SanAntonioTxScraper extends BaseScraper {
     );
     return {
       permit_number: permitNumber,
-      status:        "PENDING",
-      raw_text:      "manual check required",
+      status:        "UNKNOWN",
+      raw_text:      reason,
       scrape_url:    PORTAL_URL,
     };
   }

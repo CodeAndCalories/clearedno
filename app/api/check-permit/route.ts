@@ -4,7 +4,13 @@
 // Rate limited: max 5 checks per IP per hour (in-memory counter).
 //
 // Body: { city: string, permitNumber: string }
-// Returns: { status, address?, lastChecked, city }
+// Returns:
+//   200 → { status, rawStatus, address?, lastChecked, city }
+//   404 → { status: "not_found", error, city }   permit absent from city records
+//   503 → { status: "unavailable", message, city }  city integration not live
+//
+// `status` is only ever a mapped value or "UNKNOWN". This route never guesses
+// a status for a permit it could not find or could not classify.
 
 import { NextRequest, NextResponse } from "next/server";
 import { cities, LIVE_CHECKER_CITIES } from "@/lib/cities";
@@ -49,6 +55,7 @@ const STATUS_MAP: Record<string, string> = {
   HOLD: "UNDER_REVIEW", "ON HOLD": "UNDER_REVIEW", INSPECTION: "UNDER_REVIEW",
 
   // Pending
+  PENDING: "PENDING",
   APPLICATION: "PENDING", SUBMITTED: "PENDING", INTAKE: "PENDING",
   "APPLICATION RECEIVED": "PENDING", "IN QUEUE": "PENDING", "IN INTAKE": "PENDING",
   RECEIVED: "PENDING",
@@ -56,19 +63,28 @@ const STATUS_MAP: Record<string, string> = {
   // Rejected
   CANCELLED: "REJECTED", CANCELED: "REJECTED", VOID: "REJECTED", VOIDED: "REJECTED",
   WITHDRAWN: "REJECTED", DENIED: "REJECTED", REVOKED: "REJECTED",
+  REJECTED: "REJECTED",
 
   // Expired
   EXPIRED: "EXPIRED", LAPSED: "EXPIRED",
 };
 
-function normaliseStatus(raw: string): string {
+// Returns null when the city's status text has no mapping. Callers must
+// surface that as UNKNOWN rather than substituting a plausible status —
+// reporting "PENDING" for a status we don't recognise is a guess dressed
+// up as a fact.
+function normaliseStatus(raw: string): string | null {
   const key = raw.trim().toUpperCase();
-  return STATUS_MAP[key] ?? "PENDING";
+  return STATUS_MAP[key] ?? null;
 }
 
 // ── Austin — Open Data API ────────────────────────────────────────────────────
 
-async function checkAustin(permitNumber: string): Promise<{ status: string; address?: string }> {
+type AustinResult =
+  | { found: false }
+  | { found: true; status: string; rawStatus: string; address?: string };
+
+async function checkAustin(permitNumber: string): Promise<AustinResult> {
   const encoded = encodeURIComponent(permitNumber.trim());
   const url     = `https://data.austintexas.gov/resource/3syk-w9eu.json?permit_number=${encoded}&$limit=1`;
 
@@ -81,16 +97,25 @@ async function checkAustin(permitNumber: string): Promise<{ status: string; addr
 
   const rows = await res.json() as Array<Record<string, string>>;
 
+  // No row means the dataset has no such permit. Saying "PENDING" here
+  // invented a status for permit numbers that don't exist at all.
   if (!rows.length) {
-    return { status: "PENDING" };
+    return { found: false };
   }
 
-  const row    = rows[0];
-  const raw    = row.status_current ?? row.status ?? "";
-  const status = normaliseStatus(raw) || "PENDING";
-  const address = [row.work_address, row.work_city, row.work_state].filter(Boolean).join(", ") || undefined;
+  const row       = rows[0];
+  const rawStatus = (row.status_current ?? row.status ?? "").trim();
 
-  return { status, address };
+  // Address fields on dataset 3syk-w9eu are original_address1 / original_city /
+  // original_state. The previously used work_address / work_city / work_state
+  // do not exist on this dataset, so the address was always undefined.
+  const address = [row.original_address1, row.original_city, row.original_state]
+    .filter(Boolean)
+    .join(", ") || undefined;
+
+  const status = (rawStatus && normaliseStatus(rawStatus)) || "UNKNOWN";
+
+  return { found: true, status, rawStatus, address };
 }
 
 // ── City router ───────────────────────────────────────────────────────────────
@@ -163,11 +188,28 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   try {
-    const { status, address } = await checkAustin(permitNumber);
+    const result = await checkAustin(permitNumber);
+
+    // Permit isn't in the city's public dataset. Say so plainly instead of
+    // returning a status we have no basis for.
+    if (!result.found) {
+      const cityName = CITY_LABELS[city].split(",")[0];
+      return NextResponse.json(
+        {
+          status: "not_found",
+          error:
+            `No permit matching "${permitNumber}" was found in ${cityName}'s public records. ` +
+            `Double-check the number, or note that very recent applications can take a few days to appear.`,
+          city: cityName,
+        },
+        { status: 404 }
+      );
+    }
 
     return NextResponse.json({
-      status,
-      address,
+      status:    result.status,
+      rawStatus: result.rawStatus,
+      address:   result.address,
       lastChecked: new Date().toLocaleString("en-US", {
         timeZone:     "America/Chicago",
         dateStyle:    "medium",

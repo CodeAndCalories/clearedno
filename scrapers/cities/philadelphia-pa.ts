@@ -1,7 +1,7 @@
 // Philadelphia, PA — eCLIPSE permit scraper
 //
 // PRIMARY:  Philadelphia eCLIPSE public API (no browser required)
-// FALLBACK: pendingFallback — API is public; no Playwright fallback needed
+// FALLBACK: indeterminate() — API is public; no Playwright fallback needed
 //
 // The eCLIPSE API is a public endpoint — no auth required.
 //
@@ -31,7 +31,7 @@ const CONFIG: ScraperConfig = {
 // Carto SQL API — primary (and only) method
 const API_URL = "https://phl.carto.com/api/v2/sql?q=SELECT+*+FROM+permits+WHERE+permitnumber=";
 
-// Reference URL for fallback logs (no Playwright fallback; used in pendingFallback only)
+// Reference URL for fallback logs (no Playwright fallback; used in indeterminate() only)
 const PORTAL_URL = "https://li.phila.gov/license-inspections/verify";
 
 // ── Status mapping ────────────────────────────────────────────────────────────
@@ -97,12 +97,12 @@ export class PhiladelphiaPaScraper extends BaseScraper {
     permitNumber: string,
     _address: string
   ): Promise<ScrapeResult> {
-    // API is public — call it directly; pendingFallback on failure
+    // API is public — call it directly; indeterminate() on failure
     try {
       const result = await this.scrapeViaApi(permitNumber);
       if (result) return result;
       // null means permit not found in API
-      return this.pendingFallback(
+      return this.indeterminate(
         permitNumber,
         "Permit not found in eCLIPSE API response"
       );
@@ -113,12 +113,12 @@ export class PhiladelphiaPaScraper extends BaseScraper {
           scraper: "Philadelphia, PA",
           method: "api",
           permit_number: permitNumber,
-          message: "eCLIPSE API failed, returning PENDING fallback",
+          message: "eCLIPSE API failed, returning UNKNOWN",
           error: apiErr instanceof Error ? apiErr.message : String(apiErr),
           timestamp: new Date().toISOString(),
         })
       );
-      return this.pendingFallback(
+      return this.indeterminate(
         permitNumber,
         `eCLIPSE API error: ${apiErr instanceof Error ? apiErr.message : String(apiErr)}`
       );
@@ -178,7 +178,7 @@ export class PhiladelphiaPaScraper extends BaseScraper {
     if (!rawText) {
       return {
         permit_number: permitNumber,
-        status:        "PENDING",
+        status:        "UNKNOWN",
         raw_text:      "found in API, status field empty",
         scrape_url:    url,
       };
@@ -208,13 +208,13 @@ export class PhiladelphiaPaScraper extends BaseScraper {
 
   // ── Fallback result ────────────────────────────────────────────────────────
 
-  private pendingFallback(permitNumber: string, reason: string): ScrapeResult {
+  private indeterminate(permitNumber: string, reason: string): ScrapeResult {
     console.error(
       JSON.stringify({
         level: "warn",
         scraper: "Philadelphia, PA",
         permit_number: permitNumber,
-        message: "Using PENDING fallback — manual check may be required",
+        message: "Scrape indeterminate — returning UNKNOWN so health tracking counts it as a failure",
         reason,
         portal_url: PORTAL_URL,
         timestamp: new Date().toISOString(),
@@ -222,8 +222,8 @@ export class PhiladelphiaPaScraper extends BaseScraper {
     );
     return {
       permit_number: permitNumber,
-      status:        "PENDING",
-      raw_text:      "manual check required",
+      status:        "UNKNOWN",
+      raw_text:      reason,
       scrape_url:    PORTAL_URL,
     };
   }

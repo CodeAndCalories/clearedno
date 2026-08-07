@@ -22,6 +22,8 @@ const CITY_LABELS: Record<string, string> = Object.fromEntries(
 
 type Result = {
   status: string;
+  // The city's own wording, shown when we can't map it to one of our statuses.
+  rawStatus?: string;
   address?: string;
   lastChecked: string;
   city: string;
@@ -195,6 +197,11 @@ export function PermitChecker({ defaultCity }: PermitCheckerProps) {
                   >
                     {result.status}
                   </div>
+                  {result.status === "UNKNOWN" && result.rawStatus && (
+                    <div className="mt-1 text-[11px] text-[#F5F0E8]/50 font-mono">
+                      City reports: &ldquo;{result.rawStatus}&rdquo;
+                    </div>
+                  )}
                 </div>
                 {result.address && (
                   <div className="text-right">
