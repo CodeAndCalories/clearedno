@@ -22,8 +22,15 @@ const PROTECTED_PREFIXES = ["/dashboard"];
 
 // Routes that require a valid session → redirect to /leads/landing
 const LEADS_PREFIX = "/leads";
-// Public paths that must NOT be protected (avoids infinite redirect loop)
-const LEADS_PUBLIC_PREFIXES = ["/leads/landing", "/leads/roofing"];
+// Public paths that must NOT be protected (avoids infinite redirect loop).
+// /leads/roi-calculator is a free marketing tool like /tools/permit-fee-calculator
+// — it needs no auth, and gating it made the page unindexable (Googlebot got a
+// redirect to /leads/landing despite the URL being in the sitemap).
+const LEADS_PUBLIC_PREFIXES = [
+  "/leads/landing",
+  "/leads/roofing",
+  "/leads/roi-calculator",
+];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -108,8 +115,9 @@ export const config = {
     // /contractors, city pages, static assets) is excluded so public traffic
     // never triggers a Supabase auth call.
     //
-    // Note: /leads/landing and /leads/roofing also match here, but they are
-    // explicitly allowed through inside the handler (LEADS_PUBLIC_PREFIXES).
+    // Note: /leads/landing, /leads/roofing and /leads/roi-calculator also match
+    // here, but they are explicitly allowed through inside the handler
+    // (LEADS_PUBLIC_PREFIXES).
     "/dashboard/:path*",
     "/leads/:path*",
     "/login",
