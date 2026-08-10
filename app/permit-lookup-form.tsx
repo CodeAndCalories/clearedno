@@ -126,8 +126,13 @@ export default function PermitLookupForm() {
         Look Up Permit Info →
       </button>
 
+      {/* "permit data for" matters: this count is lookup coverage, and it sits
+          directly above the tracking CTA, where a bare "11 cities" reads as a
+          promise that we track all 11. Tracking is the smaller liveCheckerCities
+          set, named in that CTA. */}
       <p className="mt-4 text-[10px] text-[#F5F0E8]/30 tracking-wider text-center">
-        No signup required · {CITIES.length} cities · 7 permit types
+        No signup required · permit data for {CITIES.length} cities ·{" "}
+        {PROJECT_TYPES.length} permit types
       </p>
     </form>
   );

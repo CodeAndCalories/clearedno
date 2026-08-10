@@ -2,18 +2,17 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Image from "next/image";
 import PermitLookupForm from "./permit-lookup-form";
-import { liveCityList } from "@/lib/cities";
+import { cities, liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Check Any Building Permit Status — Free Lookup Tool | ClearedNo",
-  description: `Look up building permit approval times, fees, and requirements for any major US city — free, no signup. Live permit status tracking in ${liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.`,
+  description: `Look up building permit approval times, fees, and requirements across ${cities.length} US cities — free, no signup. Live permit status tracking in ${liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.`,
   alternates: {
     canonical: "https://www.clearedno.com",
   },
   openGraph: {
     title: "Check Any Building Permit Status — Free",
-    description:
-      "Look up permit approval times, fees, and requirements for any major US city. No signup required.",
+    description: `Look up permit approval times, fees, and requirements across ${cities.length} US cities. No signup required.`,
     url: "https://www.clearedno.com",
     type: "website",
     images: [{ url: "/clearedno-icon.png", width: 512, height: 512, alt: "ClearedNo" }],
@@ -59,8 +58,8 @@ export default function HomePage() {
             Permit Status — <span className="text-[#FF6B00]">Free</span>
           </h1>
           <p className="text-sm text-[#F5F0E8]/50 max-w-xl mx-auto leading-relaxed mb-12">
-            Look up permit approval times, fees, and requirements for any major
-            US city. No signup required.
+            Look up permit approval times, fees, and requirements across{" "}
+            {cities.length} US cities. No signup required.
           </p>
 
           <PermitLookupForm />
@@ -81,9 +80,16 @@ export default function HomePage() {
             <h2 className="font-heading text-2xl sm:text-3xl tracking-widest text-[#F5F0E8] uppercase mb-3">
               Tracking a permit you already pulled?
             </h2>
-            <p className="text-sm text-[#F5F0E8]/50 leading-relaxed max-w-md mx-auto mb-7">
+            <p className="text-sm text-[#F5F0E8]/50 leading-relaxed max-w-md mx-auto mb-3">
               Get an email the second your permit status changes. Stop checking
               city portals every morning.
+            </p>
+            {/* Names the tracked cities before checkout, not after: automatic
+                tracking covers fewer cities than the lookup tool above. Derived
+                from liveCheckerCities so it can't drift from what we monitor. */}
+            <p className="text-[10px] text-[#F5F0E8]/40 tracking-wider leading-relaxed max-w-md mx-auto mb-7">
+              Automatic tracking covers{" "}
+              {liveCityList({ separator: ", ", conjunction: "and", format: "abbr" })}.
             </p>
             <Link
               href="/permits/landing"
