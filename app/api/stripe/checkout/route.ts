@@ -49,6 +49,9 @@ export async function POST(req: NextRequest) {
     mode: "subscription",
     payment_method_types: ["card"],
     line_items: [{ price: PRICE_ID, quantity: 1 }],
+    // Outreach emails advertise FOUNDING49 — without this the code cannot be
+    // entered here, only in the leads/account flows.
+    allow_promotion_codes: true,
     success_url: `${baseUrl}/dashboard?checkout=success`,
     cancel_url:  `${baseUrl}/dashboard`,
     payment_method_collection: "always",

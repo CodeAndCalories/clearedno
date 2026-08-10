@@ -27,6 +27,9 @@ function mapStatus(stripeStatus: Stripe.Subscription.Status): string {
   return map[stripeStatus] ?? "canceled";
 }
 
+/** Founding-member discount, identified by coupon name / promo code (not coupon id). */
+const FOUNDING_CODE = "FOUNDING49";
+
 /** Returns true when a subscription's price is the roofing leads product. */
 function isLeadsSubscription(subscription: Stripe.Subscription): boolean {
   const priceId = subscription.items.data[0]?.price.id;
@@ -101,21 +104,62 @@ export async function POST(req: NextRequest) {
 
       // ── ClearedNo permit-checker checkout (existing logic) ────────────────
 
-      // Detect founding checkout: session had FOUNDING49 coupon applied
+      // Detect founding checkout: session had the FOUNDING49 discount applied.
+      // The live coupon was created in the dashboard, so "FOUNDING49" is its
+      // *name* (id is auto-generated) — match on name and promo code too, not
+      // just id, or founding signups get recorded as regular ones.
       const isFoundingCheckout = (session.total_details?.breakdown?.discounts ?? []).some(
-        (d) => (d.discount as { coupon?: { id?: string } })?.coupon?.id === "FOUNDING49"
+        (d) => {
+          const discount = d.discount as {
+            coupon?: { id?: string; name?: string | null };
+            promotion_code?: string | { code?: string } | null;
+          };
+          const promo = discount?.promotion_code;
+          const promoCode = typeof promo === "string" ? undefined : promo?.code;
+          return (
+            discount?.coupon?.id === FOUNDING_CODE ||
+            discount?.coupon?.name === FOUNDING_CODE ||
+            promoCode === FOUNDING_CODE
+          );
+        }
       );
 
       // Persist customer + subscription state (handles race with subscription.created)
-      await supabaseAdmin
+      const { error: stateError } = await supabaseAdmin
         .from("profiles")
         .update({
           stripe_customer_id:     session.customer as string,
           stripe_subscription_id: subscription.id,
           subscription_status:    mapStatus(subscription.status),
-          ...(isFoundingCheckout ? { plan: "founding" } : {}),
         })
         .eq("user_id", userId);
+
+      if (stateError) {
+        // Loud: the customer has paid but we failed to record it.
+        console.error("[stripe/webhook] Failed to persist subscription state", {
+          userId,
+          subscriptionId: subscription.id,
+          error: stateError.message,
+        });
+      }
+
+      // The founding flag is written separately and best-effort: `plan` is a
+      // newer column, and a failure here must never discard the billing state
+      // above (PostgREST rejects the whole payload when one column is missing).
+      if (isFoundingCheckout) {
+        const { error: planError } = await supabaseAdmin
+          .from("profiles")
+          .update({ plan: "founding" })
+          .eq("user_id", userId);
+
+        if (planError) {
+          console.error("[stripe/webhook] Failed to set plan='founding'", {
+            userId,
+            error: planError.message,
+            hint: "Run migrations/011_profiles_plan.sql if the column is missing.",
+          });
+        }
+      }
 
       // Send welcome email — fetch user's email from auth.users
       const { data: userData } = await supabaseAdmin.auth.admin.getUserById(userId);

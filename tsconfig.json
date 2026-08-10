@@ -1,4 +1,11 @@
 {
+  "//": "ts-node runs CommonJS (used by scripts/*.ts); Next.js itself uses the compilerOptions below.",
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs",
+      "moduleResolution": "node"
+    }
+  },
   "compilerOptions": {
     "lib": [
       "dom",
