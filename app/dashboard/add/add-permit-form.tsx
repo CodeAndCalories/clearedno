@@ -61,6 +61,10 @@ export default function AddPermitForm({
   const [waitlistError, setWaitlistError]     = useState<string | null>(null);
   const [waitlistLoading, setWaitlistLoading] = useState(false);
 
+  // Slot purchase (one-time $9.99)
+  const [buyingSlot, setBuyingSlot] = useState(false);
+  const [slotError, setSlotError]   = useState<string | null>(null);
+
   const selectedCity = CITY_OPTIONS.find((c) => c.slug === citySlug);
   const cityLive     = selectedCity?.live ?? false;
 
@@ -88,6 +92,34 @@ export default function AddPermitForm({
 
     router.push("/dashboard");
     router.refresh();
+  }
+
+  async function handleBuySlot() {
+    setSlotError(null);
+    setBuyingSlot(true);
+
+    try {
+      const res = await fetch("/api/stripe/checkout", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ product: "permit_slot" }),
+      });
+
+      const data = await res.json().catch(() => ({}));
+
+      if (!res.ok || !data.url) {
+        setSlotError(data.error ?? "Couldn't start checkout. Please try again.");
+        setBuyingSlot(false);
+        return;
+      }
+
+      // Leaving the app for Stripe — deliberately not clearing the loading
+      // state, so the button stays disabled through the redirect.
+      window.location.href = data.url;
+    } catch {
+      setSlotError("Network error. Please try again.");
+      setBuyingSlot(false);
+    }
   }
 
   async function handleWaitlist(e: React.FormEvent) {
@@ -238,14 +270,20 @@ export default function AddPermitForm({
               </p>
             </div>
 
+            {slotError && (
+              <div className="mt-6 border border-[#DC2626]/40 bg-[#DC2626]/10 px-4 py-3">
+                <p className="text-xs text-[#DC2626] font-mono">{slotError}</p>
+              </div>
+            )}
+
             <div className="mt-6 flex flex-col sm:flex-row gap-4">
               <button
                 type="button"
-                disabled
-                title="Slot purchases aren't live yet"
-                className="flex-1 w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase py-4 disabled:opacity-40 disabled:cursor-not-allowed"
+                onClick={handleBuySlot}
+                disabled={buyingSlot}
+                className="flex-1 w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add a Slot — $9.99
+                {buyingSlot ? "Opening Checkout..." : "Add a Slot — $9.99"}
               </button>
               <Link
                 href="/dashboard"
@@ -255,7 +293,8 @@ export default function AddPermitForm({
               </Link>
             </div>
             <p className="mt-3 text-[10px] text-[#F5F0E8]/30 font-mono">
-              Slot purchases open shortly.
+              One-time payment. The slot is yours permanently — it survives
+              cancelling a subscription.
             </p>
           </div>
         ) : (

@@ -11,7 +11,11 @@ import { createClient } from "@/lib/supabase/server";
 import { getEntitlement } from "@/lib/entitlements";
 import AddPermitForm, { type EntitlementView } from "./add-permit-form";
 
-export default async function AddPermitPage() {
+export default async function AddPermitPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const supabase = await createClient();
 
   const {
@@ -20,7 +24,18 @@ export default async function AddPermitPage() {
 
   if (!user) redirect("/login");
 
-  const entitlement = await getEntitlement(user.id);
+  const [params, entitlement] = await Promise.all([
+    searchParams,
+    getEntitlement(user.id),
+  ]);
+
+  // Stripe sends the buyer back here after a slot purchase. The page is
+  // dynamic, so this render already reflects any slot the webhook has
+  // committed — but the redirect and the webhook are independent races, and
+  // the buyer can arrive first. Showing "limit reached" to someone who just
+  // paid is the one outcome worth handling explicitly.
+  const justPurchased = params.slot === "success";
+  const creditPending = justPurchased && !entitlement.canAdd;
 
   // Infinity does not survive serialization into a Client Component, so
   // unlimited crosses the boundary as null.
@@ -59,6 +74,30 @@ export default async function AddPermitPage() {
             run. You&apos;ll get an email when the status changes.
           </p>
         </div>
+
+        {/* ── Post-purchase confirmation ───────────────────────────────── */}
+        {justPurchased && (
+          <div
+            className={`mb-6 border px-5 py-4 ${
+              creditPending
+                ? "border-[#EAB308]/40 bg-[#EAB308]/5"
+                : "border-[#16A34A]/40 bg-[#16A34A]/10"
+            }`}
+          >
+            <div
+              className={`text-[10px] tracking-[0.25em] uppercase font-mono mb-1 ${
+                creditPending ? "text-[#EAB308]" : "text-[#16A34A]"
+              }`}
+            >
+              {creditPending ? "Payment received" : "Slot added"}
+            </div>
+            <p className="text-sm text-[#F5F0E8]/70 leading-relaxed">
+              {creditPending
+                ? "Your payment went through and the slot is being credited — this usually takes a second. Refresh the page if it doesn't appear."
+                : "Your permit slot is ready. Add the permit below."}
+            </p>
+          </div>
+        )}
 
         {/* ── Entitlement strip ────────────────────────────────────────── */}
         <EntitlementStrip entitlement={view} />

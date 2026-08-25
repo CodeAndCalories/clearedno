@@ -11,6 +11,7 @@
 // Resources:
 //   permit_alerts_monthly  $79/mo   → STRIPE_PRICE_ID
 //   roofing_leads_monthly  $300/mo  → STRIPE_LEADS_PRICE_ID
+//   permit_slot_onetime    $9.99    → STRIPE_SLOT_PRICE_ID  (ONE-TIME, not recurring)
 //   FOUNDING49 coupon      $30 off once (first month $49) + matching promo code
 //                                   — the webhook matches coupon.id === "FOUNDING49"
 // ─────────────────────────────────────────────────────────
@@ -24,6 +25,16 @@ const APPLY = process.argv.includes("--apply");
 
 const FOUNDING_COUPON_ID = "FOUNDING49";
 
+/**
+ * How a price is billed.
+ *
+ * Every helper below used to assume `recurring.interval === "month"`, which
+ * silently made a one-time price unmatchable: findPriceByShape would never
+ * adopt it, and the creation path would have attached a monthly recurrence to
+ * it. The catalog now carries two shapes, so the shape has to be explicit.
+ */
+type PlanBilling = "monthly" | "one_time";
+
 type PlanSpec = {
   sku: string;
   lookupKey: string;
@@ -31,6 +42,7 @@ type PlanSpec = {
   productName: string;
   productDescription: string;
   unitAmount: number;
+  billing: PlanBilling;
 };
 
 const PLANS: PlanSpec[] = [
@@ -42,6 +54,7 @@ const PLANS: PlanSpec[] = [
     productDescription:
       "Automated permit status tracking with email and push alerts. $79/month, first 30 days free.",
     unitAmount: 7900,
+    billing: "monthly",
   },
   {
     sku: "roofing_leads",
@@ -51,12 +64,45 @@ const PLANS: PlanSpec[] = [
     productDescription:
       "Weekly storm-damage roofing leads scored by severity, unlimited downloads. Flat $300/month.",
     unitAmount: 30000,
+    billing: "monthly",
+  },
+  {
+    sku: "permit_slot",
+    lookupKey: "permit_slot_onetime",
+    envVar: "STRIPE_SLOT_PRICE_ID",
+    productName: "ClearedNo — Permit Slot",
+    productDescription:
+      "One additional tracked permit slot. One-time purchase, kept permanently.",
+    unitAmount: 999,
+    billing: "one_time",
   },
 ];
 
 // ── helpers ──────────────────────────────────────────────
 
 const dollars = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+/** "$79.00/month" or "$9.99 one-time" — used in every log line and warning. */
+function priceLabel(plan: PlanSpec): string {
+  return plan.billing === "monthly"
+    ? `${dollars(plan.unitAmount)}/month`
+    : `${dollars(plan.unitAmount)} one-time`;
+}
+
+/** How an existing Stripe price reads back, for comparison against a spec. */
+function describePrice(price: Stripe.Price): string {
+  const amount = dollars(price.unit_amount ?? 0);
+  return price.recurring
+    ? `${amount}/${price.recurring.interval}`
+    : `${amount} one-time`;
+}
+
+/** True when a live price is billed the way the spec expects. */
+function matchesBilling(price: Stripe.Price, plan: PlanSpec): boolean {
+  return plan.billing === "monthly"
+    ? price.recurring?.interval === "month"
+    : price.recurring == null;
+}
 
 function log(kind: "ok" | "add" | "warn" | "info", message: string) {
   const tag = { ok: "  ok  ", add: " add  ", warn: " warn ", info: "      " }[kind];
@@ -110,7 +156,7 @@ async function findPriceByShape(stripe: Stripe, plan: PlanSpec): Promise<Stripe.
   for await (const price of stripe.prices.list({ active: true, limit: 100 })) {
     if (
       price.unit_amount === plan.unitAmount &&
-      price.recurring?.interval === "month" &&
+      matchesBilling(price, plan) &&
       price.currency === "usd"
     ) {
       matches.push(price);
@@ -143,10 +189,9 @@ async function inspectConfiguredPrice(
   }
 
   const amount = price.unit_amount ?? 0;
-  const interval = price.recurring?.interval ?? "one-time";
   log(
     "ok",
-    `${plan.envVar} → ${price.id} (${dollars(amount)} / ${interval}${price.active ? "" : ", INACTIVE"})`
+    `${plan.envVar} → ${price.id} (${describePrice(price)}${price.active ? "" : ", INACTIVE"})`
   );
 
   if (amount !== plan.unitAmount) {
@@ -155,8 +200,11 @@ async function inspectConfiguredPrice(
         `Left untouched — changing a live price is a pricing decision, not a setup step.`
     );
   }
-  if (price.recurring?.interval !== "month") {
-    warnings.push(`${plan.envVar} is not billed monthly (interval: ${interval}).`);
+  if (!matchesBilling(price, plan)) {
+    warnings.push(
+      `${plan.envVar} is ${describePrice(price)} but should be ${priceLabel(plan)}. ` +
+        `A one-time price used in subscription mode (or the reverse) fails at checkout.`
+    );
   }
   if (!price.active) {
     warnings.push(`${plan.envVar} is archived — checkout with it will fail.`);
@@ -180,7 +228,7 @@ async function ensurePlan(stripe: Stripe, plan: PlanSpec) {
     log(
       "ok",
       `price with lookup_key "${plan.lookupKey}" already exists → ${existingPrice.id} ` +
-        `(${dollars(existingPrice.unit_amount ?? 0)} / ${existingPrice.recurring?.interval})`
+        `(${describePrice(existingPrice)})`
     );
     resolvedEnv[plan.envVar] = existingPrice.id;
     return;
@@ -195,7 +243,7 @@ async function ensurePlan(stripe: Stripe, plan: PlanSpec) {
         : (price.product as Stripe.Product).name;
     log(
       "ok",
-      `found existing ${dollars(plan.unitAmount)}/month price → ${price.id} (product "${productName}")`
+      `found existing ${priceLabel(plan)} price → ${price.id} (product "${productName}")`
     );
     log("info", `created outside this script — adopting it instead of creating a duplicate`);
     resolvedEnv[plan.envVar] = price.id;
@@ -211,11 +259,11 @@ async function ensurePlan(stripe: Stripe, plan: PlanSpec) {
   }
   if (shapeMatches.length > 1) {
     warnings.push(
-      `Found ${shapeMatches.length} active ${dollars(plan.unitAmount)}/month prices ` +
+      `Found ${shapeMatches.length} active ${priceLabel(plan)} prices ` +
         `(${shapeMatches.map((p) => p.id).join(", ")}). Too ambiguous to adopt — ` +
         `set ${plan.envVar} manually to the one production bills against.`
     );
-    log("warn", `${shapeMatches.length} candidate prices at ${dollars(plan.unitAmount)}/month — refusing to guess`);
+    log("warn", `${shapeMatches.length} candidate prices at ${priceLabel(plan)} — refusing to guess`);
     return;
   }
 
@@ -236,20 +284,24 @@ async function ensurePlan(stripe: Stripe, plan: PlanSpec) {
   if (!APPLY) {
     log(
       "add",
-      `would create price ${dollars(plan.unitAmount)}/month (lookup_key "${plan.lookupKey}") → ${plan.envVar}`
+      `would create price ${priceLabel(plan)} (lookup_key "${plan.lookupKey}") → ${plan.envVar}`
     );
     return;
   }
 
+  // Omitting `recurring` entirely is what makes a price one-time; passing it
+  // as undefined is not the same thing to the Stripe SDK's typings.
   const price = await stripe.prices.create({
     product: product!.id,
     currency: "usd",
     unit_amount: plan.unitAmount,
-    recurring: { interval: "month" },
+    ...(plan.billing === "monthly"
+      ? { recurring: { interval: "month" as const } }
+      : {}),
     lookup_key: plan.lookupKey,
     metadata: { clearedno_sku: plan.sku },
   });
-  log("add", `created price ${price.id} (${dollars(plan.unitAmount)}/month) → ${plan.envVar}`);
+  log("add", `created price ${price.id} (${priceLabel(plan)}) → ${plan.envVar}`);
   resolvedEnv[plan.envVar] = price.id;
 }
 

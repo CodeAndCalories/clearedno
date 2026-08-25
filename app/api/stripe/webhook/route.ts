@@ -58,6 +58,125 @@ function stripeTrialEndsAt(subscription: Stripe.Subscription): string | null {
 }
 
 // ---------------------------------------------------------------------------
+// One-time purchases (mode: "payment")
+// ---------------------------------------------------------------------------
+
+/** metadata.sku written by app/api/stripe/checkout/route.ts for a slot purchase. */
+const SLOT_SKU = "permit_slot";
+
+/** Postgres unique_violation. A replayed Stripe event lands here, not in error. */
+const PG_UNIQUE_VIOLATION = "23505";
+
+type SlotOutcome =
+  | "recorded"   // credited
+  | "duplicate"  // already credited; replayed event
+  | "ignored"    // not ours, or unattributable — retrying cannot help
+  | "retry";     // transient failure; ask Stripe to send it again
+
+/**
+ * Credits a purchased permit slot.
+ *
+ * Idempotency comes from the unique constraint on stripe_checkout_session_id:
+ * Stripe retries the same event on any non-2xx, and both
+ * checkout.session.completed and checkout.session.async_payment_succeeded
+ * carry the same session id. A second insert conflicts instead of granting a
+ * second slot, and that conflict is success, not failure.
+ *
+ * The product is identified by metadata.sku rather than by price id, matching
+ * how entitlement is decided everywhere else: a price is a number that will
+ * change, not an identity. There is also no Subscription object on this path,
+ * so isLeadsSubscription() cannot be consulted at all.
+ */
+async function recordSlotPurchase(
+  session: Stripe.Checkout.Session
+): Promise<SlotOutcome> {
+  if (session.metadata?.sku !== SLOT_SKU) {
+    console.warn("[stripe/webhook] One-time payment with unrecognised sku — ignoring", {
+      sessionId: session.id,
+      sku:       session.metadata?.sku ?? null,
+    });
+    return "ignored";
+  }
+
+  // Only credit money we actually have. Card payments settle before this event
+  // fires, so payment_status is "paid"; a delayed-notification method would
+  // arrive "unpaid" and settle later via checkout.session.async_payment_
+  // succeeded, which this endpoint does not handle. Card-only checkout means
+  // that cannot happen today — this guard exists so that widening
+  // payment_method_types fails loudly rather than giving product away.
+  if (session.payment_status === "unpaid") {
+    console.error("[stripe/webhook] Slot session is unpaid — not crediting", {
+      sessionId:     session.id,
+      paymentStatus: session.payment_status,
+      hint: "Handle checkout.session.async_payment_succeeded before enabling delayed payment methods.",
+    });
+    return "ignored";
+  }
+
+  const userId =
+    session.metadata?.supabase_user_id ?? session.client_reference_id ?? null;
+
+  if (!userId) {
+    // Someone paid and we cannot tell who. Retrying will not add metadata, so
+    // this is escalation-by-logging: it needs a human and a manual credit.
+    console.error("[stripe/webhook] PAID SLOT WITH NO USER ID — manual credit required", {
+      sessionId:     session.id,
+      paymentIntent: session.payment_intent,
+      customer:      session.customer,
+      customerEmail: session.customer_details?.email ?? null,
+      amountTotal:   session.amount_total,
+    });
+    return "ignored";
+  }
+
+  // Quantity is attacker-adjacent (it round-trips through Stripe metadata we
+  // set), so it is re-validated rather than trusted: anything that is not a
+  // positive integer falls back to one slot.
+  const parsed = Number.parseInt(session.metadata?.quantity ?? "1", 10);
+  const quantity = Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
+
+  const paymentIntentId =
+    typeof session.payment_intent === "string"
+      ? session.payment_intent
+      : session.payment_intent?.id ?? null;
+
+  const { error } = await supabaseAdmin.from("permit_slot_purchases").insert({
+    user_id:                    userId,
+    stripe_checkout_session_id: session.id,
+    stripe_payment_intent_id:   paymentIntentId,
+    quantity,
+  });
+
+  if (error) {
+    if (error.code === PG_UNIQUE_VIOLATION) {
+      console.log("[stripe/webhook] Slot already credited for this session — replay", {
+        sessionId: session.id,
+        userId,
+      });
+      return "duplicate";
+    }
+
+    // The customer has paid and holds no slot. Returning non-2xx makes Stripe
+    // redeliver, which the unique constraint makes safe.
+    console.error("[stripe/webhook] Failed to record slot purchase — will ask Stripe to retry", {
+      sessionId: session.id,
+      userId,
+      error:     error.message,
+      code:      error.code,
+      hint:      "Run migrations/015_permit_slot_purchases.sql if the table is missing.",
+    });
+    return "retry";
+  }
+
+  console.log("[stripe/webhook] Slot purchase recorded", {
+    sessionId: session.id,
+    userId,
+    quantity,
+  });
+  return "recorded";
+}
+
+// ---------------------------------------------------------------------------
 // ClearedNo permit-checker subscription handler (unchanged)
 // ---------------------------------------------------------------------------
 
@@ -101,6 +220,23 @@ export async function POST(req: NextRequest) {
     // ── Checkout completed: first-time subscription created ──────────────────
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
+
+      // ── One-time purchases ────────────────────────────────────────────────
+      // This must come before the guard below. A mode:"payment" session has
+      // subscription === null by definition, and customer === null unless one
+      // was passed explicitly — so the guard drops these events entirely, which
+      // is how a paid slot would vanish without trace.
+      if (session.mode === "payment") {
+        const outcome = await recordSlotPurchase(session);
+
+        if (outcome === "retry") {
+          return NextResponse.json(
+            { error: "Failed to record purchase" },
+            { status: 500 }
+          );
+        }
+        break;
+      }
 
       // Only handle subscription-mode checkouts
       if (!session.subscription || !session.customer) break;
