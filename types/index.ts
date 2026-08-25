@@ -12,7 +12,15 @@ export type PermitStatus =
   | "EXPIRED"
   | "UNKNOWN";
 
-export type SubscriptionStatus = "trialing" | "active" | "past_due" | "canceled";
+// "free" is added by migration 016: signed up, not paying, using the free
+// allowance. Distinct from "trialing", which means a live Stripe trial and
+// grants unlimited tracking.
+export type SubscriptionStatus =
+  | "free"
+  | "trialing"
+  | "active"
+  | "past_due"
+  | "canceled";
 
 export interface Profile {
   id: string;
