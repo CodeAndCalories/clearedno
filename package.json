@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "build:scraper": "tsc --project tsconfig.scripts.json",
+    "typecheck:scrapers": "tsc --project tsconfig.scripts.json --noEmit --strict",
     "outreach": "ts-node --project tsconfig.scripts.json outreach/index.ts",
     "poll:replies": "node dist/scraper/outreach/gmail-poll.js",
     "check:replies": "node dist/scraper/outreach/check-replies.js",

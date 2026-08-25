@@ -36,6 +36,27 @@ function isLeadsSubscription(subscription: Stripe.Subscription): boolean {
   return !!priceId && priceId === process.env.STRIPE_LEADS_PRICE_ID;
 }
 
+/**
+ * Stripe's trial_end (unix seconds) as an ISO timestamp, or null when the
+ * subscription has no trial.
+ *
+ * profiles.trial_ends_at defaults to signup + 14 days, but checkout creates a
+ * 30-day Stripe trial — and nothing used to reconcile the two. A subscriber
+ * was therefore bounced to /trial-expired on day 15 while Stripe still had 15
+ * days left on a trial it had not charged for. Stripe is the party that
+ * actually decides when the trial ends and when the first invoice is cut, so
+ * it is the source of truth; this mirrors its answer into the column every
+ * time we hear about the subscription.
+ *
+ * Writing null when Stripe reports no trial is deliberate: a stale future
+ * timestamp on a fully-paid subscription is exactly the drift being fixed.
+ */
+function stripeTrialEndsAt(subscription: Stripe.Subscription): string | null {
+  return subscription.trial_end
+    ? new Date(subscription.trial_end * 1000).toISOString()
+    : null;
+}
+
 // ---------------------------------------------------------------------------
 // ClearedNo permit-checker subscription handler (unchanged)
 // ---------------------------------------------------------------------------
@@ -49,6 +70,7 @@ async function updateSubscription(subscription: Stripe.Subscription) {
     .update({
       subscription_status: mapStatus(subscription.status),
       stripe_subscription_id: subscription.id,
+      trial_ends_at: stripeTrialEndsAt(subscription),
     })
     .eq("user_id", userId);
 }
@@ -131,6 +153,10 @@ export async function POST(req: NextRequest) {
           stripe_customer_id:     session.customer as string,
           stripe_subscription_id: subscription.id,
           subscription_status:    mapStatus(subscription.status),
+          // Synced here as well as in updateSubscription(): checkout.session.completed
+          // and customer.subscription.created arrive in no guaranteed order, and the
+          // dashboard reads this column on the very next page load.
+          trial_ends_at:          stripeTrialEndsAt(subscription),
         })
         .eq("user_id", userId);
 
