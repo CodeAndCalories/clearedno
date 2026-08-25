@@ -22,7 +22,12 @@ dotenv.config({ path: ".env.local" });
 
 import { supabaseAdmin } from "../lib/supabase/admin";
 import { sendPermitStatusAlert, sendAdminAlert } from "../lib/email";
-import type { Permit, PermitStatus, StatusHistoryEntry } from "../types";
+import type {
+  Permit,
+  PermitStatus,
+  StatusHistoryEntry,
+  SubscriptionStatus,
+} from "../types";
 
 // ── City scraper registry ─────────────────────────────────────────────────────
 // Add new city scrapers here. Order doesn't matter.
@@ -66,6 +71,21 @@ const HEALTH_ERROR_THRESHOLD = 3;
 
 // Statuses we consider "terminal" — no point re-checking these permits.
 const TERMINAL_STATUSES: PermitStatus[] = ["CLEARED", "REJECTED", "EXPIRED"];
+
+// Subscription statuses that entitle a user to permit tracking.
+//
+// Deliberately keyed on subscription STATUS, never on a price ID. Any active
+// permit-side subscription counts, whatever it costs — filtering on a specific
+// price here would silently stop tracking for every subscriber the moment a
+// new tier is introduced alongside the existing one.
+//
+// 'past_due' is excluded: Stripe has already failed to collect, and the
+// dashboard sends those users to /reactivate. 'canceled' likewise.
+//
+// Typed as a Set of SubscriptionStatus so an invalid literal fails the build,
+// but widened to ReadonlySet<string> so .has() takes the raw column value.
+const ENTITLED_SUBSCRIPTION_STATUSES: ReadonlySet<string> =
+  new Set<SubscriptionStatus>(["active", "trialing"]);
 
 // ── Structured logger ──────────────────────────────────────────────────────
 // All logs are newline-delimited JSON so they can be ingested by any log
@@ -158,13 +178,82 @@ async function runScrapers(): Promise<void> {
 
   const allPermits = (permits ?? []) as Permit[];
 
-  log("info", { message: `Processing ${allPermits.length} active permits` });
+  // ── Entitlement filter ─────────────────────────────────────────────────
+  // The scraper IS the product: checking a permit and emailing the alert is
+  // the thing people pay for. This working set used to be every active permit
+  // with no reference to billing, so canceled users kept receiving checks and
+  // alerts indefinitely — while /reactivate told them monitoring had stopped.
+  //
+  // permits.user_id and profiles.user_id both reference auth.users(id), but
+  // there is no foreign key between the two tables, so PostgREST cannot embed
+  // one in the other. Two queries and a Map are the join.
+  const permitOwnerIds = [...new Set(allPermits.map((p) => p.user_id))];
+  const ownerStatusById = new Map<string, string>();
+
+  if (permitOwnerIds.length > 0) {
+    const { data: ownerProfiles, error: profilesError } = await supabaseAdmin
+      .from("profiles")
+      .select("user_id, subscription_status")
+      .in("user_id", permitOwnerIds);
+
+    // Fail closed and loudly, matching the permit fetch above. Continuing
+    // without entitlement data would mean choosing between silently starving
+    // paying customers of alerts and silently restoring the bug this filter
+    // exists to fix. Neither belongs in a default path.
+    if (profilesError) {
+      log("error", {
+        message: "Failed to fetch owner profiles — cannot determine entitlement",
+        error: profilesError.message,
+      });
+      process.exit(1);
+    }
+
+    for (const row of ownerProfiles ?? []) {
+      ownerStatusById.set(
+        row.user_id as string,
+        row.subscription_status as string
+      );
+    }
+  }
+
+  // A permit whose owner has no profile row is not entitled. The signup
+  // trigger creates one for every user, so its absence is a data problem
+  // rather than a billing state — logged as such instead of being folded in
+  // with ordinary cancellations.
+  const entitledPermits: Permit[] = [];
+  let skippedUnentitled = 0;
+
+  for (const p of allPermits) {
+    const ownerStatus = ownerStatusById.get(p.user_id);
+
+    if (ownerStatus !== undefined && ENTITLED_SUBSCRIPTION_STATUSES.has(ownerStatus)) {
+      entitledPermits.push(p);
+      continue;
+    }
+
+    skippedUnentitled++;
+    log("info", {
+      permit_number: p.permit_number,
+      city: p.city,
+      state: p.state,
+      old_status: p.status,
+      owner_subscription_status: ownerStatus ?? "none (no profile row)",
+      message: "Owner not entitled to tracking — skipping",
+    });
+  }
+
+  log("info", {
+    message:
+      `Processing ${entitledPermits.length} of ${allPermits.length} active permits`,
+    entitled: entitledPermits.length,
+    skipped_unentitled: skippedUnentitled,
+  });
 
   // ── Stats for end-of-run summary ─────────────────────────────────────────
   let checked = 0, changed = 0, skipped = 0, failed = 0;
 
   // ── Process each permit ───────────────────────────────────────────────────
-  for (const permit of allPermits) {
+  for (const permit of entitledPermits) {
     const permitLog = {
       permit_number: permit.permit_number,
       city: permit.city,
@@ -387,10 +476,14 @@ async function runScrapers(): Promise<void> {
   log("info", {
     message: "Scraper run complete",
     stats: {
-      total:   allPermits.length,
+      total:    allPermits.length,
+      entitled: entitledPermits.length,
       checked,
       changed,
+      // `skipped` is city-not-supported; `skipped_unentitled` is billing.
+      // Kept separate so a spike in one is never mistaken for the other.
       skipped,
+      skipped_unentitled: skippedUnentitled,
       failed,
       duration_ms: durationMs,
     },
