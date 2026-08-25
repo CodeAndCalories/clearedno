@@ -12,6 +12,7 @@ import { PermitCard } from "./permit-card";
 import { ReferralSection } from "./referral-section";
 import { PushToggle } from "./push-toggle";
 import { DigestToggle } from "./digest-toggle";
+import CheckoutButton from "../checkout-button";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -315,14 +316,12 @@ export default async function DashboardPage() {
                 . After that, monitoring pauses until you subscribe.
               </div>
             </div>
-            <form action="/api/stripe/checkout" method="post" className="flex-shrink-0">
-              <button
-                type="submit"
-                className="w-full sm:w-auto bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-7 py-3 hover:bg-[#F5F0E8] transition-colors whitespace-nowrap"
-              >
-                Upgrade — $79/mo →
-              </button>
-            </form>
+            <CheckoutButton
+              wrapperClassName="flex-shrink-0"
+              className="w-full sm:w-auto bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-7 py-3 hover:bg-[#F5F0E8] transition-colors whitespace-nowrap"
+            >
+              Upgrade — $79/mo →
+            </CheckoutButton>
           </div>
         )}
 
@@ -359,14 +358,12 @@ export default async function DashboardPage() {
                 Permit monitoring is paused. Resubscribe to resume.
               </div>
             </div>
-            <form action="/api/stripe/checkout" method="post" className="flex-shrink-0">
-              <button
-                type="submit"
-                className="w-full sm:w-auto bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-7 py-3 hover:bg-[#F5F0E8] transition-colors whitespace-nowrap"
-              >
-                Resubscribe — $79/mo →
-              </button>
-            </form>
+            <CheckoutButton
+              wrapperClassName="flex-shrink-0"
+              className="w-full sm:w-auto bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-7 py-3 hover:bg-[#F5F0E8] transition-colors whitespace-nowrap"
+            >
+              Resubscribe — $79/mo →
+            </CheckoutButton>
           </div>
         )}
 

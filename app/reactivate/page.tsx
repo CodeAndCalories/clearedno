@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CheckoutButton from "../checkout-button";
 
 export default function ReactivatePage() {
   return (
@@ -63,14 +64,9 @@ export default function ReactivatePage() {
             </div>
 
             <div className="space-y-3">
-              <form action="/api/stripe/checkout" method="post">
-                <button
-                  type="submit"
-                  className="w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors"
-                >
-                  Reactivate — $79/mo →
-                </button>
-              </form>
+              <CheckoutButton className="w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors">
+                Reactivate — $79/mo →
+              </CheckoutButton>
 
               <a
                 href="https://billing.stripe.com/p/login/live_00g"

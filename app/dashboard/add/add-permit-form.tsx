@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { cities, LIVE_CHECKER_CITIES } from "@/lib/cities";
 import { addPermit } from "../actions";
+import CheckoutButton from "../../checkout-button";
 
 // The city list is derived from lib/cities.ts so this form, the marketing
 // /locations pages, and the scraper registry can't drift apart.
@@ -61,9 +62,6 @@ export default function AddPermitForm({
   const [waitlistError, setWaitlistError]     = useState<string | null>(null);
   const [waitlistLoading, setWaitlistLoading] = useState(false);
 
-  // Slot purchase (one-time $9.99)
-  const [buyingSlot, setBuyingSlot] = useState(false);
-  const [slotError, setSlotError]   = useState<string | null>(null);
 
   const selectedCity = CITY_OPTIONS.find((c) => c.slug === citySlug);
   const cityLive     = selectedCity?.live ?? false;
@@ -92,34 +90,6 @@ export default function AddPermitForm({
 
     router.push("/dashboard");
     router.refresh();
-  }
-
-  async function handleBuySlot() {
-    setSlotError(null);
-    setBuyingSlot(true);
-
-    try {
-      const res = await fetch("/api/stripe/checkout", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ product: "permit_slot" }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-
-      if (!res.ok || !data.url) {
-        setSlotError(data.error ?? "Couldn't start checkout. Please try again.");
-        setBuyingSlot(false);
-        return;
-      }
-
-      // Leaving the app for Stripe — deliberately not clearing the loading
-      // state, so the button stays disabled through the redirect.
-      window.location.href = data.url;
-    } catch {
-      setSlotError("Network error. Please try again.");
-      setBuyingSlot(false);
-    }
   }
 
   async function handleWaitlist(e: React.FormEvent) {
@@ -270,21 +240,14 @@ export default function AddPermitForm({
               </p>
             </div>
 
-            {slotError && (
-              <div className="mt-6 border border-[#DC2626]/40 bg-[#DC2626]/10 px-4 py-3">
-                <p className="text-xs text-[#DC2626] font-mono">{slotError}</p>
-              </div>
-            )}
-
             <div className="mt-6 flex flex-col sm:flex-row gap-4">
-              <button
-                type="button"
-                onClick={handleBuySlot}
-                disabled={buyingSlot}
-                className="flex-1 w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              <CheckoutButton
+                product="permit_slot"
+                wrapperClassName="flex-1"
+                className="w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {buyingSlot ? "Opening Checkout..." : "Add a Slot — $9.99"}
-              </button>
+                Add a Slot — $9.99
+              </CheckoutButton>
               <Link
                 href="/dashboard"
                 className="text-center sm:text-left border border-[#FF6B00]/30 text-[#F5F0E8]/60 font-mono text-sm tracking-widest uppercase px-6 py-4 hover:border-[#FF6B00] hover:text-[#F5F0E8] transition-colors"

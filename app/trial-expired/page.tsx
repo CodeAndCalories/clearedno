@@ -1,4 +1,5 @@
 import Link from "next/link";
+import CheckoutButton from "../checkout-button";
 
 export default function TrialExpiredPage() {
   return (
@@ -56,14 +57,9 @@ export default function TrialExpiredPage() {
               </ul>
             </div>
 
-            <form action="/api/stripe/checkout" method="post">
-              <button
-                type="submit"
-                className="w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors"
-              >
-                Upgrade to Continue — $79/mo →
-              </button>
-            </form>
+            <CheckoutButton className="w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors">
+              Upgrade to Continue — $79/mo →
+            </CheckoutButton>
 
             <p className="mt-4 text-[10px] text-[#F5F0E8]/20 tracking-widest">
               Your permit data is saved and ready to resume.
