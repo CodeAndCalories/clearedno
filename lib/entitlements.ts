@@ -85,9 +85,18 @@ export async function getEntitlement(userId: string): Promise<Entitlement> {
       .eq("user_id", userId)
       .eq("is_active", true),
 
+    // select("*") rather than select("quantity, refunded_at") on purpose: the
+    // refunded_at column arrives in migration 019, and naming a column that
+    // does not exist yet makes PostgREST fail the whole query. That failure is
+    // handled below by assuming zero slots — which would silently strip paid
+    // slots from every owner the moment this deployed ahead of the migration.
+    // With select("*"), a pre-019 database simply returns rows without the
+    // column, refunded_at reads as undefined, and every row counts — exactly
+    // the behaviour that database should have, since it cannot record a refund
+    // in the first place.
     supabaseAdmin
       .from("permit_slot_purchases")
-      .select("quantity")
+      .select("*")
       .eq("user_id", userId),
   ]);
 
@@ -120,20 +129,19 @@ export async function getEntitlement(userId: string): Promise<Entitlement> {
   const status = profileResult.data?.subscription_status as string | undefined;
   const used = permitsResult.count ?? 0;
 
-  const purchasedSlots = (purchasesResult.data ?? []).reduce(
-    (sum, row) => sum + (row.quantity as number),
-    0
-  );
+  const purchasedSlots = (purchasesResult.data ?? [])
+    .filter((row) => !(row as { refunded_at?: string | null }).refunded_at)
+    .reduce((sum, row) => sum + (row.quantity as number), 0);
 
   // 'canceled' and 'past_due' fall through to the free allowance rather than
   // to zero: a lapsed subscriber keeps the free tier every account gets, and
   // keeps any slots they paid for outright. Purchased slots are not a rental.
   //
-  // Known divergence: the scraper does NOT check permits for 'canceled' or
-  // 'past_due' owners, so those users can add a permit here that never gets
-  // checked. 'free' has no such gap — it is entitled in both places. Closing
-  // this means either admitting those statuses to the scraper's set or
-  // refusing the add; it is a product decision, not an oversight.
+  // The divergence this note used to describe is closed: scrapers/index.ts now
+  // admits 'canceled' and 'past_due' to ENTITLED_SUBSCRIPTION_STATUSES, so a
+  // lapsed user's permits keep being checked rather than being accepted and
+  // silently ignored. Adding is still capped here; checking is not capped
+  // there, which is what the dashboard's lapsed banner tells the user.
   if (status !== undefined && UNLIMITED_STATUSES.has(status)) {
     return {
       tier: "unlimited",

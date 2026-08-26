@@ -116,13 +116,33 @@ export default async function AccountPage() {
     : 999;
   const showChecklist = accountAgeDays < 30;
 
-  // ── Next billing date ───────────────────────────────────────────────────
-  const nextBillingDate = (() => {
-    if (!trialEndsAt) return null;
+  // ── First charge date (permit side only) ────────────────────────────────
+  // trial_ends_at belongs to the PERMIT subscription, and every profile row
+  // carries it: migration 018 deliberately kept the now() + 14 days column
+  // default when it changed subscription_status to default 'free'. So the
+  // column holds a plausible future date for accounts that have no card, no
+  // subscription and no trial.
+  //
+  // It was previously read unconditionally and rendered inside the Roofing
+  // Leads card, which meant a free-tier user with no payment method on file
+  // saw "Next charge: <date ~2 weeks out>" against a $300/mo product they had
+  // never bought. Gating on `permitTrialing` is what makes the column mean
+  // what it says; the leads card no longer claims a date at all, because
+  // nothing on the leads side records one.
+  const permitTrialing = permitStatus === "trialing";
+  const permitFirstChargeDate = (() => {
+    if (!permitTrialing || !trialEndsAt) return null;
     const d = new Date(trialEndsAt);
     if (isNaN(d.getTime()) || d <= new Date()) return null;
     return d.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
   })();
+
+  // Same class of bug, quieter: the permit card hardcoded "$79 / month" as the
+  // product price regardless of status, so a free-tier account was labelled
+  // with a price it is not paying. $79 is the upgrade price, not their plan.
+  const permitPriceLabel = permitFree
+    ? "Free tier · $79/mo for unlimited"
+    : "$79 / month";
 
   // ── Leads stats (only if active) ───────────────────────────────────────
   let leadsStats: { total: number; newThisWeek: number; counties: number } | null = null;
@@ -185,7 +205,7 @@ export default async function AccountPage() {
               <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] uppercase">
                 Permit Checker
               </h2>
-              <p className="text-xs text-[#F5F0E8]/40 mt-1">$79 / month</p>
+              <p className="text-xs text-[#F5F0E8]/40 mt-1">{permitPriceLabel}</p>
             </div>
 
             <div>
@@ -193,6 +213,11 @@ export default async function AccountPage() {
                 Status
               </p>
               {statusBadge(permitStatus)}
+              {permitFirstChargeDate && (
+                <p className="text-[9px] tracking-[0.15em] text-[#F5F0E8]/25 uppercase mt-2">
+                  First charge: {permitFirstChargeDate}
+                </p>
+              )}
             </div>
 
             <div className="mt-auto flex flex-wrap items-center gap-2">
@@ -263,12 +288,6 @@ export default async function AccountPage() {
                 </form>
               )}
             </div>
-
-            {nextBillingDate && (
-              <p className="text-[9px] tracking-[0.15em] text-[#F5F0E8]/25 uppercase mt-1">
-                Next charge: {nextBillingDate}
-              </p>
-            )}
           </div>
         </div>
 

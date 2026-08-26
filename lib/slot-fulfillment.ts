@@ -18,6 +18,8 @@
 
 import { stripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
+import { getEntitlement } from "@/lib/entitlements";
+import { sendAdminAlert } from "@/lib/email";
 import type Stripe from "stripe";
 
 /**
@@ -190,4 +192,156 @@ export async function fulfillSlotPurchaseBySessionId(
   }
 
   return fulfillSlotPurchase(session, { expectedUserId });
+}
+
+
+// ── Revoking a refunded slot ────────────────────────────────────────────────
+
+export type SlotRevokeOutcome =
+  | "revoked"    // slot marked refunded and no longer counts
+  | "not_slot"   // this charge is not a permit-slot purchase — normal, ignore
+  | "duplicate"  // already revoked — replay
+  | "partial"    // partially refunded; left alone, needs a human
+  | "retry";     // transient failure; ask Stripe to resend
+
+/**
+ * Revokes a permit slot after its charge is refunded.
+ *
+ * Matched on the PaymentIntent id rather than the Checkout Session, because a
+ * `charge.refunded` event carries no session. Migration 015 stores the
+ * PaymentIntent as a deliberately non-unique reference "for refunds and
+ * reconciliation only" — this is that use.
+ *
+ * The row is marked, never deleted. Deleting it would drop the UNIQUE
+ * constraint on stripe_checkout_session_id that stops a replayed
+ * checkout.session.completed from granting the slot again — so a refund would
+ * quietly reverse itself the next time Stripe retried the purchase event, or
+ * the moment the buyer reloaded /dashboard/add?session_id=... See
+ * migrations/019_permit_slot_refunds.sql.
+ */
+export async function revokeSlotPurchaseByCharge(
+  charge: Stripe.Charge
+): Promise<SlotRevokeOutcome> {
+  const paymentIntentId =
+    typeof charge.payment_intent === "string"
+      ? charge.payment_intent
+      : charge.payment_intent?.id ?? null;
+
+  // Subscription invoices refund through this event too and carry no slot row.
+  if (!paymentIntentId) return "not_slot";
+
+  const { data: rows, error: findError } = await supabaseAdmin
+    .from("permit_slot_purchases")
+    .select("*")
+    .eq("stripe_payment_intent_id", paymentIntentId)
+    .limit(1);
+
+  if (findError) {
+    console.error("[slot/refund] Failed to look up slot purchase", {
+      paymentIntentId,
+      error: findError.message,
+      code:  findError.code,
+    });
+    return "retry";
+  }
+
+  const row = rows?.[0] as
+    | { id: string; user_id: string; refunded_at: string | null }
+    | undefined;
+
+  // Overwhelmingly the common case: a refund on something that is not a slot.
+  if (!row) return "not_slot";
+
+  if (row.refunded_at) {
+    console.log("[slot/refund] Slot already revoked for this charge", {
+      paymentIntentId,
+      userId: row.user_id,
+    });
+    return "duplicate";
+  }
+
+  // Only a FULL refund revokes. A partial refund of a $29 slot is not a return
+  // of the product, and guessing what fraction of a permanent slot to take
+  // back is not a decision a webhook should make silently.
+  const amountRefunded = charge.amount_refunded ?? 0;
+  if (!charge.refunded || amountRefunded < charge.amount) {
+    console.warn("[slot/refund] Partial refund on a slot purchase — not revoking", {
+      paymentIntentId,
+      userId:         row.user_id,
+      chargeAmount:   charge.amount,
+      amountRefunded,
+      hint: "Revoke by hand, or refund the remainder, if the slot should be withdrawn.",
+    });
+    return "partial";
+  }
+
+  const refundId =
+    typeof charge.refunds?.data?.[0]?.id === "string"
+      ? charge.refunds.data[0].id
+      : null;
+
+  // `.is("refunded_at", null)` makes concurrent deliveries of the same event
+  // settle on one write rather than racing.
+  const { error: updateError } = await supabaseAdmin
+    .from("permit_slot_purchases")
+    .update({
+      refunded_at:      new Date().toISOString(),
+      stripe_refund_id: refundId,
+    })
+    .eq("id", row.id)
+    .is("refunded_at", null);
+
+  if (updateError) {
+    console.error("[slot/refund] REFUNDED BUT NOT REVOKED — slot still credited", {
+      paymentIntentId,
+      userId: row.user_id,
+      error:  updateError.message,
+      code:   updateError.code,
+      hint:   "Run migrations/019_permit_slot_refunds.sql if refunded_at is missing.",
+    });
+    return "retry";
+  }
+
+  console.log("[slot/refund] Slot revoked", {
+    paymentIntentId,
+    userId: row.user_id,
+    refundId,
+  });
+
+  // Revoking can leave someone tracking more permits than they are now
+  // entitled to. NOTHING IS DELETED here on purpose: choosing which permit to
+  // stop watching is a product decision, not a webhook's, and silently
+  // dropping a permit someone is waiting on is the worst possible way to make
+  // it. getEntitlement already refuses the next add, and scrapers/index.ts
+  // filters on owner status rather than permit count, so the permits they hold
+  // keep being checked. This alert exists so the state is visible instead of
+  // silent.
+  try {
+    const entitlement = await getEntitlement(row.user_id);
+    if (entitlement.used > entitlement.limit) {
+      await sendAdminAlert({
+        subject: `Slot refund left a user over their permit allowance`,
+        message: [
+          `A refunded permit slot dropped this account below the number of`,
+          `permits it is currently tracking. No permit was deleted.`,
+          ``,
+          `User:      ${row.user_id}`,
+          `Refund:    ${refundId ?? "(id unavailable)"}`,
+          `Tracking:  ${entitlement.used} permits`,
+          `Entitled:  ${entitlement.limit}`,
+          ``,
+          `They cannot add another permit until they are back under the cap.`,
+          `Existing permits continue to be checked.`,
+        ].join("\n"),
+      });
+    }
+  } catch (err) {
+    // Never fail the revoke because the alert failed — the money side is done.
+    console.error("[slot/refund] Over-allowance check failed", {
+      userId: row.user_id,
+      error:  err instanceof Error ? err.message : String(err),
+    });
+  }
+
+  return "revoked";
 }

@@ -1,7 +1,7 @@
 // Terms of Service — ClearedNo
 import Link from "next/link";
 
-const EFFECTIVE_DATE = "March 25, 2026";
+const EFFECTIVE_DATE = "August 26, 2026";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -57,6 +57,12 @@ export default function TermsPage() {
           </h1>
           <p className="text-xs text-[#F5F0E8]/30 font-mono tracking-widest">
             Effective date: {EFFECTIVE_DATE}
+          </p>
+          <p className="text-xs text-[#F5F0E8]/40 mt-3 leading-relaxed max-w-2xl">
+            Updated {EFFECTIVE_DATE}: added the free tier and one-time permit slots, and
+            clarified that the 30-day free trial belongs to the Unlimited plan and begins
+            at upgrade rather than at signup. These changes only add to what an account
+            receives — no existing entitlement was reduced.
           </p>
         </div>
 

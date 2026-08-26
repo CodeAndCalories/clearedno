@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { stripe } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { sendWelcomeEmail } from "@/lib/email-app";
-import { fulfillSlotPurchase } from "@/lib/slot-fulfillment";
+import { fulfillSlotPurchase, revokeSlotPurchaseByCharge } from "@/lib/slot-fulfillment";
 import type Stripe from "stripe";
 
 // App Router reads the raw body via req.text() — no config needed.
@@ -275,6 +275,25 @@ export async function POST(req: NextRequest) {
       } else {
         // Cancel the permit-checker subscription (existing logic)
         await updateSubscription(sub);
+      }
+      break;
+    }
+
+    // ── Slot refunded: stop counting it toward the permit allowance ─────────
+    // The refunds policy promises a 14-day no-questions refund on permit
+    // slots, so the slot has to actually go away when one is issued.
+    // charge.refunded also fires for subscription invoice refunds; those carry
+    // no slot row and fall out as "not_slot".
+    //
+    // NOTE: this event type must be enabled on the Stripe webhook endpoint.
+    case "charge.refunded": {
+      const outcome = await revokeSlotPurchaseByCharge(event.data.object as Stripe.Charge);
+
+      if (outcome === "retry") {
+        return NextResponse.json(
+          { error: "Failed to revoke refunded slot" },
+          { status: 500 }
+        );
       }
       break;
     }

@@ -1,7 +1,7 @@
 // Refund Policy — ClearedNo
 import Link from "next/link";
 
-const EFFECTIVE_DATE = "March 25, 2026";
+const EFFECTIVE_DATE = "August 26, 2026";
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -45,6 +45,12 @@ export default function RefundsPage() {
           <p className="text-xs text-[#F5F0E8]/30 font-mono tracking-widest">
             Effective date: {EFFECTIVE_DATE}
           </p>
+          <p className="text-xs text-[#F5F0E8]/40 mt-3 leading-relaxed max-w-2xl">
+            Updated {EFFECTIVE_DATE}: added the free tier and one-time permit slots, and
+            clarified that the 30-day free trial belongs to the Unlimited plan and begins
+            at upgrade rather than at signup. These changes only add to what an account
+            receives — no existing entitlement was reduced.
+          </p>
         </div>
 
         <p className="text-sm text-[#F5F0E8]/60 leading-relaxed">
@@ -57,7 +63,7 @@ export default function RefundsPage() {
           <div className="font-heading text-lg tracking-widest text-[#FF6B00]">THE SHORT VERSION</div>
           {[
             "The free tier is free forever — one permit, no card, nothing to bill or refund.",
-            "Permit slots are one-time $29 purchases. They never renew, so there is nothing to cancel.",
+            "Permit slots are one-time $29 purchases — refundable within 14 days, no questions asked.",
             "Unlimited is $79/mo with a 30-day free trial that starts at upgrade — no charge if you cancel before it ends.",
             "Cancel anytime — you keep access to the end of the billing period, then return to the free tier.",
             "No partial-month refunds after a billing cycle has started.",
@@ -113,10 +119,19 @@ export default function RefundsPage() {
             on the free tier.
           </P>
           <P>
-            <strong className="text-[#F5F0E8]/80">Refunds on slots:</strong> if you were
-            charged for a slot in error — a duplicate charge, or a purchase that never
-            credited a slot to your account — email support@clearedno.com and we will put
-            it right. See Exceptions and Disputes below.
+            <strong className="text-[#F5F0E8]/80">14-day refund, no questions asked:</strong>{" "}
+            email support@clearedno.com within 14 days of buying a slot and we will refund
+            it in full. You do not need to give a reason. The refunded slot is removed
+            from your account when the refund is processed.
+          </P>
+          <P>
+            After 14 days a slot purchase is final. A slot is delivered the moment you
+            buy it and is yours permanently, so there is no unused portion to return.
+          </P>
+          <P>
+            This deadline does not affect billing errors. If you were double-charged, or
+            charged for a slot that never appeared on your account, contact us whenever
+            you notice it and we will put it right — see Exceptions and Disputes below.
           </P>
         </Section>
 
