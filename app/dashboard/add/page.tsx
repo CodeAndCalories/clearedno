@@ -9,6 +9,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getEntitlement } from "@/lib/entitlements";
+import { fulfillSlotPurchaseBySessionId } from "@/lib/slot-fulfillment";
 import AddPermitForm, { type EntitlementView } from "./add-permit-form";
 
 export default async function AddPermitPage({
@@ -24,16 +25,29 @@ export default async function AddPermitPage({
 
   if (!user) redirect("/login");
 
-  const [params, entitlement] = await Promise.all([
-    searchParams,
-    getEntitlement(user.id),
-  ]);
+  const params = await searchParams;
 
-  // Stripe sends the buyer back here after a slot purchase. The page is
-  // dynamic, so this render already reflects any slot the webhook has
-  // committed — but the redirect and the webhook are independent races, and
-  // the buyer can arrive first. Showing "limit reached" to someone who just
-  // paid is the one outcome worth handling explicitly.
+  // ── Fulfil on return ────────────────────────────────────────────────────
+  // Stripe redirects the buyer here with ?session_id=cs_... after a slot
+  // purchase. Crediting it right now removes the race with the webhook: the
+  // webhook is the guarantee for buyers who never return, this is the
+  // guarantee for buyers who return before it lands. Whichever runs second
+  // conflicts on stripe_checkout_session_id and credits nothing extra.
+  //
+  // Ownership is enforced inside fulfillSlotPurchaseBySessionId — the id comes
+  // from the query string, so it is verified against the signed-in user before
+  // anything is written.
+  //
+  // This must complete before getEntitlement runs, or the freshly credited
+  // slot would not be counted in this render.
+  const sessionId = typeof params.session_id === "string" ? params.session_id : null;
+
+  if (sessionId) {
+    await fulfillSlotPurchaseBySessionId(sessionId, user.id);
+  }
+
+  const entitlement = await getEntitlement(user.id);
+
   const justPurchased = params.slot === "success";
   const creditPending = justPurchased && !entitlement.canAdd;
 
@@ -93,7 +107,7 @@ export default async function AddPermitPage({
             </div>
             <p className="text-sm text-[#F5F0E8]/70 leading-relaxed">
               {creditPending
-                ? "Your payment went through and the slot is being credited — this usually takes a second. Refresh the page if it doesn't appear."
+                ? "Your payment was received, but the slot hasn't landed on your account yet. Refresh in a moment — if it's still missing, email support@clearedno.com and we'll credit it by hand."
                 : "Your permit slot is ready. Add the permit below."}
             </p>
           </div>

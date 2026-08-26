@@ -17,9 +17,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { stripe, PRICE_ID } from "@/lib/stripe";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-
-/** Value written to session metadata and matched by the webhook. */
-const SLOT_SKU = "permit_slot";
+// Imported rather than redeclared: the value written here is the value
+// lib/slot-fulfillment matches on, and the two must not drift.
+import { SLOT_SKU } from "@/lib/slot-fulfillment";
 
 export async function POST(req: NextRequest) {
   const supabase = await createClient();
@@ -110,7 +110,11 @@ export async function POST(req: NextRequest) {
         metadata: { supabase_user_id: user.id },
       },
 
-      success_url: `${baseUrl}/dashboard/add?slot=success`,
+      // {CHECKOUT_SESSION_ID} is substituted by Stripe on redirect. The add
+      // page fulfills from it directly, so a buyer who returns before the
+      // webhook lands still sees their slot — the webhook remains the
+      // guarantee for buyers who never come back.
+      success_url: `${baseUrl}/dashboard/add?slot=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url:  `${baseUrl}/dashboard/add`,
     });
 
