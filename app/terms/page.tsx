@@ -94,22 +94,25 @@ export default function TermsPage() {
           </P>
         </Section>
 
-        <Section title="3. FREE TRIAL">
+        <Section title="3. PLANS, FREE TIER AND FREE TRIAL">
           <UL items={[
-            "New accounts receive a 30-day free trial (first month free) with full access to the Service.",
-            "A card is required to start the trial but will not be charged for 30 days.",
-            "If you do not add a payment method before the trial ends, your permit monitoring will pause.",
-            "You will not be charged anything if you cancel before the trial period ends.",
-            "Each person or company is entitled to one free trial. Creating multiple accounts to obtain additional trials is not permitted.",
+            "Every account starts on the free tier: one tracked permit, no card required, and no time limit. Creating an account costs nothing and does not begin a trial.",
+            "Additional permit slots may be purchased for $29 each as a one-time payment. A slot adds one permanently tracked permit. It is not a subscription: it does not expire, does not renew, and is never billed again.",
+            "The Unlimited plan is $79 per month and removes the permit limit. It is optional. The free tier does not expire if you never upgrade.",
+            "The Unlimited plan includes a 30-day free trial. The trial begins when you start the upgrade checkout, not when you create your account. A card is required at that point and is not charged during the 30 days.",
+            "If you cancel during the trial you are not charged. Your account returns to the free tier rather than closing.",
+            "Each person or company is entitled to one free trial of the Unlimited plan. Creating multiple accounts to obtain additional trials is not permitted.",
           ]} />
         </Section>
 
         <Section title="4. SUBSCRIPTION AND PAYMENT">
           <UL items={[
-            "After the free trial, the Service is billed at $79 per month per company account.",
+            "The Unlimited plan is billed at $79 per month per company account, beginning when its 30-day free trial ends.",
             "Billing is processed on a monthly cycle starting from the date your paid subscription begins.",
-            "Payments are processed by Stripe. By subscribing you agree to Stripe's terms of service.",
-            "Your subscription renews automatically each month unless you cancel.",
+            "Permit slots are charged once, at $29 each, at the time of purchase. They are not a subscription and are never billed again.",
+            "The free tier is never billed and requires no payment method.",
+            "Payments are processed by Stripe. By subscribing or purchasing you agree to Stripe's terms of service.",
+            "Your subscription renews automatically each month unless you cancel. Neither the free tier nor a purchased slot renews.",
             "We may change pricing with at least 30 days' written notice to active subscribers. Continued use after the effective date constitutes acceptance of the new price.",
           ]} />
         </Section>
@@ -117,9 +120,12 @@ export default function TermsPage() {
         <Section title="5. CANCELLATION">
           <UL items={[
             "You may cancel your subscription at any time from the account dashboard or by emailing support@clearedno.com.",
-            "Cancellation takes effect at the end of your current billing period. You retain access until that date.",
+            "Cancellation takes effect at the end of your current billing period. You retain unlimited tracking until that date.",
+            "After cancellation your account returns to the free tier. It is not closed and your permit history is not deleted.",
+            "You keep one tracked permit plus every permit slot you purchased. Slots are one-time purchases and are unaffected by cancelling a subscription.",
+            "Permits you were already tracking are not removed and continue to be monitored. The free tier limit governs how many new permits you may add.",
             "We do not offer partial-month refunds. See our Refund Policy at clearedno.com/refunds for full details.",
-            "After cancellation your permit data is retained for 90 days in case you reactivate, then permanently deleted.",
+            "If you want your account and all associated data deleted outright, email support@clearedno.com and we will delete them.",
           ]} />
         </Section>
 

@@ -124,7 +124,7 @@ export default async function LocationCityPage(props: Props) {
         acceptedAnswer: {
           "@type": "Answer",
           text: checkerLive
-            ? `ClearedNo monitors your ${city.name} permits around the clock and sends an instant alert the moment your permit status changes. Sign up free — first month is on us.`
+            ? `ClearedNo monitors your ${city.name} permits around the clock and sends an instant alert the moment your permit status changes. Signing up is free and needs no card — your first permit is tracked free, forever.`
             : `Automated tracking isn't available in ${city.name} yet, so ${city.name} permits have to be checked manually through the ${city.buildingDeptName} portal. Join the waitlist and we'll email you when ${city.name} monitoring launches.`,
         },
       },
@@ -430,7 +430,7 @@ export default async function LocationCityPage(props: Props) {
               {
                 q: `How do I track building permit status in ${city.name}, ${city.stateAbbr}?`,
                 a: checkerLive
-                  ? `ClearedNo monitors your ${city.name} permits around the clock and sends an instant alert the moment your permit status changes. Sign up free — first month is on us, no charge for 30 days.`
+                  ? `ClearedNo monitors your ${city.name} permits around the clock and sends an instant alert the moment your permit status changes. Signing up is free and needs no card — your first permit is tracked free, forever. Unlimited tracking is $79/mo when you need it.`
                   : `Manually, for now — ${city.name} has to be checked through the ${city.buildingDeptName} portal. Automated tracking isn't available in ${city.name} yet. Join the waitlist on this page and we'll email you when it launches.`,
               },
               {

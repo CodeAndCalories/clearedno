@@ -139,7 +139,7 @@ const FAQS = [
   },
   {
     q: "How much does permit tracking software cost?",
-    a: "Pricing varies. ClearedNo is a flat $79/month for unlimited permits with the first month free. Avoid tools with per-permit pricing that penalize you as you grow.",
+    a: "Pricing varies. ClearedNo tracks your first permit free forever, with no card. Additional permits are $29 each as a one-time purchase that never renews, or $79/month flat for unlimited tracking with the first month free. Avoid tools that charge a recurring fee per permit — that is the model that penalizes you as you grow.",
   },
   {
     q: "Can I track permits in multiple cities?",
@@ -155,7 +155,7 @@ const FAQS = [
   },
   {
     q: "Is there a free trial?",
-    a: "Yes — the first month is free, and you can cancel anytime.",
+    a: "Better than a trial to start with: one permit is tracked free forever, with no card and no countdown. If you need unlimited permits, the $79/month plan includes a 30-day free trial that begins when you upgrade — a card is required at that point and is not charged for 30 days. Cancel anytime and you drop back to the free tier.",
   },
 ];
 
