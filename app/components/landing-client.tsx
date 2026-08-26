@@ -55,7 +55,7 @@ export function StickyMobileCTA() {
           href="/signup"
           className="cta-glow block w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase py-4 text-center"
         >
-          START FREE TRIAL →
+          TRACK ONE PERMIT FREE →
         </Link>
       </div>
     </div>

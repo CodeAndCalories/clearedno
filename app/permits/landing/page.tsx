@@ -48,7 +48,7 @@ export const metadata: Metadata = {
 
 // ── Shared CTA button ────────────────────────────────────────────────────────
 function PrimaryCTA({
-  label = "START YOUR 30-DAY FREE TRIAL",
+  label = "TRACK YOUR FIRST PERMIT FREE",
   href = "/signup",
   className = "",
   glow = false,
@@ -254,7 +254,7 @@ export default function LandingPage() {
               </div>
 
               <p className="mt-4 text-xs text-[#F5F0E8]/40 font-mono">
-                First month free. Then $79/mo. Cancel any time.
+                One permit tracked free, forever. No card. Add more for $9.99 each.
               </p>
             </div>
 
@@ -463,87 +463,115 @@ export default function LandingPage() {
               <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">Pricing</span>
             </div>
             <h2 className="font-heading text-5xl tracking-widest text-[#F5F0E8]">
-              ONE PLAN. NO NONSENSE.
+              PICK YOUR TIER.
             </h2>
             <p className="mt-3 text-sm text-[#F5F0E8]/50 max-w-md leading-relaxed">
-              First month free. Then $79/mo. Cancel any time.
+              Start free and stay free on one permit. Pay only when you outgrow it.
             </p>
           </div>
 
-          <div className="grid lg:grid-cols-3 gap-0">
-            {/* Main plan */}
-            <div className="lg:col-span-2 border border-[#FF6B00] p-10 relative">
-              <div className="absolute top-0 right-0 bg-[#FF6B00] px-4 py-1">
-                <span className="text-[10px] font-mono font-bold tracking-widest text-[#0A0A0A] uppercase">
-                  Only Plan
-                </span>
-              </div>
-
-              <div className="flex items-baseline gap-2 mb-1">
-                <span className="font-heading text-8xl text-[#FF6B00]">FREE</span>
-              </div>
-              <p className="text-sm text-[#FF6B00]/80 font-mono tracking-widest uppercase mb-1">
-                First month — cancel anytime
-              </p>
-              <p className="text-xs text-[#F5F0E8]/40 mb-10">
-                Then $79/mo per company. Cancel any time.
-              </p>
-
-              <ul className="space-y-4 mb-10">
-                {[
-                  "Unlimited permit tracking — no per-permit fees",
-                  "Checks every 2 hours, 24 hours a day, 7 days a week",
-                  "Instant email alert the moment any status changes",
-                  "Full status history and audit trail",
+          <div className="grid md:grid-cols-3 gap-4">
+            {[
+              {
+                name: "Free",
+                price: "$0",
+                cadence: "forever",
+                features: [
+                  "1 tracked permit",
+                  "Checks every 2 hours, 24/7",
+                  "Instant email alerts",
                   `All ${LIVE_CITY_COUNT} tracked cities`,
+                ],
+                note: "No card required.",
+                featured: false,
+              },
+              {
+                name: "Permit Slot",
+                price: "$9.99",
+                cadence: "one-time, each",
+                features: [
+                  "Everything in Free",
+                  "+1 tracked permit per slot",
+                  "Never renews, never expires",
+                  "Yours even if you cancel",
+                ],
+                note: "Bought in-app when you hit the cap.",
+                featured: false,
+              },
+              {
+                name: "Unlimited",
+                price: "$79",
+                cadence: "per month",
+                features: [
+                  "Unlimited tracked permits",
+                  "No per-permit fees, no counting",
                   "Priority email support",
-                ].map((f) => (
-                  <li key={f} className="flex items-start gap-3 text-sm text-[#F5F0E8]/80">
-                    <span className="text-[#FF6B00] mt-0.5 flex-shrink-0">■</span>
-                    {f}
-                  </li>
-                ))}
-              </ul>
-
-              <PrimaryCTA
-                label="START FREE TRIAL"
-                href="/signup"
-                className="text-xs px-6 py-4"
-              />
-              <p className="mt-3 text-[10px] text-[#F5F0E8]/30">
-                30 days free · Card required · Cancel anytime
-              </p>
-            </div>
-
-            {/* THE MATH */}
-            <div className="border border-[#FF6B00]/20 border-t-0 lg:border-t lg:border-l-0 p-8 bg-[#FF6B00]/5">
-              <div className="font-heading text-xl tracking-widest text-[#FF6B00] mb-6">
-                THE MATH
-              </div>
-              <div className="space-y-6">
-                <div>
-                  <div className="text-[#F5F0E8]/40 text-xs uppercase tracking-widest mb-1">
-                    One idle day
-                  </div>
-                  <div className="font-heading text-3xl text-[#F5F0E8]">$2,400</div>
+                  "Cancel anytime — keep the free tier",
+                ],
+                note: "First month free. Card required, not charged.",
+                featured: true,
+              },
+            ].map((tier) => (
+              <div
+                key={tier.name}
+                className={`relative p-7 flex flex-col ${
+                  tier.featured ? "border-2 border-[#FF6B00]" : "border border-[#FF6B00]/25"
+                }`}
+              >
+                <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-3">
+                  {tier.name}
                 </div>
-                <div className="w-full h-px bg-[#FF6B00]/20" />
-                <div>
-                  <div className="text-[#F5F0E8]/40 text-xs uppercase tracking-widest mb-1">
-                    ClearedNo / mo
-                  </div>
-                  <div className="font-heading text-3xl text-[#FF6B00]">$79</div>
+                <div className="flex items-baseline gap-2 mb-6">
+                  <span className="font-heading text-4xl text-[#F5F0E8]">{tier.price}</span>
+                  <span className="text-[10px] text-[#F5F0E8]/40 font-mono">{tier.cadence}</span>
                 </div>
-                <div className="w-full h-px bg-[#FF6B00]/20" />
-                <p className="text-xs text-[#F5F0E8]/60 leading-relaxed">
-                  Half a day of crew time pays for a year of monitoring.
+                <ul className="space-y-2.5 mb-6 flex-1">
+                  {tier.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2.5 text-xs text-[#F5F0E8]/70 leading-relaxed">
+                      <span className="text-[#FF6B00] mt-0.5 flex-shrink-0">■</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-auto text-[10px] text-[#F5F0E8]/30 leading-relaxed">
+                  {tier.note}
                 </p>
               </div>
+            ))}
+          </div>
+
+          <div className="mt-4 flex justify-center">
+            <PrimaryCTA label="TRACK YOUR FIRST PERMIT FREE" href="/signup" className="text-xs px-8 py-4" />
+          </div>
+
+          {/* THE MATH */}
+          <div className="mt-8 border border-[#FF6B00]/20 p-8 bg-[#FF6B00]/5 grid sm:grid-cols-3 gap-8">
+            <div>
+              <div className="text-[#F5F0E8]/40 text-[10px] uppercase tracking-widest mb-1">
+                One idle day
+              </div>
+              <div className="font-heading text-3xl text-[#F5F0E8]">$2,400</div>
             </div>
+            <div>
+              <div className="text-[#F5F0E8]/40 text-[10px] uppercase tracking-widest mb-1">
+                One permit slot
+              </div>
+              <div className="font-heading text-3xl text-[#FF6B00]">$9.99</div>
+            </div>
+            <div>
+              <div className="text-[#F5F0E8]/40 text-[10px] uppercase tracking-widest mb-1">
+                Unlimited / mo
+              </div>
+              <div className="font-heading text-3xl text-[#FF6B00]">$79</div>
+            </div>
+            <p className="sm:col-span-3 text-xs text-[#F5F0E8]/60 leading-relaxed border-t border-[#FF6B00]/10 pt-6">
+              Half a day of idle crew pays for a year of monitoring. One slot costs
+              less than twenty minutes of it.
+            </p>
           </div>
 
           <p className="mt-6 text-xs text-[#F5F0E8]/30 text-center">
-            Per company · Unlimited permits · No contracts · Cancel any time
+            Start free · No card · Cancel any time · $9.99 slots never renew
           </p>
         </div>
       </section>
@@ -618,8 +646,16 @@ export default function LandingPage() {
                 a: "Yes. No contracts, no annual lock-in, no commitments. Cancel from your dashboard in one click — no questions asked.",
               },
               {
+                q: "Is the free tier really free?",
+                a: "Yes. One tracked permit, no card, no time limit. It is checked on the same schedule as every paid permit and gets the same alerts.",
+              },
+              {
+                q: "Do permit slots expire?",
+                a: "No. A slot is a one-time $9.99 purchase, yours permanently. It never renews, and you keep it even if you later cancel a subscription.",
+              },
+              {
                 q: "How does the free trial work?",
-                a: "Your first month is completely free. We collect your card upfront but charge nothing for 30 days. Cancel before day 31 and you pay nothing. Ever.",
+                a: "That is on the $79/mo unlimited plan: the first month is free, we collect your card upfront and charge nothing for 30 days. The free tier needs no card at all and has no countdown.",
               },
             ].map((item, i) => (
               <details
@@ -674,7 +710,7 @@ export default function LandingPage() {
             Are you still checking manually?
           </p>
           <PrimaryCTA
-            label="START FREE TRIAL"
+            label="TRACK YOUR FIRST PERMIT FREE"
             className="text-base px-12 py-5"
             glow
           />

@@ -92,17 +92,23 @@ const TERMINAL_STATUSES: PermitStatus[] = ["CLEARED", "REJECTED", "EXPIRED"];
 // price here would silently stop tracking for every subscriber the moment a
 // new tier is introduced alongside the existing one.
 //
-// 'past_due' and 'canceled' are excluded: Stripe has failed to collect, or the
-// subscription is gone, and the dashboard sends those users to /reactivate.
-// Note this is stricter than entitlements.ts, which lets a lapsed subscriber
-// keep the free allowance for counting purposes — so a canceled user can
-// currently add a permit that this scraper will not check. See the note beside
-// UNLIMITED_STATUSES.
+// 'past_due' and 'canceled' are included, which looks generous and is not.
+// A lapsed subscriber degrades to the FREE TIER, not to a broken product:
+// getEntitlement() still caps them at 1 + purchased slots, exactly what a
+// never-paid account gets. Excluding them here bought nothing — capacity was
+// already capped elsewhere — while creating a state where the app accepts a
+// permit it silently never checks. A permit that is accepted and never checked
+// is worse than a refused one: the user waits on an alert that cannot arrive.
+//
+// So this set is now "every status that is a real account", and the revenue
+// question — how many permits — is answered entirely by getEntitlement().
+// Cancelling still costs the user everything above the free allowance, and the
+// dashboard still routes them to /reactivate.
 //
 // Typed as a Set of SubscriptionStatus so an invalid literal fails the build,
 // but widened to ReadonlySet<string> so .has() takes the raw column value.
 const ENTITLED_SUBSCRIPTION_STATUSES: ReadonlySet<string> =
-  new Set<SubscriptionStatus>(["active", "trialing", "free"]);
+  new Set<SubscriptionStatus>(["active", "trialing", "free", "canceled", "past_due"]);
 
 // ── Structured logger ──────────────────────────────────────────────────────
 // All logs are newline-delimited JSON so they can be ingested by any log
