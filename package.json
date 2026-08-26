@@ -13,6 +13,7 @@
     "poll:replies": "node dist/scraper/outreach/gmail-poll.js",
     "check:replies": "node dist/scraper/outreach/check-replies.js",
     "verify:status-maps": "ts-node --project tsconfig.scripts.json scrapers/verify-status-maps.ts",
+    "verify:slot-ownership": "ts-node -r tsconfig-paths/register scripts/verify-slot-ownership.ts",
     "setup:stripe": "ts-node scripts/setup-stripe-products.ts"
   },
   "dependencies": {
