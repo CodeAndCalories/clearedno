@@ -69,18 +69,42 @@ const jsonLd = {
       "applicationCategory": "BusinessApplication",
       "operatingSystem": "Web",
       "description":
-        "Permit status monitoring for contractors. ClearedNo watches your building permits 24/7 and alerts you the moment your permit clears.",
-      "offers": {
-        "@type": "Offer",
-        "price": "79.00",
-        "priceCurrency": "USD",
-        "priceSpecification": {
-          "@type": "UnitPriceSpecification",
+        "Permit status monitoring for contractors. ClearedNo watches your building permits 24/7 and alerts you the moment your permit clears. Start free with one tracked permit — no card required.",
+      // Three tiers, not one. A lone $79 Offer told Google the product had a
+      // price of admission it no longer has: signup is free and takes no card,
+      // and extra permits can be bought outright instead of subscribed to.
+      "offers": [
+        {
+          "@type": "Offer",
+          "name": "Free",
+          "price": "0",
+          "priceCurrency": "USD",
+          "description":
+            "One tracked permit, checked every 2 hours. No card required, no time limit.",
+        },
+        {
+          "@type": "Offer",
+          "name": "Permit Slot",
+          "price": "29.00",
+          "priceCurrency": "USD",
+          "description":
+            "One additional tracked permit. One-time purchase, kept permanently, never renews.",
+        },
+        {
+          "@type": "Offer",
+          "name": "Unlimited",
           "price": "79.00",
           "priceCurrency": "USD",
-          "unitText": "month",
+          "description":
+            "Unlimited tracked permits. First 30 days free when you upgrade.",
+          "priceSpecification": {
+            "@type": "UnitPriceSpecification",
+            "price": "79.00",
+            "priceCurrency": "USD",
+            "unitText": "month",
+          },
         },
-      },
+      ],
     },
     {
       "@type": "Organization",
@@ -142,15 +166,23 @@ const jsonLd = {
           "name": "Can I cancel anytime?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Yes. No contracts, no annual lock-in, no commitments. Cancel from your dashboard in one click.",
+            "text": "Yes. No contracts, no annual lock-in, no commitments. Cancel from your dashboard in one click. You drop back to the free tier — one tracked permit, plus any slots you bought outright, which you keep. Nothing is deleted.",
           },
         },
         {
           "@type": "Question",
-          "name": "How does the free trial work?",
+          "name": "How much does ClearedNo cost?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "Your first month is completely free. We collect your card upfront but charge nothing for 30 days. Cancel before day 31 and you pay nothing. Ever. Then $79/mo.",
+            "text": "One tracked permit is free forever and needs no card. Extra permits are $29 each — a one-time purchase that never renews. Unlimited tracking is $79/month, with the first 30 days free.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need a card to sign up?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Signing up is free and takes no card at all — you get one tracked permit with no time limit. A card is only needed if you upgrade to unlimited at $79/month, and even then the first 30 days are free.",
           },
         },
       ],

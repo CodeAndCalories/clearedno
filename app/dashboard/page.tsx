@@ -153,11 +153,6 @@ export default async function DashboardPage() {
   const profile = profileResult.data as Profile | null;
   const permits = (permitsResult.data ?? []) as Permit[];
 
-  // Only resolved when the empty state will render — three extra queries are
-  // not worth paying on every dashboard load that has permits to show.
-  const emptyStateEntitlement =
-    permits.length === 0 ? await getEntitlement(user.id) : null;
-
   const isPaid     = profile?.subscription_status === "active";
   const isTrialing = profile?.subscription_status === "trialing";
 
@@ -167,11 +162,45 @@ export default async function DashboardPage() {
     if (trialExpired) redirect("/trial-expired");
   }
 
-  // Enforce subscription — canceled/past_due users see a reactivation page
+  // Lapsed accounts are no longer redirected away. Cancelling drops a user to
+  // the free tier — one permit plus any slots bought outright — and
+  // scrapers/index.ts keeps checking their permits, since both statuses are in
+  // ENTITLED_SUBSCRIPTION_STATUSES. Forcing them to /reactivate walled them out
+  // of a tier the pricing page explicitly promises them, behind a page whose
+  // only control was $79/mo. The banner below offers reactivation instead of
+  // demanding it. /reactivate is kept as a route and still resolves, but
+  // nothing links to it any more — the banner sends users straight to Stripe.
   const subStatus = profile?.subscription_status;
-  if (subStatus === "canceled" || subStatus === "past_due") {
-    redirect("/reactivate");
-  }
+  const isLapsed  = subStatus === "canceled" || subStatus === "past_due";
+
+  // Resolved only where the free allowance is actually reported: the empty
+  // state names it, and the lapsed banner reports it against usage. Not worth
+  // three extra queries on a subscriber's dashboard that has permits to render.
+  const entitlement =
+    permits.length === 0 || isLapsed ? await getEntitlement(user.id) : null;
+
+  // What a lapsed user is told they still have. Over-allowance is stated
+  // rather than hidden: the scraper filters on status, not count, so their
+  // existing permits really do keep being checked — it is adding another that
+  // the cap blocks.
+  const lapsedMessage = (() => {
+    if (!entitlement) return "";
+    const allowed = `${entitlement.limit} permit${entitlement.limit === 1 ? "" : "s"}`;
+    const slots =
+      entitlement.purchasedSlots > 0
+        ? ` — including the ${entitlement.purchasedSlots} slot${
+            entitlement.purchasedSlots === 1 ? "" : "s"
+          } you bought, which you keep`
+        : "";
+    const lead =
+      subStatus === "past_due"
+        ? "Your last payment didn't go through, so unlimited tracking has stopped."
+        : "Unlimited tracking has ended.";
+
+    return entitlement.used > entitlement.limit
+      ? `${lead} Your ${entitlement.used} permits are still being checked every 2 hours, but the free tier covers ${allowed}${slots} — so you can't add another until you're back under that, or subscribed again. Nothing was deleted.`
+      : `${lead} You're on the free tier: ${allowed}${slots}, still checked every 2 hours. Nothing was deleted.`;
+  })();
 
   // For active subscribers: fetch next billing date from Stripe's current_period_end.
   let nextBillingDate: string | null = null;
@@ -310,7 +339,7 @@ export default async function DashboardPage() {
 
         {/* ── Permit grid ──────────────────────────────────────────── */}
         {permits.length === 0 ? (
-          <EmptyState entitlement={emptyStateEntitlement!} />
+          <EmptyState entitlement={entitlement!} />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {permits.map((permit) => (
@@ -349,45 +378,36 @@ export default async function DashboardPage() {
           </div>
         )}
 
-        {/* ── Past due banner ──────────────────────────────────────── */}
-        {profile?.subscription_status === "past_due" && (
-          <div className="mt-8 sm:mt-10 border border-[#DC2626]/40 bg-[#DC2626]/5 px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        {/* ── Lapsed banner: on the free tier, reactivation offered ── */}
+        {isLapsed && entitlement && (
+          <div className="mt-8 sm:mt-10 border border-[#EAB308]/40 bg-[#EAB308]/5 px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
             <div>
-              <div className="text-xs font-mono text-[#DC2626] uppercase tracking-widest font-medium mb-1">
-                Payment Failed
+              <div className="text-xs font-mono text-[#EAB308] uppercase tracking-widest font-medium mb-1">
+                {subStatus === "past_due"
+                  ? "Payment failed — you're on the free tier"
+                  : "Subscription canceled — you're on the free tier"}
               </div>
-              <div className="text-xs text-[#F5F0E8]/50">
-                Your last payment didn&apos;t go through. Update your billing details to keep monitoring active.
+              <div className="text-xs text-[#F5F0E8]/50 leading-relaxed max-w-xl">
+                {lapsedMessage}
               </div>
             </div>
-            <a
-              href="https://billing.stripe.com/p/login/live_00g"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex-shrink-0 bg-[#DC2626] text-[#F5F0E8] font-mono text-xs font-medium tracking-widest uppercase px-7 py-3 hover:bg-[#F5F0E8] hover:text-[#0A0A0A] transition-colors whitespace-nowrap text-center"
-            >
-              Update Payment →
-            </a>
-          </div>
-        )}
-
-        {/* ── Canceled banner ──────────────────────────────────────── */}
-        {profile?.subscription_status === "canceled" && (
-          <div className="mt-8 sm:mt-10 border border-[#6B7280]/30 bg-[#6B7280]/5 px-4 sm:px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div>
-              <div className="text-xs font-mono text-[#6B7280] uppercase tracking-widest font-medium mb-1">
-                Subscription Canceled
-              </div>
-              <div className="text-xs text-[#F5F0E8]/40">
-                Permit monitoring is paused. Resubscribe to resume.
-              </div>
+            <div className="flex flex-col gap-2 flex-shrink-0 w-full sm:w-auto">
+              {subStatus === "past_due" && (
+                <a
+                  href="https://billing.stripe.com/p/login/live_00g"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-[#EAB308] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-7 py-3 hover:bg-[#F5F0E8] transition-colors whitespace-nowrap text-center"
+                >
+                  Update Payment →
+                </a>
+              )}
+              <CheckoutButton
+                className="w-full sm:w-auto border border-[#FF6B00]/50 text-[#FF6B00] font-mono text-xs font-bold tracking-widest uppercase px-7 py-3 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors whitespace-nowrap"
+              >
+                Reactivate — $79/mo →
+              </CheckoutButton>
             </div>
-            <CheckoutButton
-              wrapperClassName="flex-shrink-0"
-              className="w-full sm:w-auto bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-7 py-3 hover:bg-[#F5F0E8] transition-colors whitespace-nowrap"
-            >
-              Resubscribe — $79/mo →
-            </CheckoutButton>
           </div>
         )}
 

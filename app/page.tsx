@@ -95,10 +95,10 @@ export default function HomePage() {
               href="/permits/landing"
               className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-8 py-4 hover:bg-[#F5F0E8] transition-colors"
             >
-              Track It Automatically — $79/mo →
+              Track It Automatically — Free →
             </Link>
             <p className="mt-3 text-[10px] text-[#FF6B00]/50 tracking-widest uppercase">
-              First month free
+              One permit free, forever · No card · $79/mo for unlimited
             </p>
           </div>
         </section>

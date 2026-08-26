@@ -66,7 +66,7 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
             <Link href="/blog" className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase">Blog</Link>
             <Link href="/login" className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase">Log In</Link>
             <Link href="/signup" className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors">
-              Start Free Trial
+              Start Free
             </Link>
           </div>
         </div>
@@ -132,9 +132,9 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
                 href="/signup"
                 className="block w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-[10px] font-bold tracking-widest uppercase py-3 text-center hover:bg-[#F5F0E8] transition-colors"
               >
-                START FREE TRIAL →
+                TRACK ONE PERMIT FREE →
               </Link>
-              <p className="mt-2 text-[9px] text-[#F5F0E8]/25 text-center">First month free · Card not charged for 30 days</p>
+              <p className="mt-2 text-[9px] text-[#F5F0E8]/25 text-center">One permit free, forever · No card</p>
             </div>
 
             {/* City links */}

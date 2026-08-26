@@ -1,8 +1,9 @@
 -- Migration 018 — free tier: default 'free', backfill abandoned signups
 --
--- NOT YET APPLIED. Run in:
--- https://supabase.com/dashboard/project/<project>/sql/new
--- Requires migration 016 (which added 'free' to the CHECK) to be applied first.
+-- APPLIED to production 2026-08-26, via the Supabase SQL editor, after
+-- migration 016 (which added 'free' to the CHECK). profiles.subscription_status
+-- now defaults to 'free'. Do not re-run: this file is kept as the record of the
+-- change, not as pending work.
 --
 -- ── Why the default changes ──────────────────────────────────────────────
 -- schema.sql defaults subscription_status to 'trialing', which is a claim the

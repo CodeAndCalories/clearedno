@@ -7,8 +7,10 @@
 -- someone mid-trial, and both lib/entitlements.ts and the scraper's
 -- entitlement filter treat 'trialing' as unlimited.
 --
--- NOT YET APPLIED. Run in:
--- https://supabase.com/dashboard/project/<project>/sql/new
+-- APPLIED to production 2026-08-26, via the Supabase SQL editor. The CHECK on
+-- subscription_status now includes 'free' and validated clean against the
+-- existing rows. Do not re-run: this file is kept as the record of the change,
+-- not as pending work.
 --
 -- ── Why this widens rather than replaces ─────────────────────────────────
 -- The constraint is looked up from the catalog instead of being assumed by
