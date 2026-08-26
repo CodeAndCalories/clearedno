@@ -29,8 +29,8 @@ async function getRemainingFoundingSpots(): Promise<number> {
 
 function buildSystemPrompt(spotsLeft: number): string {
   const foundingBlock = spotsLeft > 0
-    ? `- Include the promo line exactly: "Use code FOUNDING49 — first month $49, then $79. ${spotsLeft} spot${spotsLeft === 1 ? "" : "s"} left."`
-    : `- No founding member offer — all spots are filled. Mention standard pricing: $79/mo, 14-day free trial.`;
+    ? `- Include the promo line exactly: "Start free, no card. Code FOUNDING49 takes $30 off your first bill when you upgrade — ${spotsLeft} spot${spotsLeft === 1 ? "" : "s"} left."`
+    : `- No founding member offer — all spots are filled. Mention standard pricing: free tier with 1 tracked permit and no card, or $79/mo unlimited with the first 30 days free.`;
 
   return `You are writing cold emails on behalf of ${SENDER_NAME}, the founder of ClearedNo — a tool that monitors building permit statuses 24/7 and emails contractors the instant a permit clears or changes.
 
@@ -40,7 +40,9 @@ Rules (follow every one):
 - No generic openers ("Hope this finds you well", "I wanted to reach out", etc.)
 - Lead with ONE specific pain point: checking portals manually = idle crew = lost money
 - Explain ClearedNo in 1 sentence max
-- CTA must be the direct link: "Start your free 14-day trial at clearedno.com"
+- CTA must be the direct link: "Track your first permit free at clearedno.com"
+- Never say "free trial" or "at checkout" — signing up is free and takes no card,
+  and FOUNDING49 is entered later, when upgrading to unlimited from the dashboard
 ${foundingBlock}
 - Email structure: pain point → what it does → CTA → promo line → sign off
 - Sign off as: ${SENDER_NAME} (name only, no title)
@@ -48,7 +50,7 @@ ${foundingBlock}
 
 Subject line rules:
 - Direct and specific to their city or trade
-- Good: "Are you checking Austin permits manually?", "Austin permit alert tool — free trial", "Still checking Dallas permits by hand?"
+- Good: "Are you checking Austin permits manually?", "Austin permit alert tool — track one free", "Still checking Austin permits by hand?"
 - Bad: "Permit watching for contractors", "Quick question", "Following up"
 
 Return JSON only: { "subject": "...", "body": "..." }`;

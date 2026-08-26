@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { stripe } from "@/lib/stripe";
 import { cities as allCities, LIVE_CHECKER_CITIES } from "@/lib/cities";
+import { getEntitlement, type Entitlement } from "@/lib/entitlements";
 import type { Permit, PermitStatus, Profile } from "@/types";
 import { PermitCard } from "./permit-card";
 import { ReferralSection } from "./referral-section";
@@ -24,7 +25,7 @@ function daysUntil(dateStr: string): number {
 
 // ── Empty state ───────────────────────────────────────────────────────────────
 
-function EmptyState() {
+function EmptyState({ entitlement }: { entitlement: Entitlement }) {
   // Derived from LIVE_CHECKER_CITIES so this panel can never again advertise a
   // city we don't actually monitor. It previously hardcoded Dallas and Houston
   // as "live" — neither had a working checker, and Houston has no public API at
@@ -39,11 +40,29 @@ function EmptyState() {
     .map((c) => c.name)
     .join(" · ");
 
+  // Signup promises "1 permit free, forever"; without this the first screen
+  // after signup never repeats it, and the cap only surfaces on /dashboard/add.
+  // Counted from FREE_TIER_PERMIT_LIMIT via getEntitlement so the number here
+  // can never drift from the number actually enforced.
+  const allowance =
+    entitlement.tier === "unlimited"
+      ? "Unlimited plan — no cap on tracked permits."
+      : entitlement.purchasedSlots > 0
+        ? `Free tier + ${entitlement.purchasedSlots} slot${
+            entitlement.purchasedSlots === 1 ? "" : "s"
+          } — ${entitlement.limit} permits included.`
+        : `Free tier — ${entitlement.limit} permit${
+            entitlement.limit === 1 ? "" : "s"
+          } included, no card.`;
+
   return (
     <div className="border border-[#FF6B00]/20 border-dashed p-10 sm:p-16 text-center">
-      <div className="font-heading text-4xl sm:text-5xl text-[#FF6B00]/30 mb-4">
+      <div className="font-heading text-4xl sm:text-5xl text-[#FF6B00]/30 mb-3">
         NO PERMITS YET
       </div>
+      <p className="text-[11px] text-[#FF6B00]/70 font-mono tracking-widest uppercase mb-5">
+        {allowance}
+      </p>
       <p className="text-sm text-[#F5F0E8]/40 mb-8 max-w-sm mx-auto leading-relaxed">
         Add your first permit and we&apos;ll start watching it immediately.
       </p>
@@ -133,6 +152,11 @@ export default async function DashboardPage() {
 
   const profile = profileResult.data as Profile | null;
   const permits = (permitsResult.data ?? []) as Permit[];
+
+  // Only resolved when the empty state will render — three extra queries are
+  // not worth paying on every dashboard load that has permits to show.
+  const emptyStateEntitlement =
+    permits.length === 0 ? await getEntitlement(user.id) : null;
 
   const isPaid     = profile?.subscription_status === "active";
   const isTrialing = profile?.subscription_status === "trialing";
@@ -286,7 +310,7 @@ export default async function DashboardPage() {
 
         {/* ── Permit grid ──────────────────────────────────────────── */}
         {permits.length === 0 ? (
-          <EmptyState />
+          <EmptyState entitlement={emptyStateEntitlement!} />
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {permits.map((permit) => (

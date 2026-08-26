@@ -32,10 +32,14 @@ export const FREE_TIER_PERMIT_LIMIT = 1;
  * entitlement layer exists to close. Reconciling the two sets breaks a tier.
  *
  * Keyed on STATUS, never on a price ID. Any active permit-side subscription
- * counts — the legacy $79/mo, the incoming $29/mo, or whatever replaces them.
+ * counts, whatever it is billed at — today's $79/mo or whatever replaces it.
  * Checking a specific price here would drop every existing subscriber to the
  * free tier the moment a second price exists, which is the single most
  * expensive mistake available in this change.
+ *
+ * Not to be confused with the $29 permit slot: that is a one-time purchase,
+ * never a subscription status, and it raises `limit` via purchasedSlots below
+ * rather than granting anything unlimited.
  */
 const UNLIMITED_STATUSES: ReadonlySet<string> = new Set<SubscriptionStatus>([
   "active",

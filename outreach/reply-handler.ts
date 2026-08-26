@@ -3,7 +3,8 @@
 // Wire to an inbound email webhook at: app/api/outreach/reply/route.ts
 //
 // First reply from a lead:
-//   INTERESTED    → auto-reply with signup link + FOUNDING49 → mark auto_replied = true
+//   INTERESTED    → auto-reply with free-signup link + FOUNDING49 upgrade note
+//                   → mark auto_replied = true
 //   QUESTION      → Claude answers question → auto-send → mark auto_replied = true
 //   NOT_INTERESTED → polite one-liner → mark do_not_contact
 //   OUT_OF_OFFICE  → no reply → set follow_up_after = now + 7 days
@@ -15,6 +16,9 @@ import Anthropic from "@anthropic-ai/sdk";
 import { supabaseAdmin } from "../lib/supabase/admin";
 import { sendAdminAlert } from "../lib/email";
 import { sendSingleEmail } from "./sender";
+// Live-city names come from the same helper the marketing pages use, so an
+// auto-reply can never advertise a city we do not actually monitor.
+import { liveCityList } from "../lib/cities";
 
 const client      = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const SENDER_NAME = process.env.FROM_NAME?.split(" ")[0] ?? "Alex";
@@ -70,9 +74,9 @@ function buildInterestedReply(firstName: string, originalSubject: string) {
       ``,
       `Great to hear from you. Here's everything you need:`,
       ``,
-      `→ ${BASE_URL}`,
-      `→ Use code FOUNDING49 at checkout`,
-      `→ First month $49, then $79/mo locked in`,
+      `→ Sign up free at ${BASE_URL} — one permit tracked, no card`,
+      `→ Need more? Unlimited is $79/mo with the first 30 days free`,
+      `→ Enter code FOUNDING49 when you upgrade — $30 off your first bill`,
       ``,
       `Takes about 2 minutes to set up. Let me know if you have any questions.`,
       ``,
@@ -100,11 +104,13 @@ async function buildQuestionReply(
     system: `You help ${SENDER_NAME}, founder of ClearedNo, write short direct replies to contractor questions.
 
 ClearedNo facts (use only what's relevant):
-- Monitors building permit statuses 24/7 — Austin TX and Dallas TX currently
+- Monitors building permit statuses 24/7 — ${liveCityList({ separator: ", ", conjunction: "and" })} currently
 - Checks every 2 hours, emails instantly on any status change
 - Tracks building, electrical, plumbing, mechanical permits
-- $79/mo, first month $49 with code FOUNDING49
-- 14-day free trial included, cancel anytime
+- Free tier: 1 tracked permit, no card, no time limit
+- Extra permits: $29 one-time per slot, kept permanently, never renews
+- Unlimited: $79/mo, first 30 days free, cancel anytime
+- FOUNDING49 takes $30 off the first bill — entered when upgrading, not at signup
 - Adding new cities weekly — users can request at clearedno.com/suggest-city
 
 Rules:
