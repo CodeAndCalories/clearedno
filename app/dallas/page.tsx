@@ -54,7 +54,7 @@ export default function DallasPage() {
           <div className="flex items-center gap-4">
             <Link href="/login" className="hidden sm:block text-xs tracking-widest text-[#F5F0E8]/60 hover:text-[#FF6B00] transition-colors uppercase">Log In</Link>
             <Link href="/signup" className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors">
-              Start Free Trial
+              Start Free
             </Link>
           </div>
         </div>

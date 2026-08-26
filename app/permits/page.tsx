@@ -57,7 +57,7 @@ export default function PermitsIndexPage() {
               href="/signup"
               className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors"
             >
-              Start Free Trial
+              Start Free
             </Link>
           </div>
         </div>
@@ -147,7 +147,7 @@ export default function PermitsIndexPage() {
             Once you&apos;ve submitted, ClearedNo watches the portal and alerts you the
             moment your status changes. Automated tracking is live in{" "}
             {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.
-            First month free.
+            Track one permit free, forever.
           </p>
           <Link
             href="/signup"

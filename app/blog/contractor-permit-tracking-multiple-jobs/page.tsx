@@ -193,7 +193,7 @@ export default function PermitTrackingPost() {
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">AUTOMATED PERMIT MONITORING FOR AUSTIN CONTRACTORS</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             Add your Austin permits. ClearedNo checks every 2 hours and emails you the moment anything changes.
-            Unlimited permits, one account. First month free.
+            Unlimited permits, one account. Or track one free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

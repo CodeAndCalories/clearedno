@@ -360,7 +360,7 @@ export default function HoustonPermitStatusPost() {
             href="/signup"
             className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-8 py-3 hover:bg-[#F5F0E8] transition-colors text-center"
           >
-            START FREE TRIAL →
+            TRACK ONE PERMIT FREE →
           </Link>
         </div>
 

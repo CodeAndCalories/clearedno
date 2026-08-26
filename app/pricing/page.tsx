@@ -98,7 +98,7 @@ const TIERS: Tier[] = [
       "Priority email support",
       "Cancel anytime — you keep the free tier",
     ],
-    cta: "Start Free Trial →",
+    cta: "Start Free, Upgrade Later →",
     href: "/signup",
     featured: true,
     note: "First month free. Card required, not charged for 30 days.",

@@ -155,14 +155,14 @@ export default function PermitClearedWhatHappensNextPost() {
           <h3 className="font-heading text-2xl tracking-widests text-[#F5F0E8] mb-3">KNOW THE MOMENT YOUR PERMIT CLEARS</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo checks your permits every 2 hours. When your permit clears, you get an email immediately —
-            not the next morning. First month free.
+            not the next morning. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href="/signup"
               className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-8 py-3 hover:bg-[#F5F0E8] transition-colors text-center"
             >
-              START YOUR 30-DAY FREE TRIAL →
+              TRACK ONE PERMIT FREE →
             </Link>
             <Link
               href="/#how-it-works"

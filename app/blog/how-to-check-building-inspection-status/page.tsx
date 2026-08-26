@@ -488,7 +488,7 @@ export default function BuildingInspectionStatusPost() {
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo monitors your permits in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })} automatically.
             The second any inspection status changes — passed, failed, or put on hold — you get an email.
-            No more logging into five different portals. First month free.
+            No more logging into five different portals. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

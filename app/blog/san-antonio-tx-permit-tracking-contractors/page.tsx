@@ -142,17 +142,17 @@ export default function SanAntonioPermitTrackingPost() {
         <div className="border border-[#FF6B00]/40 bg-[#FF6B00]/5 p-6 relative">
           <div className="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-[#FF6B00] -translate-x-px -translate-y-px" />
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
-          <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">MONITOR YOUR SAN ANTONIO PERMITS — FIRST MONTH FREE</h3>
+          <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">MONITOR YOUR SAN ANTONIO PERMITS — FREE TO START</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             Automated San Antonio tracking isn&apos;t live yet. Get notified when it launches — tracking already runs in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.
-            Stop logging into SAconnect every morning. First month free.
+            Stop logging into SAconnect every morning. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
               href="/signup"
               className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-8 py-3 hover:bg-[#F5F0E8] transition-colors text-center"
             >
-              START YOUR 30-DAY FREE TRIAL →
+              TRACK ONE PERMIT FREE →
             </Link>
             <Link
               href="/#how-it-works"

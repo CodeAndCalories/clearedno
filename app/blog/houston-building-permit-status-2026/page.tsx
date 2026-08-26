@@ -424,7 +424,7 @@ export default function HoustonPermitStatus2026Post() {
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             Automated Houston tracking isn&apos;t available yet. Where it is live, ClearedNo checks every 2 hours — the second an inspection passes,
             fails, or a hold lands — you get an email. Stop checking houstonpermittingcenter.org
-            every morning. First month free.
+            every morning. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

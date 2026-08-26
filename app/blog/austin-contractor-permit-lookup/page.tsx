@@ -175,7 +175,7 @@ export default function AustinPermitLookupPost() {
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">GET ALERTED THE MOMENT YOUR PERMIT CLEARS</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo checks your Austin permits every 2 hours and sends you an instant email the moment the status changes.
-            No more morning portal checks. First month free.
+            No more morning portal checks. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

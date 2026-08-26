@@ -480,7 +480,7 @@ export default function BuildingPermitStatusCheckGuidePost() {
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo checks your permits across Ohio, Illinois, Indiana, Michigan, Kentucky, and
             Pennsylvania automatically. Enter permit numbers once — get email alerts the moment
-            any status changes. No more morning portal rounds. First month free.
+            any status changes. No more morning portal rounds. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

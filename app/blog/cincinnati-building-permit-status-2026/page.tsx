@@ -415,7 +415,7 @@ export default function CincinnatiPermitStatus2026Post() {
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo is bringing automatic permit tracking to Hamilton County — Cincinnati&apos;s
             ~46,000 records coming soon. Sign up now to be first notified when Cincinnati tracking
-            goes live. First month free.
+            goes live. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

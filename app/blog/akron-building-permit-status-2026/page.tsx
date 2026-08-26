@@ -399,7 +399,7 @@ export default function AkronPermitStatus2026Post() {
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">TRACK YOUR AKRON PERMITS AUTOMATICALLY</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo is building Summit County coverage — ~50,000 Akron-area records coming soon.
-            Sign up now to be first notified when Akron tracking goes live. First month free.
+            Sign up now to be first notified when Akron tracking goes live. Free to join, no card.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

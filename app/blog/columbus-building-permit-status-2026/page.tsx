@@ -416,7 +416,7 @@ export default function ColumbusPermitStatus2026Post() {
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo checks your Columbus permits every 2 hours across Franklin County&apos;s
             271,000+ property records. The second an inspection passes, fails, or a hold lands —
-            you get an email. Stop checking permits.columbus.gov every morning. First month free.
+            you get an email. Stop checking permits.columbus.gov every morning. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

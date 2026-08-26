@@ -476,7 +476,7 @@ export default function FreePermitLookupByAddressPost() {
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             Stop checking permit portals manually every morning. ClearedNo monitors your permits
             automatically and sends email alerts the moment any status changes — passed, failed,
-            on hold, or expiring. First month free.
+            on hold, or expiring. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

@@ -169,7 +169,7 @@ export default async function LocationCityPage(props: Props) {
               href="/signup"
               className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors"
             >
-              Start Free Trial
+              Start Free
             </Link>
           </div>
         </div>
@@ -200,7 +200,7 @@ export default async function LocationCityPage(props: Props) {
                 href="/signup"
                 className="inline-flex items-center gap-3 bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-bold tracking-widest uppercase px-10 py-5 hover:bg-[#F5F0E8] transition-colors"
               >
-                AVOID {city.name.toUpperCase()} LATE FEES AND PROJECT DELAYS — START FREE TRIAL <span>→</span>
+                AVOID {city.name.toUpperCase()} LATE FEES AND PROJECT DELAYS — TRACK ONE FREE <span>→</span>
               </Link>
             </>
           ) : (
@@ -330,8 +330,8 @@ export default async function LocationCityPage(props: Props) {
                   detail: "One $79/mo subscription covers every permit in your pipeline — no per-permit fees, no caps.",
                 },
                 {
-                  tip: "First month completely free",
-                  detail: "Start tracking today. Card required but not charged for 30 days. Cancel anytime with one click.",
+                  tip: "Your first permit is free",
+                  detail: "Track one permit free, forever — no card, no countdown. Unlimited is $79/mo when you outgrow it, with the first month free.",
                 },
                   ]
                 : [
@@ -464,7 +464,7 @@ export default async function LocationCityPage(props: Props) {
               STOP CHECKING.<br /><span className="text-[#FF6B00]">START BUILDING.</span>
             </h2>
             <p className="text-sm text-[#F5F0E8]/50 mb-8">
-              First month free. Card required, not charged for 30 days. Cancel anytime.
+              One permit free, forever. No card. Cancel anytime.
             </p>
             <Link
               href="/signup"

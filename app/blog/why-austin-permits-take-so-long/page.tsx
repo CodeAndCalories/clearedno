@@ -170,7 +170,7 @@ export default function AustinPermitDelaysPost() {
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">KNOW THE MOMENT YOUR PERMIT STATUS CHANGES</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo checks your Austin permits every 2 hours. The second a correction drops or a permit clears, you get an email.
-            Stop checking the portal. Start responding faster. First month free.
+            Stop checking the portal. Start responding faster. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

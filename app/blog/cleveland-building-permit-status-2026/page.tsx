@@ -402,7 +402,7 @@ export default function ClevelandPermitStatus2026Post() {
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
             ClearedNo checks your Cleveland and Cuyahoga County permits every 2 hours. The second
             an inspection passes, fails, or a hold lands — you get an email. Stop juggling multiple
-            portals every morning. First month free.
+            portals every morning. Track one permit free, forever.
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link

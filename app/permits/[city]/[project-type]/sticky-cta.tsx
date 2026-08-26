@@ -53,7 +53,7 @@ export default function StickyPermitCTA() {
             href="/signup"
             className="bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-4 py-2 sm:px-6 sm:py-3 hover:bg-[#F5F0E8] transition-colors whitespace-nowrap"
           >
-            Start Free 30-Day Trial →
+            Track One Permit Free →
           </Link>
           <button
             onClick={dismiss}

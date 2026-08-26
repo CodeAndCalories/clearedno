@@ -141,7 +141,7 @@ async function StatePermitsPage({ slug }: { slug: string }) {
               href="/signup"
               className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors"
             >
-              Start Free Trial
+              Start Free
             </Link>
           </div>
         </div>
@@ -240,7 +240,7 @@ async function StatePermitsPage({ slug }: { slug: string }) {
               </h2>
               <p className="text-sm text-[#F5F0E8]/50 mb-8">
                 ClearedNo watches {trackedInState.join(", ")} permit portals multiple times
-                daily and emails you the moment your status changes. First month free.
+                daily and emails you the moment your status changes. Track one permit free, forever.
               </p>
               <Link
                 href="/signup"
@@ -331,7 +331,7 @@ export default async function CityPermitsPage(props: { params: Promise<{ city: s
               href="/signup"
               className="bg-[#FF6B00] text-[#0A0A0A] text-xs font-mono font-bold tracking-widest uppercase px-4 py-2 hover:bg-[#F5F0E8] transition-colors"
             >
-              Start Free Trial
+              Start Free
             </Link>
           </div>
         </div>
@@ -437,7 +437,7 @@ export default async function CityPermitsPage(props: { params: Promise<{ city: s
             </h2>
             <p className="text-sm text-[#F5F0E8]/50 mb-8">
               ClearedNo checks the {meta.name} permit portal multiple times daily and
-              emails you the moment your status changes. First month free.
+              emails you the moment your status changes. Track one permit free, forever.
             </p>
             <Link
               href="/signup"
