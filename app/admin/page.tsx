@@ -12,6 +12,7 @@ async function fetchAll() {
     usersRes,
     activeRes,
     trialRes,
+    freeRes,
     permitsRes,
     permitsByCityRes,
     recentProfilesRes,
@@ -21,6 +22,9 @@ async function fetchAll() {
     supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }),
     supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("subscription_status", "active"),
     supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("subscription_status", "trialing"),
+    // Free accounts were invisible here: counted in Total Users but in none of
+    // the status tiles, so the numbers never added up.
+    supabaseAdmin.from("profiles").select("*", { count: "exact", head: true }).eq("subscription_status", "free"),
     supabaseAdmin.from("permits").select("*", { count: "exact", head: true }).eq("is_active", true),
     // Permits grouped by city — fetch all active and aggregate in JS
     supabaseAdmin.from("permits").select("city, state").eq("is_active", true),
@@ -79,6 +83,7 @@ async function fetchAll() {
     totalUsers:      usersRes.count      ?? 0,
     activeSubsCount: activeRes.count     ?? 0,
     trialCount:      trialRes.count      ?? 0,
+    freeCount:       freeRes.count       ?? 0,
     mrr:             (activeRes.count ?? 0) * 79,
     permitsTracked:  permitsRes.count    ?? 0,
     permitsByCity,
@@ -148,10 +153,11 @@ export default async function AdminPage() {
         {/* ── Key metrics ── */}
         <section>
           <SectionLabel>Key Metrics</SectionLabel>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
             <MetricCard label="Total Users"     value={d.totalUsers}      />
             <MetricCard label="Active Subs"     value={d.activeSubsCount} accent />
             <MetricCard label="On Trial"        value={d.trialCount}      />
+            <MetricCard label="Free Tier"       value={d.freeCount}       />
             <MetricCard label="MRR"             value={`$${d.mrr}`}       accent />
             <MetricCard label="Permits Tracked" value={d.permitsTracked}  />
           </div>

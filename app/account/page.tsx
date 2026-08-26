@@ -10,6 +10,10 @@ export const metadata = {
 
 const STATUS_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
   active:   { label: "Active",    color: "#22C55E", bg: "rgba(34,197,94,0.12)"   },
+  // 'free' is a working state, not an absence of one: the account tracks one
+  // permit plus any slots bought outright. Without an entry here it fell
+  // through to "No Access", which is both wrong and discouraging.
+  free:     { label: "Free",      color: "#60A5FA", bg: "rgba(96,165,250,0.12)"  },
   trialing: { label: "Trial",     color: "#FF6B00", bg: "rgba(255,107,0,0.12)"   },
   past_due: { label: "Past Due",  color: "#EAB308", bg: "rgba(234,179,8,0.12)"   },
   canceled: { label: "Canceled",  color: "#DC2626", bg: "rgba(220,38,38,0.12)"   },
@@ -98,6 +102,11 @@ export default async function AccountPage() {
   const trialEndsAt  = profile?.trial_ends_at as string | null | undefined;
 
   const permitActive = permitStatus === "active" || permitStatus === "trialing";
+  // A free account has a real, working dashboard — one tracked permit plus any
+  // purchased slots — so it gets the dashboard link like any paying account,
+  // alongside an upgrade path rather than instead of one.
+  const permitFree = permitStatus === "free";
+  const permitHasDashboard = permitActive || permitFree;
   const leadsActive  = leadsStatus === "active";
 
   // ── Account age (use auth user created_at) ──────────────────────────────
@@ -186,8 +195,8 @@ export default async function AccountPage() {
               {statusBadge(permitStatus)}
             </div>
 
-            <div className="mt-auto">
-              {permitActive ? (
+            <div className="mt-auto flex flex-wrap items-center gap-2">
+              {permitHasDashboard ? (
                 <a
                   href="/dashboard"
                   className="inline-block border border-[#FF6B00] text-[#FF6B00] text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors"
@@ -200,6 +209,14 @@ export default async function AccountPage() {
                   className="inline-block border border-[#F5F0E8]/30 text-[#F5F0E8]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#F5F0E8]/60 hover:text-[#F5F0E8] transition-colors"
                 >
                   Get Access →
+                </a>
+              )}
+              {permitFree && (
+                <a
+                  href="/pricing"
+                  className="inline-block border border-[#F5F0E8]/30 text-[#F5F0E8]/60 text-[10px] tracking-widest uppercase font-mono px-4 py-2 hover:border-[#F5F0E8]/60 hover:text-[#F5F0E8] transition-colors"
+                >
+                  Upgrade →
                 </a>
               )}
             </div>

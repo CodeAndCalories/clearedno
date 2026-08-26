@@ -16,17 +16,26 @@ import type { SubscriptionStatus } from "@/types";
 export const FREE_TIER_PERMIT_LIMIT = 1;
 
 /**
- * Subscription statuses that grant unlimited tracking.
+ * Subscription statuses that grant UNLIMITED tracking.
+ *
+ * ── THIS SET IS NOT A MIRROR OF ENTITLED_SUBSCRIPTION_STATUSES ──────────
+ * scrapers/index.ts holds a set that looks almost identical. The two answer
+ * DIFFERENT questions and are deliberately not the same:
+ *
+ *   this set → "how many permits may this user have?"
+ *   ENTITLED_SUBSCRIPTION_STATUSES → "may this permit be checked at all?"
+ *
+ * 'free' makes the difference concrete. A free user's one permit IS checked,
+ * so 'free' appears in the scraper's set — but a free user is capped at
+ * 1 + purchased slots, so 'free' must NEVER appear here. Adding it would hand
+ * every non-paying account unlimited tracking, which is the hole the whole
+ * entitlement layer exists to close. Reconciling the two sets breaks a tier.
  *
  * Keyed on STATUS, never on a price ID. Any active permit-side subscription
  * counts — the legacy $79/mo, the incoming $29/mo, or whatever replaces them.
  * Checking a specific price here would drop every existing subscriber to the
  * free tier the moment a second price exists, which is the single most
  * expensive mistake available in this change.
- *
- * Mirrors ENTITLED_SUBSCRIPTION_STATUSES in scrapers/index.ts. The two must
- * agree: this decides whether a permit can be added, that one decides whether
- * it gets checked.
  */
 const UNLIMITED_STATUSES: ReadonlySet<string> = new Set<SubscriptionStatus>([
   "active",
@@ -115,6 +124,12 @@ export async function getEntitlement(userId: string): Promise<Entitlement> {
   // 'canceled' and 'past_due' fall through to the free allowance rather than
   // to zero: a lapsed subscriber keeps the free tier every account gets, and
   // keeps any slots they paid for outright. Purchased slots are not a rental.
+  //
+  // Known divergence: the scraper does NOT check permits for 'canceled' or
+  // 'past_due' owners, so those users can add a permit here that never gets
+  // checked. 'free' has no such gap — it is entitled in both places. Closing
+  // this means either admitting those statuses to the scraper's set or
+  // refusing the add; it is a product decision, not an oversight.
   if (status !== undefined && UNLIMITED_STATUSES.has(status)) {
     return {
       tier: "unlimited",

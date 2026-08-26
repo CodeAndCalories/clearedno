@@ -72,20 +72,37 @@ const HEALTH_ERROR_THRESHOLD = 3;
 // Statuses we consider "terminal" — no point re-checking these permits.
 const TERMINAL_STATUSES: PermitStatus[] = ["CLEARED", "REJECTED", "EXPIRED"];
 
-// Subscription statuses that entitle a user to permit tracking.
+// Subscription statuses whose permits get checked.
+//
+// ── THIS SET IS NOT A MIRROR OF UNLIMITED_STATUSES ──────────────────────
+// lib/entitlements.ts holds a set that looks almost identical. The two answer
+// DIFFERENT questions and are deliberately not the same:
+//
+//   this set  → "may this permit be checked at all?"
+//   UNLIMITED_STATUSES → "how many permits may this user have?"
+//
+// 'free' makes the difference concrete. A free user's one permit IS checked —
+// that is the entire free tier — so 'free' belongs here. But a free user is
+// capped at 1 + purchased slots, so 'free' must NEVER be added to
+// UNLIMITED_STATUSES, where it would hand every non-paying account unlimited
+// tracking. Reconciling the two sets to "fix" the discrepancy breaks a tier.
 //
 // Deliberately keyed on subscription STATUS, never on a price ID. Any active
 // permit-side subscription counts, whatever it costs — filtering on a specific
 // price here would silently stop tracking for every subscriber the moment a
 // new tier is introduced alongside the existing one.
 //
-// 'past_due' is excluded: Stripe has already failed to collect, and the
-// dashboard sends those users to /reactivate. 'canceled' likewise.
+// 'past_due' and 'canceled' are excluded: Stripe has failed to collect, or the
+// subscription is gone, and the dashboard sends those users to /reactivate.
+// Note this is stricter than entitlements.ts, which lets a lapsed subscriber
+// keep the free allowance for counting purposes — so a canceled user can
+// currently add a permit that this scraper will not check. See the note beside
+// UNLIMITED_STATUSES.
 //
 // Typed as a Set of SubscriptionStatus so an invalid literal fails the build,
 // but widened to ReadonlySet<string> so .has() takes the raw column value.
 const ENTITLED_SUBSCRIPTION_STATUSES: ReadonlySet<string> =
-  new Set<SubscriptionStatus>(["active", "trialing"]);
+  new Set<SubscriptionStatus>(["active", "trialing", "free"]);
 
 // ── Structured logger ──────────────────────────────────────────────────────
 // All logs are newline-delimited JSON so they can be ingested by any log
