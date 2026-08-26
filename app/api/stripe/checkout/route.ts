@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 //
 //   "permit_alerts" (default) — subscription. First month free (30-day trial),
 //                               then $79/mo.
-//   "permit_slot"             — one-time $9.99 for a single extra tracked
+//   "permit_slot"             — one-time $29 for a single extra tracked
 //                               permit. mode: "payment", no subscription.
 //
 // The default matters: the dashboard banners POST to this route as a plain
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
   const baseUrl = process.env.NEXT_PUBLIC_URL!;
 
-  // ── One-time permit slot ($9.99) ────────────────────────────────────────
+  // ── One-time permit slot ($29) ──────────────────────────────────────────
   if (product === SLOT_SKU) {
     const slotPriceId = process.env.STRIPE_SLOT_PRICE_ID;
 

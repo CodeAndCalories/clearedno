@@ -53,7 +53,7 @@ export interface Entitlement {
   used: number;
   /** Whether one more permit may be added right now. */
   canAdd: boolean;
-  /** Slots bought at $9.99 each, summed across purchases. */
+  /** Slots bought outright, summed across purchases. */
   purchasedSlots: number;
 }
 

@@ -21,11 +21,11 @@ const FAQ = [
   },
   {
     q: "Do permit slots expire?",
-    a: "No. A slot is a one-time $9.99 purchase and it's yours permanently — it survives cancelling a subscription, and it never renews or bills again.",
+    a: "No. A slot is a one-time $29 purchase and it's yours permanently — it survives cancelling a subscription, and it never renews or bills again.",
   },
   {
     q: "When is the subscription worth it over slots?",
-    a: "Slots are cheaper in raw dollars almost however many you buy, because they never bill again. The subscription is for pipelines that don't stop — unlimited permits with nothing to count, buy, or top up as jobs come in. If you're running a handful of jobs a year, buy slots.",
+    a: "Count the new permits you pull in a typical month. At one or two, slots win — $29 or $58, paid once and never again. At three a month you'd spend $87 on slots against $79 for unlimited, so the subscription is cheaper from the first month and stays cheaper every month after. A list that sits still at any size: buy slots. Three or more new permits a month: subscribe.",
   },
   {
     q: "What happens if I cancel the subscription?",
@@ -72,7 +72,7 @@ const TIERS: Tier[] = [
   },
   {
     name: "Permit Slot",
-    price: "$9.99",
+    price: "$29",
     cadence: "one-time, each",
     tagline: "Add permits as jobs come in.",
     features: [
@@ -210,44 +210,95 @@ export default function PricingPage() {
             WHICH ONE, HONESTLY
           </div>
           <p className="text-xs text-[#F5F0E8]/50 mb-8 max-w-2xl leading-relaxed">
-            Slots are a one-time charge and never renew, so in raw dollars they
-            stay cheaper than the subscription almost however many you buy. We&apos;d
-            rather say that plainly than bury it.
+            A slot is $29, once. Unlimited is $79, every month. Which one is
+            cheaper comes down to a single question — does your permit list sit
+            still, or does it keep moving? Both answers are below, with the
+            arithmetic.
           </p>
 
+          {/* A — a list that sits still */}
+          <div className="text-[10px] tracking-[0.25em] text-[#FF6B00] uppercase mb-3">
+            A list that sits still &rarr; buy slots
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-xs font-mono min-w-[420px]">
               <thead>
                 <tr className="border-b border-[#FF6B00]/20 text-[#FF6B00]/70">
                   <th className="text-left py-2 pr-4 font-normal tracking-widest uppercase text-[10px]">Permits</th>
-                  <th className="text-left py-2 pr-4 font-normal tracking-widest uppercase text-[10px]">With slots</th>
-                  <th className="text-left py-2 font-normal tracking-widest uppercase text-[10px]">Unlimited, 1 year</th>
+                  <th className="text-left py-2 pr-4 font-normal tracking-widest uppercase text-[10px]">Slots to buy</th>
+                  <th className="text-left py-2 font-normal tracking-widest uppercase text-[10px]">You pay, total</th>
                 </tr>
               </thead>
               <tbody>
                 {[
-                  { permits: "1",   slots: "$0",      sub: "$948" },
-                  { permits: "3",   slots: "$19.98",  sub: "$948" },
-                  { permits: "10",  slots: "$89.91",  sub: "$948" },
-                  { permits: "25",  slots: "$239.76", sub: "$948" },
+                  { permits: "1", slots: "0 — included free", total: "$0"   },
+                  { permits: "2", slots: "1",                  total: "$29"  },
+                  { permits: "3", slots: "2",                  total: "$58"  },
+                  { permits: "5", slots: "4",                  total: "$116" },
                 ].map((row) => (
                   <tr key={row.permits} className="border-b border-[#FF6B00]/10">
                     <td className="py-3 pr-4 text-[#F5F0E8]/80">{row.permits}</td>
-                    <td className="py-3 pr-4 text-[#16A34A]">{row.slots} once</td>
-                    <td className="py-3 text-[#F5F0E8]/50">{row.sub}/yr</td>
+                    <td className="py-3 pr-4 text-[#F5F0E8]/50">{row.slots}</td>
+                    <td className="py-3 text-[#16A34A]">{row.total} once</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <p className="mt-4 mb-10 text-xs text-[#F5F0E8]/60 leading-relaxed max-w-2xl">
+            Paid once, then never again. Five permits watched forever costs $116
+            — less than two months of unlimited, and there is no third month.
+            If this is you, don&apos;t buy the subscription.
+          </p>
 
-          <p className="mt-6 text-xs text-[#F5F0E8]/60 leading-relaxed max-w-2xl">
-            <span className="text-[#F5F0E8]">So why subscribe?</span> Because
-            counting costs something too. On the subscription there is no cap to
-            hit, no purchase to make mid-job, and no permit you skipped tracking
-            because it wasn&apos;t worth another $9.99. If your permit list changes
-            week to week, buy the plan. If it doesn&apos;t, buy slots — we&apos;ll
-            still be here.
+          {/* B — a list that keeps moving */}
+          <div className="text-[10px] tracking-[0.25em] text-[#FF6B00] uppercase mb-3">
+            A list that keeps moving &rarr; subscribe
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs font-mono min-w-[420px]">
+              <thead>
+                <tr className="border-b border-[#FF6B00]/20 text-[#FF6B00]/70">
+                  <th className="text-left py-2 pr-4 font-normal tracking-widest uppercase text-[10px]">New permits / month</th>
+                  <th className="text-left py-2 pr-4 font-normal tracking-widest uppercase text-[10px]">Slots cost</th>
+                  <th className="text-left py-2 font-normal tracking-widest uppercase text-[10px]">Unlimited</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[
+                  { rate: "1", slots: "$29/mo",  cheaper: "slots" },
+                  { rate: "2", slots: "$58/mo",  cheaper: "slots" },
+                  { rate: "3", slots: "$87/mo",  cheaper: "sub"   },
+                  { rate: "5", slots: "$145/mo", cheaper: "sub"   },
+                ].map((row) => (
+                  <tr key={row.rate} className="border-b border-[#FF6B00]/10">
+                    <td className="py-3 pr-4 text-[#F5F0E8]/80">{row.rate}</td>
+                    <td
+                      className={`py-3 pr-4 ${
+                        row.cheaper === "slots" ? "text-[#16A34A]" : "text-[#F5F0E8]/50"
+                      }`}
+                    >
+                      {row.slots}
+                    </td>
+                    <td
+                      className={`py-3 ${
+                        row.cheaper === "sub" ? "text-[#16A34A]" : "text-[#F5F0E8]/50"
+                      }`}
+                    >
+                      $79/mo
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="mt-4 text-xs text-[#F5F0E8]/60 leading-relaxed max-w-2xl">
+            <span className="text-[#F5F0E8]">Three a month is the crossover.</span>{" "}
+            At three new permits a month you spend $87 on slots against $79 for
+            unlimited — and you spend it again next month, and the month after
+            that. From three and up the subscription is simply the cheaper way to
+            buy the same thing, before you count the time lost buying slots
+            mid-job.
           </p>
         </div>
 
@@ -263,7 +314,7 @@ export default function PricingPage() {
             <div className="text-[#F5F0E8]/40 text-[10px] uppercase tracking-widest mb-1">
               One permit slot
             </div>
-            <div className="font-heading text-3xl text-[#FF6B00]">$9.99</div>
+            <div className="font-heading text-3xl text-[#FF6B00]">$29</div>
           </div>
           <div>
             <div className="text-[#F5F0E8]/40 text-[10px] uppercase tracking-widest mb-1">
@@ -273,7 +324,7 @@ export default function PricingPage() {
           </div>
           <p className="sm:col-span-3 text-xs text-[#F5F0E8]/60 leading-relaxed border-t border-[#FF6B00]/10 pt-6">
             Half a day of idle crew pays for a year of monitoring. One slot costs
-            less than twenty minutes of it.
+            under ten minutes of it.
           </p>
         </div>
 

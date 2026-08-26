@@ -159,7 +159,7 @@ function EntitlementStrip({ entitlement }: { entitlement: EntitlementView }) {
         {purchasedSlots > 0
           ? `1 free + ${purchasedSlots} purchased ${purchasedSlots === 1 ? "slot" : "slots"}`
           : atLimit
-            ? "Free permit used — add another for $9.99"
+            ? "Free permit used — add another for $29"
             : "1 free permit included"}
       </span>
     </div>

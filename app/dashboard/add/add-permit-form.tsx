@@ -246,7 +246,7 @@ export default function AddPermitForm({
                 wrapperClassName="flex-1"
                 className="w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Add a Slot — $9.99
+                Add a Slot — $29
               </CheckoutButton>
               <Link
                 href="/dashboard"

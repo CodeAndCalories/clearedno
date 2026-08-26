@@ -254,7 +254,7 @@ export default function LandingPage() {
               </div>
 
               <p className="mt-4 text-xs text-[#F5F0E8]/40 font-mono">
-                One permit tracked free, forever. No card. Add more for $9.99 each.
+                One permit tracked free, forever. No card. Add more for $29 each.
               </p>
             </div>
 
@@ -487,7 +487,7 @@ export default function LandingPage() {
               },
               {
                 name: "Permit Slot",
-                price: "$9.99",
+                price: "$29",
                 cadence: "one-time, each",
                 features: [
                   "Everything in Free",
@@ -556,7 +556,7 @@ export default function LandingPage() {
               <div className="text-[#F5F0E8]/40 text-[10px] uppercase tracking-widest mb-1">
                 One permit slot
               </div>
-              <div className="font-heading text-3xl text-[#FF6B00]">$9.99</div>
+              <div className="font-heading text-3xl text-[#FF6B00]">$29</div>
             </div>
             <div>
               <div className="text-[#F5F0E8]/40 text-[10px] uppercase tracking-widest mb-1">
@@ -566,12 +566,12 @@ export default function LandingPage() {
             </div>
             <p className="sm:col-span-3 text-xs text-[#F5F0E8]/60 leading-relaxed border-t border-[#FF6B00]/10 pt-6">
               Half a day of idle crew pays for a year of monitoring. One slot costs
-              less than twenty minutes of it.
+              under ten minutes of it.
             </p>
           </div>
 
           <p className="mt-6 text-xs text-[#F5F0E8]/30 text-center">
-            Start free · No card · Cancel any time · $9.99 slots never renew
+            Start free · No card · Cancel any time · $29 slots never renew
           </p>
         </div>
       </section>
@@ -651,7 +651,7 @@ export default function LandingPage() {
               },
               {
                 q: "Do permit slots expire?",
-                a: "No. A slot is a one-time $9.99 purchase, yours permanently. It never renews, and you keep it even if you later cancel a subscription.",
+                a: "No. A slot is a one-time $29 purchase, yours permanently. It never renews, and you keep it even if you later cancel a subscription.",
               },
               {
                 q: "How does the free trial work?",

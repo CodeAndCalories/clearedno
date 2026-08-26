@@ -11,9 +11,13 @@
 // Resources:
 //   permit_alerts_monthly  $79/mo   → STRIPE_PRICE_ID
 //   roofing_leads_monthly  $300/mo  → STRIPE_LEADS_PRICE_ID
-//   permit_slot_onetime    $9.99    → STRIPE_SLOT_PRICE_ID  (ONE-TIME, not recurring)
+//   permit_slot_onetime_v2 $29.00   → STRIPE_SLOT_PRICE_ID  (ONE-TIME, not recurring)
 //   FOUNDING49 coupon      $30 off once (first month $49) + matching promo code
 //                                   — the webhook matches coupon.id === "FOUNDING49"
+//
+// Retired prices are archived rather than edited: Stripe prices are immutable,
+// so a price change is always "create the new one, deactivate the old one".
+// See RETIRED note on the permit_slot plan below.
 // ─────────────────────────────────────────────────────────
 
 import * as dotenv from "dotenv";
@@ -43,6 +47,12 @@ type PlanSpec = {
   productDescription: string;
   unitAmount: number;
   billing: PlanBilling;
+  /**
+   * Prices this plan used to bill against. Archived (active: false) on --apply
+   * so nothing can check out at the old amount, and never adopted from the
+   * environment even when STRIPE_..._PRICE_ID still names one.
+   */
+  retiredPriceIds?: string[];
 };
 
 const PLANS: PlanSpec[] = [
@@ -68,13 +78,18 @@ const PLANS: PlanSpec[] = [
   },
   {
     sku: "permit_slot",
-    lookupKey: "permit_slot_onetime",
+    // _v2: the $9.99 price still owns "permit_slot_onetime" until it is
+    // archived, and Stripe rejects a lookup_key held by another active price.
+    lookupKey: "permit_slot_onetime_v2",
     envVar: "STRIPE_SLOT_PRICE_ID",
     productName: "ClearedNo — Permit Slot",
     productDescription:
       "One additional tracked permit slot. One-time purchase, kept permanently.",
-    unitAmount: 999,
+    unitAmount: 2900,
     billing: "one_time",
+    // The $9.99 price this replaced. Nothing ever sold at it, so archiving is
+    // pure cleanup — no customer is mid-purchase against it.
+    retiredPriceIds: ["price_1U8V0BDMg5xWs4GTOzfXOc3b"],
   },
 ];
 
@@ -82,7 +97,7 @@ const PLANS: PlanSpec[] = [
 
 const dollars = (cents: number) => `$${(cents / 100).toFixed(2)}`;
 
-/** "$79.00/month" or "$9.99 one-time" — used in every log line and warning. */
+/** "$79.00/month" or "$29.00 one-time" — used in every log line and warning. */
 function priceLabel(plan: PlanSpec): string {
   return plan.billing === "monthly"
     ? `${dollars(plan.unitAmount)}/month`
@@ -214,11 +229,61 @@ async function inspectConfiguredPrice(
   return true;
 }
 
+/** True when `priceId` is one this plan has explicitly moved off. */
+function isRetiredPrice(plan: PlanSpec, priceId: string): boolean {
+  return (plan.retiredPriceIds ?? []).includes(priceId);
+}
+
+/**
+ * Deactivates the prices a plan has moved off. Stripe prices cannot be edited,
+ * so raising an amount means creating a new price and archiving the old one —
+ * skip the archive and the previous amount stays purchasable by anything still
+ * holding its id.
+ */
+async function archiveRetiredPrices(stripe: Stripe, plan: PlanSpec) {
+  for (const priceId of plan.retiredPriceIds ?? []) {
+    let price: Stripe.Price;
+    try {
+      price = await stripe.prices.retrieve(priceId);
+    } catch (err) {
+      // Expected in the mode that never had it (a test-mode id in live, or a
+      // freshly created account) — not a problem to report.
+      if (isResourceMissing(err)) {
+        log("info", `retired price ${priceId} is not in this account — nothing to archive`);
+        continue;
+      }
+      throw err;
+    }
+
+    if (!price.active) {
+      log("ok", `retired price ${priceId} (${describePrice(price)}) is already archived`);
+      continue;
+    }
+    if (!APPLY) {
+      log("add", `would archive retired price ${priceId} (${describePrice(price)})`);
+      continue;
+    }
+
+    await stripe.prices.update(priceId, { active: false });
+    log("add", `archived retired price ${priceId} (${describePrice(price)})`);
+  }
+}
+
 async function ensurePlan(stripe: Stripe, plan: PlanSpec) {
   console.log(`\n── ${plan.productName} ${"─".repeat(Math.max(0, 46 - plan.productName.length))}`);
 
+  await archiveRetiredPrices(stripe, plan);
+
   const configured = process.env[plan.envVar];
-  if (configured) {
+  if (configured && isRetiredPrice(plan, configured)) {
+    // Adopting it would pin the catalog to the price we just archived and let
+    // the run finish reporting "complete" while checkout was still broken.
+    log("warn", `${plan.envVar} still points at retired price ${configured} — ignoring it`);
+    warnings.push(
+      `${plan.envVar}=${configured} is the retired price. Replace it with the ` +
+        `${plan.envVar} value printed below, in .env.local and in the Vercel env.`
+    );
+  } else if (configured) {
     const usable = await inspectConfiguredPrice(stripe, plan, configured);
     if (usable) return;
   }

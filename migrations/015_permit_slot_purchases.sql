@@ -1,6 +1,6 @@
 -- Migration 015 — permit_slot_purchases
 --
--- Ledger of one-time permit-slot purchases ($9.99 each). One row per completed
+-- Ledger of one-time permit-slot purchases. One row per completed
 -- Stripe Checkout Session. Read by lib/entitlements.ts, written only by the
 -- Stripe webhook.
 --

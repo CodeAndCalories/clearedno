@@ -2,10 +2,11 @@
 
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 function SignupForm() {
+  const router = useRouter();
   const searchParams = useSearchParams();
 
   const [fullName, setFullName] = useState("");
@@ -66,20 +67,15 @@ function SignupForm() {
       localStorage.removeItem("clearedno_ref");
     }
 
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Signup no longer opens Stripe. A new account lands on the free tier —
+    // one tracked permit, no card — and upgrades from the dashboard when it
+    // hits the cap. FOUNDING49 stays enterable at that Upgrade checkout.
+    //
+    // The settle delay stays: profiles rows are created by a trigger on
+    // auth.users, and /dashboard reads profiles on its very first render.
+    await new Promise((resolve) => setTimeout(resolve, 1000));
 
-    const checkoutRes = await fetch("/api/stripe/checkout", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email }),
-    })
-    const checkoutData = await checkoutRes.json()
-    if (checkoutData.url) {
-      window.location.href = checkoutData.url
-    } else {
-      setError("Failed to start checkout. Please try again.")
-      setLoading(false)
-    }
+    router.push("/dashboard");
   }
 
   return (
@@ -91,7 +87,7 @@ function SignupForm() {
         </Link>
         <div className="flex items-center gap-2 text-[10px] tracking-widest text-[#F5F0E8]/30 uppercase">
           <span className="w-1.5 h-1.5 bg-[#16A34A] rounded-full animate-pulse" />
-          First Month Free
+          Free Tier · No Card
         </div>
       </div>
 
@@ -110,7 +106,7 @@ function SignupForm() {
                 START WATCHING
               </h1>
               <p className="text-xs text-[#F5F0E8]/40 tracking-widest">
-                30 days free · Then $79/mo
+                1 permit free, forever · No card
               </p>
             </div>
 
@@ -182,12 +178,13 @@ function SignupForm() {
                 disabled={loading}
                 className="w-full bg-[#FF6B00] text-[#0A0A0A] font-mono text-sm font-medium tracking-widest uppercase py-4 hover:bg-[#F5F0E8] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? "Creating Account..." : "Start Free Trial →"}
+                {loading ? "Creating Account..." : "Create Free Account →"}
               </button>
 
               <p className="text-[10px] text-[#F5F0E8]/30 text-center leading-relaxed">
-                By signing up you agree to our terms. Your trial starts immediately.
-                Your card won't be charged for 30 days. Cancel anytime.
+                By signing up you agree to our terms. No card required — you start
+                on the free tier with one tracked permit, and upgrade from the
+                dashboard whenever you need more.
               </p>
             </form>
 
