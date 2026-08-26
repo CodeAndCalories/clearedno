@@ -102,8 +102,17 @@ const TERMINAL_STATUSES: PermitStatus[] = ["CLEARED", "REJECTED", "EXPIRED"];
 //
 // So this set is now "every status that is a real account", and the revenue
 // question — how many permits — is answered entirely by getEntitlement().
-// Cancelling still costs the user everything above the free allowance, and the
-// dashboard still routes them to /reactivate.
+//
+// Be precise about what that enforces. getEntitlement gates ADDING a permit,
+// so a lapsed user cannot climb past 1 + purchased slots. It does not prune
+// what they already have, and the loop below filters on status, not count — a
+// subscriber who cancels holding 5 permits keeps all 5 checked. The dashboard's
+// lapsed banner says exactly that rather than implying a cap nothing applies.
+// Trimming to the allowance would mean choosing which permits to drop, which is
+// a product decision, not a scraper one.
+//
+// The dashboard no longer redirects lapsed users to /reactivate; they land on
+// the dashboard with that banner and can reactivate from it.
 //
 // Typed as a Set of SubscriptionStatus so an invalid literal fails the build,
 // but widened to ReadonlySet<string> so .has() takes the raw column value.
