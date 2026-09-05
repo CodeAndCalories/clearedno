@@ -356,10 +356,20 @@ async function runScrapers(): Promise<void> {
     // "checked, unchanged" indistinguishable from "never checked". That is
     // the signal used to detect a silently dead pipeline, so it has to be
     // written unconditionally.
+    //
+    // scrape_url rides along for the same reason: it was only written in the
+    // "status changed" branch, so a permit whose first check matched its
+    // seeded status (a Seattle permit added as PENDING that really is
+    // pending) never got its deep link — the dashboard had nothing to link
+    // to until the status moved. The link is known on every successful
+    // check, so it is stored on every successful check.
     if (!DRY_RUN) {
       const { error: stampError } = await supabaseAdmin
         .from("permits")
-        .update({ last_checked: new Date().toISOString() })
+        .update({
+          last_checked: new Date().toISOString(),
+          scrape_url:   result.scrape_url,
+        })
         .eq("id", permit.id);
 
       if (stampError) {
@@ -419,14 +429,13 @@ async function runScrapers(): Promise<void> {
     const updatedHistory: StatusHistoryEntry[] = [...history, newEntry];
 
     // ── 4b. Update permit in Supabase ─────────────────────────────────
-    // last_checked is already stamped in step 2b for every successful
-    // check, changed or not — it deliberately isn't repeated here.
+    // last_checked and scrape_url are already stamped in step 2b for every
+    // successful check, changed or not — they deliberately aren't repeated.
     const { error: updateError } = await supabaseAdmin
       .from("permits")
       .update({
         status:         result.status,
         status_history: updatedHistory,
-        scrape_url:     result.scrape_url,
       })
       .eq("id", permit.id);
 
