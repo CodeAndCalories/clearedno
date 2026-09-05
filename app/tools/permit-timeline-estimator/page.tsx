@@ -138,6 +138,12 @@ export default function PermitTimelineEstimatorPage() {
             ← Estimate Your Permit Fee
           </Link>
           <Link
+            href="/check"
+            className="text-[10px] tracking-widest text-[#F5F0E8]/30 uppercase hover:text-[#FF6B00] transition-colors"
+          >
+            Check a Permit&apos;s Live Status →
+          </Link>
+          <Link
             href="/permits"
             className="text-[10px] tracking-widest text-[#F5F0E8]/30 uppercase hover:text-[#FF6B00] transition-colors"
           >

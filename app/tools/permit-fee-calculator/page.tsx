@@ -130,13 +130,19 @@ export default function PermitFeeCalculatorPage() {
           </p>
         </div>
 
-        {/* Breadcrumb back link */}
-        <div className="mt-8 border-t border-[#FF6B00]/10 pt-6">
+        {/* Cross-links */}
+        <div className="mt-8 border-t border-[#FF6B00]/10 pt-6 flex flex-col sm:flex-row gap-3 sm:justify-between">
           <Link
             href="/permits"
             className="text-[10px] tracking-widest text-[#F5F0E8]/30 uppercase hover:text-[#FF6B00] transition-colors"
           >
             ← Browse Permit Guides by City
+          </Link>
+          <Link
+            href="/check"
+            className="text-[10px] tracking-widest text-[#F5F0E8]/30 uppercase hover:text-[#FF6B00] transition-colors"
+          >
+            Check a Permit&apos;s Live Status →
           </Link>
         </div>
       </div>

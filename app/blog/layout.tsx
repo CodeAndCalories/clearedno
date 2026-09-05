@@ -85,9 +85,10 @@ export default function BlogLayout({ children }: { children: React.ReactNode }) 
               <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-4">Free Tools</div>
               <ul className="space-y-2">
                 {[
+                  { label: "Permit Status Checker", href: "/check" },
                   { label: "Permit Fee Calculator", href: "/tools/permit-fee-calculator" },
                   { label: "Permit Timeline Estimator", href: "/tools/permit-timeline-estimator" },
-                  { label: "Permit Lookup by Address", href: "/" },
+                  { label: "Permit Guides by City & Project", href: "/" },
                 ].map((tool) => (
                   <li key={tool.href}>
                     <Link

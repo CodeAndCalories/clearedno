@@ -57,9 +57,18 @@ export default function HomePage() {
             Check Any Building<br />
             Permit Status — <span className="text-[#FF6B00]">Free</span>
           </h1>
-          <p className="text-sm text-[#F5F0E8]/50 max-w-xl mx-auto leading-relaxed mb-12">
+          <p className="text-sm text-[#F5F0E8]/50 max-w-xl mx-auto leading-relaxed mb-4">
             Look up permit approval times, fees, and requirements across{" "}
             {cities.length} US cities. No signup required.
+          </p>
+          <p className="text-xs text-[#F5F0E8]/40 max-w-xl mx-auto leading-relaxed mb-12">
+            Already have a permit number?{" "}
+            <Link
+              href="/check"
+              className="text-[#FF6B00] hover:text-[#F5F0E8] underline underline-offset-4 transition-colors"
+            >
+              Check its live status instantly →
+            </Link>
           </p>
 
           <PermitLookupForm />
@@ -111,6 +120,12 @@ export default function HomePage() {
           <p className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/20 uppercase">
             © {new Date().getFullYear()} ClearedNo
           </p>
+          <Link
+            href="/check"
+            className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase hover:text-[#FF6B00]/60 transition-colors"
+          >
+            Permit Status Checker
+          </Link>
           <Link
             href="/locations"
             className="text-[9px] tracking-[0.2em] text-[#F5F0E8]/30 uppercase hover:text-[#FF6B00]/60 transition-colors"
