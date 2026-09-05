@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
   title: "Grand Rapids Michigan Building Permit Guide: How to Search and Track Permits (2026) | ClearedNo",
@@ -293,7 +294,7 @@ export default function GrandRapidsMichiganPermitPost() {
           >
             REQUEST YOUR CITY →
           </Link>
-          <p className="mt-2 text-[9px] text-[#F5F0E8]/25 text-center">Ohio, Michigan &amp; Pennsylvania support coming soon</p>
+          <p className="mt-2 text-[9px] text-[#F5F0E8]/25 text-center">Automated tracking live in {liveCityList({ separator: ", ", conjunction: "and", format: "city" })}</p>
         </div>
 
         <nav className="border-t border-[#FF6B00]/10 pt-6 flex flex-col sm:flex-row gap-4 justify-between text-xs text-[#F5F0E8]/40 font-mono">

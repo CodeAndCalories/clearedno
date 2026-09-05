@@ -306,6 +306,119 @@ async function checkPittsburgh(permitNumber: string): Promise<CheckResult> {
   };
 }
 
+// Seattle — Socrata Open Data API (SDCI "Building Permits", 76t5-zqzr)
+async function checkSeattle(permitNumber: string): Promise<CheckResult> {
+  const url =
+    "https://data.seattle.gov/resource/76t5-zqzr.json" +
+    `?permitnum=${encodeURIComponent(permitNumber.trim())}&$limit=1`;
+
+  const res = await fetch(url, {
+    headers: { "Accept": "application/json" },
+    signal: AbortSignal.timeout(10_000),
+  });
+
+  if (!res.ok) throw new Error(`Seattle API ${res.status}`);
+
+  const rows = await res.json() as Array<Record<string, string>>;
+  const row  = rows[0];
+  if (!row) return { found: false };
+
+  const rawStatus = (row.statuscurrent ?? "").trim();
+
+  const address = [row.originaladdress1, row.originalcity, row.originalstate]
+    .filter(Boolean)
+    .join(", ") || undefined;
+
+  return {
+    found:     true,
+    status:    rawStatus ? resolveStatus("seattle", rawStatus) : "UNKNOWN",
+    rawStatus,
+    address,
+  };
+}
+
+// Detroit — two ArcGIS Feature Services (BSEED open data).
+//
+// The building-permits layer holds ISSUED permits only and has no status
+// column; the plan-reviews layer holds the pre-issuance task state. Both are
+// queried in parallel and the permits layer wins: a record there with an
+// issued_date is issued, whatever earlier review stage the other layer shows.
+// See scrapers/cities/detroit-mi.ts for the verification behind this.
+async function checkDetroit(permitNumber: string): Promise<CheckResult> {
+  const base     = "https://services2.arcgis.com/qvkbeam7Wirps6zC/arcgis/rest/services";
+  const recordId = permitNumber.trim().toUpperCase();
+  const where    = `record_id=${sqlQuote(recordId)}`;
+
+  const query = async (
+    layer: string,
+    outFields: string,
+    orderBy: string
+  ): Promise<Record<string, string | null> | null> => {
+    const params = new URLSearchParams({
+      where,
+      outFields,
+      orderByFields:     orderBy,
+      returnGeometry:    "false",
+      resultRecordCount: "1",
+      f:                 "json",
+    });
+    const res = await fetch(`${base}/${layer}/FeatureServer/0/query?${params.toString()}`, {
+      headers: { "Accept": "application/json" },
+      signal: AbortSignal.timeout(10_000),
+    });
+
+    if (!res.ok) throw new Error(`Detroit API ${res.status}`);
+
+    const data = await res.json() as {
+      features?: { attributes?: Record<string, string | null> }[];
+      error?: { message?: string };
+    };
+
+    // ArcGIS returns query errors with HTTP 200, so this must be checked
+    // explicitly or a malformed query looks like "permit not found".
+    if (data.error) throw new Error(`Detroit API: ${data.error.message ?? "unknown"}`);
+
+    return data.features?.[0]?.attributes ?? null;
+  };
+
+  const [permit, review] = await Promise.all([
+    query("bseed_building_permits",
+          "record_id,issued_date,address", "issued_date DESC"),
+    query("bseed_building_permit_plan_reviews",
+          "record_id,task,task_status,address", "task_status_date DESC"),
+  ]);
+
+  if (!permit && !review) return { found: false };
+
+  const addressOf = (a: Record<string, string | null> | null): string | undefined => {
+    const street = (a?.address ?? "").trim();
+    return street ? `${street}, Detroit, MI` : undefined;
+  };
+
+  const issuedDate = (permit?.issued_date ?? "").trim();
+  if (permit && issuedDate) {
+    return {
+      found:     true,
+      status:    resolveStatus("detroit", "Issued"),
+      rawStatus: `Issued ${issuedDate}`,
+      address:   addressOf(permit) ?? addressOf(review),
+    };
+  }
+
+  const taskStatus = (review?.task_status ?? "").trim();
+  const task       = (review?.task        ?? "").trim();
+  // Surface the workflow stage alongside the status — "Plans Distribution /
+  // Routed for Electronic Review" reads far better than the bare status.
+  const rawStatus = task && taskStatus ? `${task} / ${taskStatus}` : taskStatus;
+
+  return {
+    found:     true,
+    status:    taskStatus ? resolveStatus("detroit", taskStatus) : "UNKNOWN",
+    rawStatus,
+    address:   addressOf(review) ?? addressOf(permit),
+  };
+}
+
 /**
  * City slug → checker. Every slug in LIVE_CHECKER_CITIES must appear here, or
  * the route would fall back to another city's dataset and report a confidently
@@ -318,13 +431,15 @@ const CITY_CHECKERS: Record<string, (permitNumber: string) => Promise<CheckResul
   cincinnati:   checkCincinnati,
   philadelphia: checkPhiladelphia,
   pittsburgh:   checkPittsburgh,
+  seattle:      checkSeattle,
+  detroit:      checkDetroit,
 };
 
 // ── City router ───────────────────────────────────────────────────────────────
 //
-// Austin, Columbus and Philadelphia have live integrations, each backed by a
-// public API. The remaining city portals don't expose public APIs —
-// until those exist, we surface an honest "coming soon" instead of pretending
+// Every city in LIVE_CHECKER_CITIES has a checker above, each backed by a
+// public API. The remaining city portals don't expose a usable status API —
+// until they do, we surface an honest "coming soon" instead of pretending
 // to check.
 //
 // Accepted cities are derived from lib/cities.ts so every city with a

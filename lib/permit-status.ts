@@ -553,6 +553,178 @@ export const PITTSBURGH_STATUS_MAP: StatusMap = {
   "LAPSED":                    "EXPIRED",
 };
 
+// ── Seattle, WA ───────────────────────────────────────────────
+
+//
+// Matched exact-first by BaseScraper.matchStatus(), then longest-substring.
+// This is the COMPLETE live `statuscurrent` vocabulary of dataset 76t5-zqzr,
+// verified against the API (counts as of 2026-09-04): 24 values. The brief
+// that added this city listed 17 — the seven it omitted are tagged [+] below
+// and were found by GROUP BY on the live endpoint, not guessed.
+//
+// Seattle publishes the richest PRE-ISSUANCE workflow of any city we track:
+// thirteen of the 24 values describe a permit that has not been issued yet.
+//
+// ── THE DISTINCTION THIS UNION CANNOT EXPRESS ────────────────────────────────
+// Three values mean "the APPLICANT must act": Corrections Required,
+// Additional Info Requested, Awaiting Information. One means "the CITY is
+// working — wait": Reviews In Process. PermitStatus has one bucket for both,
+// UNDER_REVIEW, so they are flattened here exactly as Pittsburgh's "Applicant
+// Revisions" and "In Review" already are. The raw status is preserved verbatim
+// in raw_text / rawStatus so the dashboard and checker still show which one it
+// is. Expressing it properly needs a new PermitStatus (e.g. ACTION_REQUIRED),
+// which is a schema constraint + UI + email change, not a mapping change.
+//
+// "Ready for Issuance" is PENDING, not APPROVED — see Pittsburgh's "Ready For
+// Issue": the permit has not been issued and work may not legally start.
+// "Approved to Occupy" is CLEARED, not APPROVED — it is the certificate of
+// occupancy, the end of the lifecycle. Both MUST stay exact keys: under
+// substring matching each would hit the "APPROVED" fallback.
+
+export const SEATTLE_STATUS_MAP: StatusMap = {
+  // ── Finished ──────────────────────────────────────────────────────────────
+  "COMPLETED":                 "CLEARED",      // 133,863
+  "CLOSED":                    "CLEARED",      // 8,967
+  "APPROVED TO OCCUPY":        "CLEARED",      // 26  [+] certificate of occupancy
+
+  // ── Issued / work may proceed ─────────────────────────────────────────────
+  "ISSUED":                    "APPROVED",     // 8,392
+  "ACTIVE":                    "APPROVED",     // 268
+  "PHASE ISSUED":              "APPROVED",     // 13  [+] a phase of a phased permit is issued
+  // Inspections passed but the permit is not finaled — same call as
+  // Cleveland's "Inspection Approved - C.O. Req". Not CLEARED until "Completed".
+  "INSPECTIONS COMPLETED":     "APPROVED",     // 142 [+]
+
+  // ── Pre-issuance: intake / queued — received, not yet under review ────────
+  "INITIATED":                 "PENDING",      // 219  — application started online
+  "READY FOR INTAKE":          "PENDING",      // 291
+  "SCHEDULED":                 "PENDING",      // 1,940 — intake appointment scheduled
+  "SCHEDULED AND SUBMITTED":   "PENDING",      // 82   [+]
+  "APPLICATION COMPLETED":     "PENDING",      // 732  — intake done, review not started (NOT "COMPLETED")
+  "PENDING":                   "PENDING",      // 2    [+]
+
+  // ── Pre-issuance: reviews done, awaiting issuance ─────────────────────────
+  "REVIEWS COMPLETED":         "PENDING",      // 465  — issuance steps remain (NOT "COMPLETED")
+  "READY FOR ISSUANCE":        "PENDING",      // 662  — approved, NOT issued
+
+  // ── In review — with the city, wait ───────────────────────────────────────
+  "REVIEWS IN PROCESS":        "UNDER_REVIEW", // 616
+  "CORRECTIONS SUBMITTED":     "UNDER_REVIEW", // 9    [+] applicant responded, back with the city
+
+  // ── In review — APPLICANT must act (flattened; see note above) ────────────
+  "ADDITIONAL INFO REQUESTED": "UNDER_REVIEW", // 10,147
+  "CORRECTIONS REQUIRED":      "UNDER_REVIEW", // 2,109
+  "AWAITING INFORMATION":      "UNDER_REVIEW", // 528
+
+  // ── Terminal negative ─────────────────────────────────────────────────────
+  "WITHDRAWN":                 "REJECTED",     // 5,160
+  "CANCELED":                  "REJECTED",     // 4,574 — Seattle spells it with one L
+  "DENIED":                    "REJECTED",     // 1    [+]
+
+  // ── Lapsed ────────────────────────────────────────────────────────────────
+  "EXPIRED":                   "EXPIRED",      // 13,618
+
+  // ── Generic fallbacks (substring pass only) ───────────────────────────────
+  // Not emitted today; retained so a future Seattle value lands somewhere
+  // sensible rather than UNKNOWN. Exact match on the live keys above always
+  // runs first, so none of these can hijack a known value.
+  "CERTIFICATE OF OCCUPANCY":  "CLEARED",
+  "FINAL INSPECTION":          "CLEARED",
+  "CO ISSUED":                 "CLEARED",
+  "FINALED":                   "CLEARED",
+  "FINAL":                     "CLEARED",
+
+  "APPROVED":                  "APPROVED",
+
+  "APPLICATION RECEIVED":      "PENDING",
+  "APPLICATION":               "PENDING",
+  "SUBMITTED":                 "PENDING",
+  "INTAKE":                    "PENDING",
+
+  "UNDER REVIEW":              "UNDER_REVIEW",
+  "IN REVIEW":                 "UNDER_REVIEW",
+  "ON HOLD":                   "UNDER_REVIEW",
+  "HOLD":                      "UNDER_REVIEW",
+
+  "CANCELLED":                 "REJECTED",
+  "REJECTED":                  "REJECTED",
+  "REVOKED":                   "REJECTED",
+  "VOID":                      "REJECTED",
+
+  "LAPSED":                    "EXPIRED",
+};
+
+// ── Detroit, MI ───────────────────────────────────────────────
+
+//
+// Detroit's status comes from TWO ArcGIS layers, neither of which has a
+// permit-level status column on its own:
+//
+//   bseed_building_permit_plan_reviews  task_status  — pre-issuance workflow
+//   bseed_building_permits              (none)       — issued permits only;
+//                                                      every row has issued_date
+//
+// The scraper queries both. A row in the permits layer with an issued_date is
+// reported as the synthetic raw status "Issued" and mapped here. Otherwise the
+// plan-review task_status is mapped. The task_status block is the COMPLETE
+// live vocabulary, verified by GROUP BY (counts as of 2026-09-04).
+//
+// "Plans Approved" is PENDING, not APPROVED: it means plan review passed, and
+// the permit has NOT been issued (23,762 rows carry it, most of which were
+// later issued — the permits layer wins for those). It MUST stay an exact key
+// or the "APPROVED" fallback would report issued-and-buildable for a permit
+// that cannot legally start.
+
+export const DETROIT_STATUS_MAP: StatusMap = {
+  // ── Issued — synthesised from the permits layer ───────────────────────────
+  "ISSUED":                                  "APPROVED",
+
+  // ── Pre-issuance (plan reviews layer, task_status) — complete ─────────────
+  "PLANS APPROVED":                          "PENDING",      // 23,762 — review passed, NOT issued
+  "ACCEPTED - DOCUMENT REVIEW NOT REQUIRED": "PENDING",      // 8,022  — intake accepted, awaiting issuance
+  "ACCEPTED - DOCUMENT REVIEW REQUIRED":     "PENDING",      // 3,887  — intake accepted, not yet routed
+  "ROUTED FOR ELECTRONIC REVIEW":            "UNDER_REVIEW", // 3,583
+  "ROUTED FOR PAPER REVIEW":                 "UNDER_REVIEW", // 361
+  // Applicant must act — flattened into UNDER_REVIEW, see the Seattle note.
+  "INCOMPLETE":                              "UNDER_REVIEW", // 1
+
+  // ── Generic fallbacks (substring pass only) ───────────────────────────────
+  "CERTIFICATE OF OCCUPANCY":  "CLEARED",
+  "FINAL INSPECTION":          "CLEARED",
+  "CO ISSUED":                 "CLEARED",
+  "COMPLETED":                 "CLEARED",
+  "FINALED":                   "CLEARED",
+  "CLOSED":                    "CLEARED",
+  "FINAL":                     "CLEARED",
+
+  "APPROVED":                  "APPROVED",
+  "ACTIVE":                    "APPROVED",
+
+  "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
+  "UNDER REVIEW":              "UNDER_REVIEW",
+  "IN REVIEW":                 "UNDER_REVIEW",
+  "REVIEW":                    "UNDER_REVIEW",
+  "ON HOLD":                   "UNDER_REVIEW",
+  "HOLD":                      "UNDER_REVIEW",
+
+  "APPLICATION RECEIVED":      "PENDING",
+  "APPLICATION":               "PENDING",
+  "SUBMITTED":                 "PENDING",
+  "ACCEPTED":                  "PENDING",
+  "PENDING":                   "PENDING",
+  "INTAKE":                    "PENDING",
+
+  "WITHDRAWN":                 "REJECTED",
+  "CANCELLED":                 "REJECTED",
+  "REJECTED":                  "REJECTED",
+  "REVOKED":                   "REJECTED",
+  "DENIED":                    "REJECTED",
+  "VOID":                      "REJECTED",
+
+  "EXPIRED":                   "EXPIRED",
+  "LAPSED":                    "EXPIRED",
+};
+
 // ── City registry ─────────────────────────────────────────────────────────────
 
 /**
@@ -566,6 +738,8 @@ export const CITY_STATUS_MAPS: Record<string, StatusMap> = {
   cincinnati:   CINCINNATI_STATUS_MAP,
   philadelphia: PHILADELPHIA_STATUS_MAP,
   pittsburgh:   PITTSBURGH_STATUS_MAP,
+  seattle:      SEATTLE_STATUS_MAP,
+  detroit:      DETROIT_STATUS_MAP,
 };
 
 /**

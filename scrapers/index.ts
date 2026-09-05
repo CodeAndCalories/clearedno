@@ -41,6 +41,8 @@ import { CincinnatiOhScraper }    from "./cities/cincinnati-oh";
 import { PhiladelphiaPaScraper }  from "./cities/philadelphia-pa";
 import { PittsburghPaScraper }    from "./cities/pittsburgh-pa";
 import { GrandRapidsMiScraper }   from "./cities/grand-rapids-mi";
+import { SeattleWaScraper }       from "./cities/seattle-wa";
+import { DetroitMiScraper }       from "./cities/detroit-mi";
 import type { BaseScraper } from "./base-scraper";
 
 const SCRAPERS: BaseScraper[] = [
@@ -51,6 +53,8 @@ const SCRAPERS: BaseScraper[] = [
   new CincinnatiOhScraper(),    // Socrata
   new PhiladelphiaPaScraper(),  // Carto SQL
   new PittsburghPaScraper(),    // CKAN
+  new SeattleWaScraper(),       // Socrata
+  new DetroitMiScraper(),       // ArcGIS (two layers)
 
   // ── Browser-based, unsupported ──────────────────────────────────────────
   // These remain registered so an existing permit row still routes somewhere

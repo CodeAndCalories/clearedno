@@ -2,7 +2,7 @@
 //
 //   npm run verify:status-maps
 //
-// Asserts that every status string the six live city APIs actually emit maps
+// Asserts that every status string the eight live city APIs actually emit maps
 // to the PermitStatus we intend. Exits non-zero on any mismatch.
 //
 // ── WHY THIS EXISTS ──────────────────────────────────────────────────────────
@@ -28,6 +28,11 @@
 //   Cincinnati    $select=statuscurrent,count(*)&$group=statuscurrent
 //   Philadelphia  SELECT status, count(*) FROM permits GROUP BY status
 //   Pittsburgh    SELECT status, count(*) FROM "<resource>" GROUP BY status
+//   Seattle       $select=statuscurrent,count(*)&$group=statuscurrent
+//   Detroit       groupByFieldsForStatistics=task_status  (plan-reviews layer;
+//                 the permits layer has no status — "Issued" is synthesised)
+//
+// Seattle and Detroit vocabularies are complete as of 2026-09-04.
 //
 // Run with --live to re-fetch each vocabulary and report any value that has
 // appeared since this file was written.
@@ -185,6 +190,58 @@ const PITTSBURGH: Case[] = [
   ["Expired", "EXPIRED"],
 ];
 
+// ── Seattle, WA — statuscurrent (complete, 24 values) ─────────────────────────
+//
+// The pre-issuance states are the point of this city — see the notes in
+// lib/permit-status.ts. Pins that matter:
+//   "Ready for Issuance"  → PENDING, not APPROVED: not issued, work may not start
+//   "Approved to Occupy"  → CLEARED, not APPROVED: it is the CO
+//   "Plans Approved"-style substring traps: "Application Completed" and
+//   "Reviews Completed" must NOT resolve to CLEARED via "COMPLETED".
+
+const SEATTLE: Case[] = [
+  // Regression pins — substring collisions
+  ["Application Completed",     "PENDING"],
+  ["Reviews Completed",         "PENDING"],
+  ["Inspections Completed",     "APPROVED"],
+  ["Approved to Occupy",        "CLEARED"],
+  ["Ready for Issuance",        "PENDING"],
+  ["Phase Issued",              "APPROVED"],
+
+  ["Completed", "CLEARED"], ["Closed", "CLEARED"],
+  ["Issued", "APPROVED"], ["Active", "APPROVED"],
+  ["Initiated", "PENDING"], ["Ready for Intake", "PENDING"],
+  ["Scheduled", "PENDING"], ["Scheduled and Submitted", "PENDING"],
+  ["Pending", "PENDING"],
+  ["Reviews In Process", "UNDER_REVIEW"],
+  ["Corrections Submitted", "UNDER_REVIEW"],
+  // Applicant-must-act states — flattened into UNDER_REVIEW by design; the
+  // union has no ACTION_REQUIRED. If that status is ever added, move these.
+  ["Additional Info Requested", "UNDER_REVIEW"],
+  ["Corrections Required", "UNDER_REVIEW"],
+  ["Awaiting Information", "UNDER_REVIEW"],
+  ["Withdrawn", "REJECTED"], ["Canceled", "REJECTED"], ["Denied", "REJECTED"],
+  ["Expired", "EXPIRED"],
+];
+
+// ── Detroit, MI — task_status (complete) + synthesised "Issued" ───────────────
+//
+// "Plans Approved" must be PENDING, not APPROVED: plan review passed, the
+// permit is not issued. Records that were subsequently issued appear in the
+// permits layer, which the scraper checks first.
+
+const DETROIT: Case[] = [
+  // Regression pin — "Plans Approved" is NOT permit approval
+  ["Plans Approved", "PENDING"],
+
+  ["Issued", "APPROVED"],
+  ["Accepted - Document Review Required", "PENDING"],
+  ["Accepted - Document Review Not Required", "PENDING"],
+  ["Routed for Electronic Review", "UNDER_REVIEW"],
+  ["Routed for Paper Review", "UNDER_REVIEW"],
+  ["Incomplete", "UNDER_REVIEW"],
+];
+
 // ── Suite ─────────────────────────────────────────────────────────────────────
 
 const SUITES: [city: string, cases: Case[]][] = [
@@ -194,6 +251,8 @@ const SUITES: [city: string, cases: Case[]][] = [
   ["cincinnati",   CINCINNATI],
   ["philadelphia", PHILADELPHIA],
   ["pittsburgh",   PITTSBURGH],
+  ["seattle",      SEATTLE],
+  ["detroit",      DETROIT],
 ];
 
 // Live vocabulary sources, used by --live to detect statuses added since the
@@ -239,6 +298,19 @@ const LIVE_SOURCES: Record<string, () => Promise<string[]>> = {
     const r = await fetch(`https://data.wprdc.org/api/3/action/datastore_search_sql?sql=${q}`);
     const d = await r.json() as { result?: { records?: { status: string }[] } };
     return (d.result?.records ?? []).map((x) => x.status ?? "");
+  },
+  seattle: async () => {
+    const r = await fetch("https://data.seattle.gov/resource/76t5-zqzr.json?$select=statuscurrent&$group=statuscurrent&$limit=200");
+    return (await r.json() as { statuscurrent?: string }[]).map((x) => x.statuscurrent ?? "");
+  },
+  detroit: async () => {
+    const u = "https://services2.arcgis.com/qvkbeam7Wirps6zC/arcgis/rest/services/bseed_building_permit_plan_reviews/FeatureServer/0/query"
+      + "?where=1%3D1&groupByFieldsForStatistics=task_status"
+      + '&outStatistics=[{"statisticType":"count","onStatisticField":"ObjectId","outStatisticFieldName":"n"}]&f=json';
+    const d = await (await fetch(u)).json() as { features?: { attributes: Record<string, string> }[] };
+    // The permits layer has no status column; "Issued" is synthesised by the
+    // scraper, so it is appended here to keep the drift check honest.
+    return [...(d.features ?? []).map((x) => x.attributes.task_status ?? ""), "Issued"];
   },
 };
 

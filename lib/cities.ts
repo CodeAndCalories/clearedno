@@ -292,6 +292,34 @@ export const cities: CityData[] = [
       "/locations/oh/cincinnati",
     ],
   },
+
+  // ── Washington ───────────────────────────────────────────────────────────
+  {
+    name: "Seattle",
+    state: "Washington",
+    stateAbbr: "WA",
+    stateSlug: "wa",
+    slug: "seattle",
+    buildingDeptName: "Seattle Department of Construction and Inspections (SDCI)",
+    buildingDeptPhone: "(206) 684-8600",
+    buildingDeptAddress: "Seattle Municipal Tower, 700 5th Ave, Suite 2000, Seattle, WA 98104",
+    buildingDeptUrl: "https://www.seattle.gov/sdci",
+    summary:
+      "Seattle's SDCI publishes the most detailed permit workflow of any city we track — intake, review, corrections and issuance are all visible. Reviews run long, and correction cycles are where most projects stall.",
+    timelines: [
+      { type: "Simple remodel / repair", time: "2–6 weeks" },
+      { type: "New residential build", time: "8–16 weeks" },
+      { type: "Commercial tenant improvement", time: "6–12 weeks" },
+      { type: "New commercial construction", time: "12–24 weeks" },
+    ],
+    // Seattle is our only West Coast city, so its "nearby" links point at the
+    // other live-tracking markets rather than at geography.
+    neighbors: [
+      "/locations/tx/austin",
+      "/locations/oh/columbus",
+      "/locations/pa/philadelphia",
+    ],
+  },
 ];
 
 /**
@@ -309,6 +337,9 @@ export const cities: CityData[] = [
  *   cincinnati    Socrata      data.cincinnati-oh.gov/resource/uhjb-xac9
  *   philadelphia  Carto SQL    phl.carto.com/api/v2/sql (table `permits`)
  *   pittsburgh    CKAN         data.wprdc.org datastore, resource f4d1177a…
+ *   seattle       Socrata      data.seattle.gov/resource/76t5-zqzr
+ *   detroit       ArcGIS FS    services2.arcgis.com/qvkbeam7Wirps6zC/…/bseed_building_permit_plan_reviews/0
+ *                              + …/bseed_building_permits/0 (two layers, see scraper)
  *
  * Adding a city here requires BOTH a scraper in scrapers/cities/ (registered in
  * scrapers/index.ts) AND an entry in CITY_CHECKERS in app/api/check-permit.
@@ -319,8 +350,10 @@ export const cities: CityData[] = [
  * were reporting UNKNOWN on every run while the UI advertised them as live —
  * users waited for alerts that could never fire. If a city can't be served by
  * an API, it belongs on the waitlist, not in this set. Houston and Grand Rapids
- * publish no per-permit API at all; Dallas, San Antonio and Detroit publish
- * permits but no status field.
+ * publish no per-permit API at all; Dallas and San Antonio publish permits but
+ * no status field. Detroit was in that last group until 2026-09-04: its
+ * building-permits layer really has no status, but a second plan-reviews layer
+ * carries the pre-issuance workflow, so it is now tracked.
  */
 export const LIVE_CHECKER_CITIES = new Set<string>([
   "austin",
@@ -329,6 +362,8 @@ export const LIVE_CHECKER_CITIES = new Set<string>([
   "cincinnati",
   "philadelphia",
   "pittsburgh",
+  "seattle",
+  "detroit",
 ]);
 
 /**
@@ -451,7 +486,7 @@ export function getCityData(
 
 /**
  * Cities grouped by state, preserving the declaration order above so the
- * /locations hub renders Texas → Ohio → Michigan → Pennsylvania.
+ * /locations hub renders Texas → Ohio → Michigan → Pennsylvania → Washington.
  */
 export function getCitiesByState(): { state: string; stateAbbr: string; cities: CityData[] }[] {
   const groups: { state: string; stateAbbr: string; cities: CityData[] }[] = [];
