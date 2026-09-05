@@ -300,7 +300,15 @@ export const cities: CityData[] = [
     stateAbbr: "WA",
     stateSlug: "wa",
     slug: "seattle",
-    buildingDeptName: "Seattle Department of Construction and Inspections (SDCI)",
+    // Verified against seattle.gov 2026-09-04. SDCI runs a VIRTUAL Applicant
+    // Services Center: services are online through the Seattle Services
+    // Portal and the Municipal Tower office has limited access (a 4th-floor
+    // information desk for language/technical help). Never describe the
+    // address below as a walk-in permit counter.
+    //   Mailing:     P.O. Box 34019, Seattle, WA 98124-4019
+    //   Hours:       Monday-Friday, 8:00 AM - 4:00 PM
+    //   Inspections: (206) 684-8950
+    buildingDeptName: "Seattle Department of Construction & Inspections (SDCI)",
     buildingDeptPhone: "(206) 684-8600",
     buildingDeptAddress: "Seattle Municipal Tower, 700 5th Ave, Suite 2000, Seattle, WA 98104",
     buildingDeptUrl: "https://www.seattle.gov/sdci",
