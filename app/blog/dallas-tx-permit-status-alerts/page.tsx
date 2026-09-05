@@ -147,7 +147,7 @@ export default function DallasTxPermitStatusAlertsPost() {
               TRACK ONE PERMIT FREE →
             </Link>
             <Link
-              href="/#how-it-works"
+              href="/permits/landing#how-it-works"
               className="inline-block border border-[#FF6B00]/40 text-[#F5F0E8]/60 font-mono text-xs tracking-widest uppercase px-8 py-3 hover:border-[#FF6B00] hover:text-[#F5F0E8] transition-colors text-center"
             >
               SEE HOW IT WORKS

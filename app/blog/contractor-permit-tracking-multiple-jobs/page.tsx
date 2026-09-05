@@ -214,7 +214,7 @@ export default function PermitTrackingPost() {
         <nav className="border-t border-[#FF6B00]/10 pt-6 flex flex-col sm:flex-row gap-4 justify-between text-xs text-[#F5F0E8]/40 font-mono">
           <Link href="/blog/why-austin-permits-take-so-long" className="hover:text-[#FF6B00] transition-colors">← Why Austin Permits Take So Long</Link>
           <Link href="/blog/austin-permit-tx-search-tool" className="hover:text-[#FF6B00] transition-colors">
-            Austin TX Permit Search Tool →
+            How to Search Austin Building Permits →
           </Link>
         </nav>
       </div>

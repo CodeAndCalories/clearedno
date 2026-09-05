@@ -2,9 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Austin TX Permit Search Tool — Check Status by Address Free (2026)",
+  // Retitled 2026-09-04. The old title promised an on-page "search tool" and an
+  // address lookup; this is a how-to guide, and the only lookup ClearedNo runs is
+  // by permit number at /check. Title and description now say what the page is,
+  // and keep "Austin" + "permit search" prominent — that is what ranks.
+  title: "How to Search Austin Building Permits (2026) — By Address or Permit Number | ClearedNo",
   description:
-    "Search any Austin building permit by address or number. Check inspection status, approval dates, and contractor info. Free instant lookup tool.",
+    "Austin permit search, step by step: find any building permit by address, permit number, or contractor using Austin Build Central and Open Data — and check a permit's live status free by number.",
   keywords: [
     "Austin TX permit search tool",
     "Austin permit search",
@@ -15,8 +19,8 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://www.clearedno.com/blog/austin-permit-tx-search-tool" },
   openGraph: {
-    title: "Austin TX Permit Search Tool: How to Find Any Permit in 2026",
-    description: "How to search Austin TX permits by address, number, or contractor — official portals and faster tools.",
+    title: "How to Search Austin Building Permits (2026) — By Address or Permit Number",
+    description: "How to search Austin TX permits by address, number, or contractor using the official portals — plus a free live status check by permit number.",
     url: "https://www.clearedno.com/blog/austin-permit-tx-search-tool",
     type: "article",
   },
@@ -25,12 +29,12 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Article",
-  headline: "Austin TX Permit Search Tool: How to Find Any Permit in 2026",
-  description: "How to find any permit in Austin TX using official portals and permit search tools.",
+  headline: "How to Search Austin Building Permits (2026) — By Address or Permit Number",
+  description: "How to find any permit in Austin TX by address, permit number, or contractor using the official portals.",
   author: { "@type": "Organization", name: "ClearedNo" },
   publisher: { "@type": "Organization", name: "ClearedNo", url: "https://www.clearedno.com" },
   datePublished: "2026-03-22",
-  dateModified: "2026-03-28",
+  dateModified: "2026-09-04",
 };
 
 export default function AustinPermitSearchToolPost() {
@@ -44,11 +48,30 @@ export default function AustinPermitSearchToolPost() {
           <span className="text-[10px] text-[#F5F0E8]/25 font-mono">March 2026 · 5 min read</span>
         </div>
         <h1 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] leading-[0.95] mb-6">
-          AUSTIN TX PERMIT SEARCH TOOL: HOW TO FIND ANY PERMIT IN 2026
+          HOW TO SEARCH AUSTIN BUILDING PERMITS (2026) — BY ADDRESS OR PERMIT NUMBER
         </h1>
         <p className="text-sm text-[#F5F0E8]/60 leading-relaxed border-l-2 border-[#FF6B00]/40 pl-4">
-          Whether you&apos;re searching for your own permit or looking up permit history on a property you&apos;re about to work on — here&apos;s every way to find Austin permits.
+          Whether you&apos;re searching for your own permit or looking up permit history on a property you&apos;re about to work on — here&apos;s every way to find Austin permits, and which city portal to use for each.
         </p>
+
+        {/* Austin is a live checker city: anyone who landed here wanting an actual
+            status lookup can get one in one click instead of reading a guide. */}
+        <div className="mt-6 border border-[#FF6B00]/40 bg-[#FF6B00]/5 p-5 relative">
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FF6B00] -translate-x-px -translate-y-px" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
+          <p className="text-[9px] tracking-[0.3em] text-[#FF6B00] uppercase font-mono mb-2">Have the permit number already?</p>
+          <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-3">
+            Skip the portal. Our free checker pulls the current status of any Austin permit straight
+            from the city&apos;s open-data feed — no login, no signup. Permit number only; for address
+            searches, use Austin Build Central as described below.
+          </p>
+          <Link
+            href="/check"
+            className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-6 py-3 hover:bg-[#F5F0E8] transition-colors"
+          >
+            CHECK AN AUSTIN PERMIT&apos;S STATUS FREE →
+          </Link>
+        </div>
       </header>
 
       <div className="prose-custom space-y-8 text-sm text-[#F5F0E8]/70 leading-relaxed">
@@ -78,9 +101,9 @@ export default function AustinPermitSearchToolPost() {
               },
               {
                 name: "ClearedNo Free Permit Checker",
-                url: "clearedno.com",
-                best: "Quick status check on active Austin permits",
-                notes: "Enter a permit number and get the current status without logging into any city portal.",
+                url: "clearedno.com/check",
+                best: "Quick status check on active Austin permits — by permit number",
+                notes: "Enter a permit number and get the current status without logging into any city portal. Does not search by address.",
               },
             ].map((row, i) => (
               <div key={row.name} className={`px-5 py-4 ${i % 2 === 0 ? "" : "bg-[#FF6B00]/3"} ${i < 2 ? "border-b border-[#FF6B00]/10" : ""}`}>
@@ -115,14 +138,17 @@ export default function AustinPermitSearchToolPost() {
             If the number has spaces and two letters at the end (like <code className="bg-[#FF6B00]/10 text-[#FF6B00] px-1">PP</code>, <code className="bg-[#FF6B00]/10 text-[#FF6B00] px-1">BP</code>, <code className="bg-[#FF6B00]/10 text-[#FF6B00] px-1">EP</code>), it&apos;s the newer format and you may find it easier to search the Open Data portal.
           </p>
           <p className="mt-3">
-            Alternatively, you can drop the permit number into ClearedNo&apos;s free permit checker at the top of our homepage. It pulls live data and shows you the current status in a few seconds.
+            Alternatively, drop the permit number into{" "}
+            <Link href="/check" className="text-[#FF6B00] hover:underline">ClearedNo&apos;s free permit checker</Link>.
+            It reads Austin&apos;s open-data feed and shows you the current status in a few seconds, in either number format.
           </p>
         </section>
 
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">SEARCHING BY ADDRESS</h2>
           <p>
-            Both ABC and the Open Data portal support address searches. Here&apos;s when to use each:
+            Both ABC and the Open Data portal support address searches — ClearedNo&apos;s checker does not, so for
+            address lookups you&apos;ll use the city&apos;s own portals. Here&apos;s when to use each:
           </p>
           <p className="mt-3">
             <strong className="text-[#F5F0E8]">Use Austin Build Central (ABC)</strong> when you need current status on an active permit at an address. Go to Building → Search, select the address search option, and enter the street address. You&apos;ll get a list of permits associated with that address.
@@ -176,7 +202,7 @@ export default function AustinPermitSearchToolPost() {
         <section>
           <h2 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-4">THE LIMITATION ALL THESE TOOLS SHARE</h2>
           <p>
-            Every tool described here — ABC, Open Data, third-party search tools — is a passive lookup. You go check. Nothing comes to you.
+            Every method described here — ABC, Open Data, our free checker — is a passive lookup. You go check. Nothing comes to you.
           </p>
           <p className="mt-3">
             For a single permit you check once a week, that&apos;s fine. For 8–10 active permits you&apos;re scheduling crews around? You need proactive notifications.
@@ -197,7 +223,7 @@ export default function AustinPermitSearchToolPost() {
           </p>
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              href="/#check-permit"
+              href="/check"
               className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-8 py-3 hover:bg-[#F5F0E8] transition-colors text-center"
             >
               CHECK A PERMIT NOW (FREE) →

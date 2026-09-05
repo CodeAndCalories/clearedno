@@ -186,7 +186,7 @@ const ROOFING_POSTS = [
 const PERMIT_POSTS = [
   {
     href: "/blog/austin-permit-tx-search-tool",
-    title: "Austin TX Permit Search Tool: How to Find Any Permit in 2026",
+    title: "How to Search Austin Building Permits (2026) — By Address or Permit Number",
     excerpt:
       "Whether you're looking up your own permit or researching a property — here's every way to search Austin permits by number, address, or contractor.",
     tag: "Austin, TX",

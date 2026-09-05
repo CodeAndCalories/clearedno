@@ -189,7 +189,7 @@ export default function PermitClearedMeaningPost() {
               START MONITORING FREE →
             </Link>
             <Link
-              href="/#check-permit"
+              href="/check"
               className="inline-block border border-[#FF6B00]/40 text-[#F5F0E8]/60 font-mono text-xs tracking-widest uppercase px-8 py-3 hover:border-[#FF6B00] hover:text-[#F5F0E8] transition-colors text-center"
             >
               CHECK A PERMIT NOW (FREE)

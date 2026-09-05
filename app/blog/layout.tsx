@@ -12,7 +12,7 @@ const RECENT_POSTS = [
   { title: "Building Permit Status Check — How to Find Any Permit in the Midwest", href: "/blog/building-permit-status-check-guide" },
   { title: "Houston Building Permit Status Check — Complete 2026 Guide", href: "/blog/houston-building-permit-status-2026" },
   { title: "How to Check Building Inspection Status Online (OH, TX, IL, PA)", href: "/blog/how-to-check-building-inspection-status" },
-  { title: "Austin TX Permit Search Tool: How to Find Any Permit", href: "/blog/austin-permit-tx-search-tool" },
+  { title: "How to Search Austin Building Permits — By Address or Permit Number", href: "/blog/austin-permit-tx-search-tool" },
   { title: "Tracking Multiple Permits Without Losing Your Mind", href: "/blog/contractor-permit-tracking-multiple-jobs" },
   { title: "Why Austin Permits Take So Long", href: "/blog/why-austin-permits-take-so-long" },
   { title: "Round Rock, Cedar Park & Georgetown Permit Requirements", href: "/blog/round-rock-cedar-park-permit-requirements" },

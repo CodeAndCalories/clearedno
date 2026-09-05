@@ -332,6 +332,17 @@ export default function BuildingPermitStatusCheckGuidePost() {
           neighbor&apos;s renovation, building permit status is public information. This guide
           covers every major Midwest city and how to look up permit status for free.
         </p>
+
+        {/* Consolidate the head term onto /check: this guide sits right next to it in
+            search, and several of the cities below have a live checker. */}
+        <p className="mt-5 text-xs text-[#F5F0E8]/60 leading-relaxed border border-[#FF6B00]/30 bg-[#FF6B00]/5 px-5 py-4">
+          <span className="text-[9px] tracking-[0.3em] text-[#FF6B00] uppercase font-mono mr-3">Shortcut</span>
+          Have a permit number in Columbus, Cleveland, Cincinnati, Pittsburgh, Philadelphia or Detroit?{" "}
+          <Link href="/check" className="text-[#FF6B00] hover:underline font-mono">
+            Check its live status free →
+          </Link>{" "}
+          — no portal login. Everything below is for cities without a live checker, or for searching by address.
+        </p>
       </header>
 
       <div className="prose-custom space-y-8 text-sm text-[#F5F0E8]/70 leading-relaxed">
@@ -490,7 +501,7 @@ export default function BuildingPermitStatusCheckGuidePost() {
               START TRACKING FREE →
             </Link>
             <Link
-              href="/#check-permit"
+              href="/check"
               className="inline-block border border-[#FF6B00]/40 text-[#F5F0E8]/60 font-mono text-xs tracking-widest uppercase px-8 py-3 hover:border-[#FF6B00] hover:text-[#F5F0E8] transition-colors text-center"
             >
               CHECK A PERMIT NOW (FREE)
