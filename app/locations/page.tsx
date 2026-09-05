@@ -101,7 +101,7 @@ export default function LocationsHubPage() {
           <div className="flex items-center gap-3 mb-6">
             <div className="w-8 h-px bg-[#FF6B00]" />
             <span className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase">
-              {cities.length} Cities Tracked
+              {LIVE_CITY_COUNT} Cities Tracked · {cities.length} City Guides
             </span>
           </div>
           <h1 className="font-heading text-5xl sm:text-7xl tracking-wider text-[#F5F0E8] leading-[0.9] mb-6">

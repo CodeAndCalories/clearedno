@@ -5,14 +5,17 @@ import PermitLookupForm from "./permit-lookup-form";
 import { cities, liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
-  title: "Check Any Building Permit Status — Free Lookup Tool | ClearedNo",
-  description: `Look up building permit approval times, fees, and requirements across ${cities.length} US cities — free, no signup. Live permit status tracking in ${liveCityList({ separator: ", ", conjunction: "and", format: "city" })}.`,
+  // The homepage routes to fee and timeline guides and pitches status ALERTS.
+  // It does not check a permit's live status — /check does. The title and H1
+  // say what this page does so /check can own the status-lookup query.
+  title: "Building Permit Fees, Timelines & Status Alerts — Free Tools for Contractors | ClearedNo",
+  description: `Free building permit fee estimates and approval timelines for ${cities.length} US cities, plus automatic status alerts in ${liveCityList({ separator: ", ", conjunction: "and", format: "city" })}. Built for contractors. No signup to look.`,
   alternates: {
     canonical: "https://www.clearedno.com",
   },
   openGraph: {
-    title: "Check Any Building Permit Status — Free",
-    description: `Look up permit approval times, fees, and requirements across ${cities.length} US cities. No signup required.`,
+    title: "Building Permit Fees, Timelines & Status Alerts — Free Tools for Contractors",
+    description: `Permit fee estimates and approval timelines for ${cities.length} US cities, plus automatic status alerts. No signup to look.`,
     url: "https://www.clearedno.com",
     type: "website",
     images: [{ url: "/clearedno-icon.png", width: 512, height: 512, alt: "ClearedNo" }],
@@ -51,23 +54,23 @@ export default function HomePage() {
         {/* ── Hero + lookup tool ──────────────────────────────────────────── */}
         <section className="px-6 pt-20 pb-16 sm:pt-24 text-center">
           <p className="text-[10px] tracking-[0.4em] text-[#FF6B00]/70 uppercase mb-5">
-            Free Tool · No Signup
+            Free Tools for Contractors · No Signup
           </p>
           <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl tracking-widest text-[#F5F0E8] uppercase leading-[1.05] mb-5">
-            Check Any Building<br />
-            Permit Status — <span className="text-[#FF6B00]">Free</span>
+            Building Permit Fees,<br />
+            Timelines &amp; <span className="text-[#FF6B00]">Status Alerts</span>
           </h1>
           <p className="text-sm text-[#F5F0E8]/50 max-w-xl mx-auto leading-relaxed mb-4">
-            Look up permit approval times, fees, and requirements across{" "}
-            {cities.length} US cities. No signup required.
+            Pick a city and a project type to see what the permit costs, how long approval
+            takes, and what the city requires — across {cities.length} US cities.
           </p>
           <p className="text-xs text-[#F5F0E8]/40 max-w-xl mx-auto leading-relaxed mb-12">
-            Already have a permit number?{" "}
+            Already have a permit number and want its live status?{" "}
             <Link
               href="/check"
               className="text-[#FF6B00] hover:text-[#F5F0E8] underline underline-offset-4 transition-colors"
             >
-              Check its live status instantly →
+              Use the free status checker →
             </Link>
           </p>
 

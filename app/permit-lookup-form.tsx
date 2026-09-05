@@ -59,7 +59,7 @@ export default function PermitLookupForm() {
       <span className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
 
       <p className="text-[9px] tracking-[0.35em] text-[#FF6B00]/60 uppercase mb-6">
-        Free Permit Lookup
+        Free Fee &amp; Timeline Lookup
       </p>
 
       <div className="grid sm:grid-cols-2 gap-5">
