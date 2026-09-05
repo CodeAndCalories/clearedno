@@ -83,8 +83,9 @@ export function PermitChecker({ defaultCity }: PermitCheckerProps) {
     const s = status.toUpperCase();
     if (s === "CLEARED")      return "#16A34A";
     if (s === "APPROVED")     return "#FF6B00";
-    if (s === "UNDER_REVIEW") return "#EAB308";
-    if (s === "REJECTED")     return "#DC2626";
+    if (s === "UNDER_REVIEW")    return "#EAB308";
+    if (s === "ACTION_REQUIRED") return "#F43F5E";
+    if (s === "REJECTED")        return "#DC2626";
     if (s === "EXPIRED")      return "#6B7280";
     return "#6B7280"; // PENDING, UNKNOWN
   };

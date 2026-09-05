@@ -32,7 +32,8 @@
 //   Detroit       groupByFieldsForStatistics=task_status  (plan-reviews layer;
 //                 the permits layer has no status — "Issued" is synthesised)
 //
-// Seattle and Detroit vocabularies are complete as of 2026-09-04.
+// All eight vocabularies were re-enumerated on 2026-09-04 for the
+// ACTION_REQUIRED remap; counts in lib/permit-status.ts are from that pass.
 //
 // Run with --live to re-fetch each vocabulary and report any value that has
 // appeared since this file was written.
@@ -45,17 +46,20 @@ type Case = [raw: string, expected: PermitStatus];
 // ── Austin, TX — status_current (complete) ────────────────────────────────────
 
 const AUSTIN: Case[] = [
-  // Regression pins — substring collisions
-  ["Inactive Pending Revision", "UNDER_REVIEW"],
-  ["Inactive Contractor",       "UNDER_REVIEW"],
+  // Regression pins — substring collisions ("ACTIVE" must not win)
+  ["Inactive Pending Revision", "ACTION_REQUIRED"],
+  ["Inactive Contractor",       "ACTION_REQUIRED"],
   ["Denied but Closed",         "REJECTED"],
 
   ["Final", "CLEARED"], ["Closed", "CLEARED"],
   ["Active", "APPROVED"],
   ["Pending", "PENDING"], ["Pending Permit", "PENDING"],
-  ["Awaiting Upload", "PENDING"], ["Awaiting Update", "PENDING"],
+  // Applicant must act
+  ["Awaiting Upload", "ACTION_REQUIRED"], ["Awaiting Update", "ACTION_REQUIRED"],
+  ["Application Incomplete", "ACTION_REQUIRED"],
+  // Ambiguous who acts — stays UNDER_REVIEW
   ["On Hold", "UNDER_REVIEW"], ["Re Review", "UNDER_REVIEW"],
-  ["Suspended", "UNDER_REVIEW"], ["Application Incomplete", "UNDER_REVIEW"],
+  ["Suspended", "UNDER_REVIEW"],
   ["Expired", "EXPIRED"], ["Expired - License", "EXPIRED"],
   ["VOID", "REJECTED"], ["Withdrawn", "REJECTED"], ["Cancelled", "REJECTED"],
   ["Aborted", "REJECTED"], ["Revoked", "REJECTED"], ["Rejected", "REJECTED"],
@@ -78,7 +82,7 @@ const COLUMBUS: Case[] = [
   ["Active", "APPROVED"], ["Open", "APPROVED"],
   ["Expired", "EXPIRED"], ["Expired No Permit", "EXPIRED"],
   ["Applied Online", "PENDING"], ["Issuance Pending", "PENDING"],
-  ["Corrections Required", "UNDER_REVIEW"], ["Under Review", "UNDER_REVIEW"],
+  ["Corrections Required", "ACTION_REQUIRED"], ["Under Review", "UNDER_REVIEW"],
   ["Void", "REJECTED"], ["VOID - Wrong CAP Type", "REJECTED"],
   ["Void - Duplicate", "REJECTED"], ["VOID - Entered In Error", "REJECTED"],
   ["Void - Test", "REJECTED"], ["Withdrawn", "REJECTED"],
@@ -108,14 +112,18 @@ const CLEVELAND: Case[] = [
 
   ["Inspection Pending", "UNDER_REVIEW"],
   ["nspection Pending", "UNDER_REVIEW"],   // typo present in the source data
-  ["Non-Compliant", "UNDER_REVIEW"],
   ["Review Complete Alert Assessmt", "UNDER_REVIEW"],
   ["Reopened", "UNDER_REVIEW"], ["Certificate Review", "UNDER_REVIEW"],
   ["Zoning Review Pending", "UNDER_REVIEW"],
   ["Revisions Received", "UNDER_REVIEW"],
-  ["Inspection Failed", "UNDER_REVIEW"], ["Appeal Pending", "UNDER_REVIEW"],
-  ["Appeal Not Filed", "UNDER_REVIEW"], ["Cashier Declined", "UNDER_REVIEW"],
-  ["No Except - Make Corr Noted", "UNDER_REVIEW"],
+  ["Appeal Pending", "UNDER_REVIEW"], ["Appeal Not Filed", "UNDER_REVIEW"],
+  // Applicant must act — failed inspections and a declined payment.
+  // "Permit Closed/Non-Compliant" is CLEARED (pinned above); bare
+  // "Non-Compliant" is a live failed inspection and must not inherit that.
+  ["Non-Compliant", "ACTION_REQUIRED"],
+  ["Inspection Failed", "ACTION_REQUIRED"],
+  ["Cashier Declined", "ACTION_REQUIRED"],
+  ["No Except - Make Corr Noted", "ACTION_REQUIRED"],
   // Intermediate sub-review approvals are NOT permit approval.
   ["Fire Review Approved", "UNDER_REVIEW"],
   ["Plan Review Approved", "UNDER_REVIEW"],
@@ -148,7 +156,7 @@ const CINCINNATI: Case[] = [
   ["WITHDRWN", "REJECTED"], ["W/REFUND", "REJECTED"], ["VOIDED", "REJECTED"],
   ["REVOKED", "REJECTED"], ["DENIED", "REJECTED"],
   ["EXPIRED", "EXPIRED"], ["APP_EXP", "EXPIRED"],
-  ["CAGIS", "UNKNOWN"],
+  ["CAGIS", "UNKNOWN"], ["SUBPERM", "UNKNOWN"],
 ];
 
 // ── Philadelphia, PA — status (complete) ─────────────────────────────────────
@@ -160,10 +168,11 @@ const PHILADELPHIA: Case[] = [
   ["ABANDONED", "REJECTED"], ["Cancelled", "REJECTED"], ["Refused", "REJECTED"],
   ["Denied", "REJECTED"], ["REVOKED", "REJECTED"], ["Withdrawn", "REJECTED"],
   ["Stop Work", "UNDER_REVIEW"],
-  ["Amendment Application Incomplete", "UNDER_REVIEW"],
-  ["Amendment Applicant Revisions", "UNDER_REVIEW"],
+  ["Amendment Application Incomplete", "ACTION_REQUIRED"],
+  ["Amendment Applicant Revisions", "ACTION_REQUIRED"],
   ["Amendment Review", "UNDER_REVIEW"],
   ["Amendment Requested", "UNDER_REVIEW"],
+  ["In Review", "UNDER_REVIEW"],
   ["Amendment Ready For Issue", "PENDING"], ["Ready For Issue", "PENDING"],
   ["Amendment Denied", "REJECTED"], ["Expired Denial", "REJECTED"],
 ];
@@ -180,9 +189,12 @@ const PITTSBURGH: Case[] = [
   ["Ready For Issue", "PENDING"],
   ["Application Finalization", "PENDING"],
   ["In Review", "UNDER_REVIEW"],
-  ["Applicant Revisions", "UNDER_REVIEW"],
-  ["Amendment Applicant Revisions", "UNDER_REVIEW"],
-  ["Amendment Application Incomplete", "UNDER_REVIEW"],
+  ["Reviews Paused", "UNDER_REVIEW"],
+  // Applicant must act
+  ["Applicant Revisions", "ACTION_REQUIRED"],
+  ["Amendment Applicant Revisions", "ACTION_REQUIRED"],
+  ["Amendment Application Incomplete", "ACTION_REQUIRED"],
+  // With the city, or ambiguous who acts
   ["Amendment Review", "UNDER_REVIEW"],
   ["Amendment Requested", "UNDER_REVIEW"],
   ["Stop Work", "UNDER_REVIEW"],
@@ -215,11 +227,13 @@ const SEATTLE: Case[] = [
   ["Pending", "PENDING"],
   ["Reviews In Process", "UNDER_REVIEW"],
   ["Corrections Submitted", "UNDER_REVIEW"],
-  // Applicant-must-act states — flattened into UNDER_REVIEW by design; the
-  // union has no ACTION_REQUIRED. If that status is ever added, move these.
-  ["Additional Info Requested", "UNDER_REVIEW"],
-  ["Corrections Required", "UNDER_REVIEW"],
-  ["Awaiting Information", "UNDER_REVIEW"],
+  // Applicant-must-act states — ACTION_REQUIRED, distinct from the
+  // city-is-working "Reviews In Process" above. This is the distinction the
+  // status was added for; if any of these regress to UNDER_REVIEW the alert
+  // that tells a contractor to act stops firing.
+  ["Additional Info Requested", "ACTION_REQUIRED"],
+  ["Corrections Required", "ACTION_REQUIRED"],
+  ["Awaiting Information", "ACTION_REQUIRED"],
   ["Withdrawn", "REJECTED"], ["Canceled", "REJECTED"], ["Denied", "REJECTED"],
   ["Expired", "EXPIRED"],
 ];
@@ -239,7 +253,7 @@ const DETROIT: Case[] = [
   ["Accepted - Document Review Not Required", "PENDING"],
   ["Routed for Electronic Review", "UNDER_REVIEW"],
   ["Routed for Paper Review", "UNDER_REVIEW"],
-  ["Incomplete", "UNDER_REVIEW"],
+  ["Incomplete", "ACTION_REQUIRED"],
 ];
 
 // ── Suite ─────────────────────────────────────────────────────────────────────

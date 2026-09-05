@@ -24,6 +24,10 @@ const STATUS_CONFIG: Record<
   CLEARED:      { label: "CLEARED",      color: "#16A34A", bg: "rgba(22,163,74,0.12)",   dot: "#16A34A" },
   REJECTED:     { label: "REJECTED",     color: "#DC2626", bg: "rgba(220,38,38,0.12)",   dot: "#DC2626" },
   UNDER_REVIEW: { label: "UNDER REVIEW", color: "#EAB308", bg: "rgba(234,179,8,0.12)",   dot: "#EAB308" },
+  // Rose (#F43F5E): distinct from UNDER_REVIEW's yellow and REJECTED's deep
+  // red. Stronger fill and a pulsing dot — this is the one badge that means
+  // "you have to do something today".
+  ACTION_REQUIRED: { label: "ACTION REQUIRED", color: "#F43F5E", bg: "rgba(244,63,94,0.18)", dot: "#F43F5E" },
   EXPIRED:      { label: "EXPIRED",      color: "#6B7280", bg: "rgba(107,114,128,0.08)", dot: "#6B7280" },
   UNKNOWN:      { label: "UNKNOWN",      color: "#6B7280", bg: "rgba(107,114,128,0.12)", dot: "#6B7280" },
 };
@@ -35,7 +39,10 @@ function StatusBadge({ status }: { status: PermitStatus }) {
       className="inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-mono font-medium tracking-widest uppercase"
       style={{ color: cfg.color, backgroundColor: cfg.bg }}
     >
-      <span className="w-1.5 h-1.5 rounded-full flex-shrink-0" style={{ backgroundColor: cfg.dot }} />
+      <span
+        className={`w-1.5 h-1.5 rounded-full flex-shrink-0${status === "ACTION_REQUIRED" ? " animate-pulse" : ""}`}
+        style={{ backgroundColor: cfg.dot }}
+      />
       {cfg.label}
     </span>
   );

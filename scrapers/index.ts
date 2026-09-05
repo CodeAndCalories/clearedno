@@ -74,7 +74,17 @@ const DRY_RUN = process.env.DRY_RUN === "true";
 const HEALTH_ERROR_THRESHOLD = 3;
 
 // Statuses we consider "terminal" — no point re-checking these permits.
+//
+// ACTION_REQUIRED is deliberately NOT here. It means the city is waiting on
+// the applicant; once they respond the status moves again (Corrections
+// Submitted → Reviews In Process → Ready for Issuance in Seattle), and the
+// user needs the alert for each of those. UNDER_REVIEW and PENDING are absent
+// for the same reason.
 const TERMINAL_STATUSES: PermitStatus[] = ["CLEARED", "REJECTED", "EXPIRED"];
+
+// PostgREST `in` filter literal, derived from the list above so the query and
+// the constant cannot drift apart.
+const TERMINAL_STATUS_FILTER = `(${TERMINAL_STATUSES.map((s) => `"${s}"`).join(",")})`;
 
 // Subscription statuses whose permits get checked.
 //
@@ -204,7 +214,7 @@ async function runScrapers(): Promise<void> {
     .from("permits")
     .select("*")
     .eq("is_active", true)
-    .not("status", "in", `("CLEARED","REJECTED","EXPIRED")`)
+    .not("status", "in", TERMINAL_STATUS_FILTER)
     .order("last_checked", { ascending: true, nullsFirst: true }); // oldest-checked first
 
   if (fetchError) {
@@ -471,10 +481,13 @@ async function runScrapers(): Promise<void> {
     const userName = profile?.full_name ?? "there";
 
     // ── 4d. Send alert email ──────────────────────────────────────────
+    // The updated history is passed so the alert can quote the city's own
+    // wording — for ACTION_REQUIRED that raw text ("Corrections Required") is
+    // the thing the contractor actually needs to read.
     const emailResult = await sendPermitStatusAlert({
       to:       userEmail,
       userName,
-      permit: { ...permit, status: result.status },
+      permit: { ...permit, status: result.status, status_history: updatedHistory },
     }).catch((e) => {
       log("error", {
         ...permitLog,

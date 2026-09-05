@@ -1,13 +1,21 @@
 // Central type definitions for ClearedNo
 // Keep these in sync with schema.sql
 
-// UNDER_REVIEW: flagged by the city for additional review
-// EXPIRED: permit lapsed without action
+// UNDER_REVIEW:    with the city — a reviewer or inspector is working; wait
+// ACTION_REQUIRED: with the APPLICANT — the city is waiting on corrections,
+//                  missing information, a revised submittal or a payment.
+//                  Not terminal: the permit keeps being checked. This is the
+//                  status where a contractor who doesn't know loses days.
+// EXPIRED:         permit lapsed without action
+//
+// Adding a value here requires a migration widening permits_status_check
+// (see migrations/020) — the DB rejects unknown statuses with 23514.
 export type PermitStatus =
   | "PENDING"
   | "APPROVED"
   | "CLEARED"
   | "UNDER_REVIEW"
+  | "ACTION_REQUIRED"
   | "REJECTED"
   | "EXPIRED"
   | "UNKNOWN";

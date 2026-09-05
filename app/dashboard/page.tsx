@@ -126,8 +126,11 @@ const STATUS_CONFIG: Record<PermitStatus, { color: string }> = {
   APPROVED:     { color: "#FF6B00" },
   CLEARED:      { color: "#16A34A" },
   REJECTED:     { color: "#DC2626" },
-  UNDER_REVIEW: { color: "#EAB308" },
-  EXPIRED:      { color: "#6B7280" },
+  UNDER_REVIEW:    { color: "#EAB308" },
+  // Rose, not the yellow of UNDER_REVIEW and not the deep red of REJECTED:
+  // urgent but recoverable — the applicant has to do something.
+  ACTION_REQUIRED: { color: "#F43F5E" },
+  EXPIRED:         { color: "#6B7280" },
   UNKNOWN:      { color: "#6B7280" },
 };
 

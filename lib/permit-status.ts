@@ -78,6 +78,17 @@ export function normalizeStatus(rawText: string): PermitStatus {
   if (t.includes("ISSUED") || t.includes("APPROVED") || t.includes("ACTIVE")) {
     return "APPROVED";
   }
+  // Applicant-must-act phrasing is checked before the generic review bucket:
+  // "Corrections Required" contains no review keyword, but a future
+  // "Corrections Required - In Review" must still land on ACTION_REQUIRED.
+  if (
+    t.includes("CORRECTIONS REQUIRED") || t.includes("REVISIONS REQUIRED") ||
+    t.includes("INFO REQUESTED")       || t.includes("INFORMATION REQUESTED") ||
+    t.includes("AWAITING INFORMATION") || t.includes("APPLICANT REVISIONS") ||
+    t.includes("APPLICATION INCOMPLETE")
+  ) {
+    return "ACTION_REQUIRED";
+  }
   if (t.includes("UNDER REVIEW") || t.includes("IN REVIEW") || t.includes("HOLD")) {
     return "UNDER_REVIEW";
   }
@@ -118,16 +129,19 @@ export const AUSTIN_STATUS_MAP: StatusMap = {
   // Application received, not yet reviewed
   "PENDING":                          "PENDING",   // 229
   "PENDING PERMIT":                   "PENDING",   // 65
-  "AWAITING UPLOAD":                  "PENDING",   // 1
-  "AWAITING UPDATE":                  "PENDING",   // 1
 
-  // In review / held — not yet decided
-  "INACTIVE PENDING REVISION":        "UNDER_REVIEW", // 115
-  "ON HOLD":                          "UNDER_REVIEW", // 76
+  // Applicant must act — the city is waiting on the applicant
+  // (re-enumerated 2026-09-04; "Awaiting Update" no longer appears live)
+  "AWAITING UPLOAD":                  "ACTION_REQUIRED", // 1 — documents not uploaded
+  "AWAITING UPDATE":                  "ACTION_REQUIRED", // 0 — retained from 2026-08-07
+  "APPLICATION INCOMPLETE":           "ACTION_REQUIRED", // 2
+  "INACTIVE PENDING REVISION":        "ACTION_REQUIRED", // 72 — inactive until applicant revises
+  "INACTIVE CONTRACTOR":              "ACTION_REQUIRED", // 3 — applicant must assign a contractor
+
+  // In review / held — with the city, or ambiguous who acts
+  "ON HOLD":                          "UNDER_REVIEW", // 65
   "RE REVIEW":                        "UNDER_REVIEW", // 55
   "SUSPENDED":                        "UNDER_REVIEW", // 26
-  "INACTIVE CONTRACTOR":              "UNDER_REVIEW", // 3
-  "APPLICATION INCOMPLETE":           "UNDER_REVIEW", // 2
 
   // Permit lapsed without final inspection
   "EXPIRED":                          "EXPIRED",   // 168,987
@@ -162,7 +176,7 @@ export const AUSTIN_STATUS_MAP: StatusMap = {
   "IN QUEUE":                  "PENDING",
   "INTAKE":                    "PENDING",
 
-  "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
+  "CORRECTIONS REQUIRED":      "ACTION_REQUIRED",
   "UNDER REVIEW":              "UNDER_REVIEW",
   "IN REVIEW":                 "UNDER_REVIEW",
   "INSPECTION":                "UNDER_REVIEW",
@@ -201,8 +215,8 @@ export const COLUMBUS_STATUS_MAP: StatusMap = {
   "EXPIRED NO PERMIT":       "EXPIRED",      // 9
   "APPLIED ONLINE":          "PENDING",      // 6
   "ISSUANCE PENDING":        "PENDING",      // 4
-  "CORRECTIONS REQUIRED":    "UNDER_REVIEW", // 3
-  "UNDER REVIEW":            "UNDER_REVIEW", // 3
+  "CORRECTIONS REQUIRED":    "ACTION_REQUIRED", // 3 — applicant must act
+  "UNDER REVIEW":            "UNDER_REVIEW",    // 3
   "VOID":                    "REJECTED",     // 281
   "VOID - WRONG CAP TYPE":   "REJECTED",     // 715
   "VOID - DUPLICATE":        "REJECTED",     // 528
@@ -279,17 +293,21 @@ export const CLEVELAND_STATUS_MAP: StatusMap = {
   // ── In review / action needed ─────────────────────────────────────────────
   "INSPECTION PENDING":               "UNDER_REVIEW", // 8,154
   "NSPECTION PENDING":                "UNDER_REVIEW", // 1 — typo in source data
-  "NON-COMPLIANT":                    "UNDER_REVIEW", // 5,329
   "REVIEW COMPLETE ALERT ASSESSMT":   "UNDER_REVIEW", // 729
   "REOPENED":                         "UNDER_REVIEW", // 248
   "CERTIFICATE REVIEW":               "UNDER_REVIEW", // 49
   "ZONING REVIEW PENDING":            "UNDER_REVIEW", // 11
   "REVISIONS RECEIVED":               "UNDER_REVIEW", // 10
-  "INSPECTION FAILED":                "UNDER_REVIEW", // 2 — rework, not rejection
   "APPEAL PENDING":                   "UNDER_REVIEW", // 2
   "APPEAL NOT FILED":                 "UNDER_REVIEW", // 1
-  "CASHIER DECLINED":                 "UNDER_REVIEW", // 1 — payment needs action
-  "NO EXCEPT - MAKE CORR NOTED":      "UNDER_REVIEW", // 1
+
+  // ── Applicant must act ────────────────────────────────────────────────────
+  // Inspection outcomes that mean "correct the work and re-inspect", plus a
+  // declined payment. These are the contractor's move, not the city's.
+  "NON-COMPLIANT":                    "ACTION_REQUIRED", // 5,329 — failed inspection, correct & reschedule
+  "INSPECTION FAILED":                "ACTION_REQUIRED", // 2     — rework, not rejection
+  "NO EXCEPT - MAKE CORR NOTED":      "ACTION_REQUIRED", // 1     — corrections noted on plans
+  "CASHIER DECLINED":                 "ACTION_REQUIRED", // 1     — payment must be redone
   // Intermediate sub-review approvals — NOT permit approval.
   "FIRE REVIEW APPROVED":             "UNDER_REVIEW", // 2
   "PLAN REVIEW APPROVED":             "UNDER_REVIEW", // 1
@@ -384,8 +402,9 @@ export const CINCINNATI_STATUS_MAP: StatusMap = {
   "EXPIRED":   "EXPIRED",      // 1,581
   "APP_EXP":   "EXPIRED",      // 93  — application expired
 
-  // Internal system marker, not a permit state — see Cleveland for rationale.
+  // Internal system markers, not permit states — see Cleveland for rationale.
   "CAGIS":     "UNKNOWN",      // 1
+  "SUBPERM":   "UNKNOWN",      // 1 — sub-permit marker, appeared 2026-09
 
   // ── Generic fallbacks (substring pass only) ───────────────────────────────
   "CERTIFICATE OF OCCUPANCY":  "CLEARED",
@@ -397,7 +416,7 @@ export const CINCINNATI_STATUS_MAP: StatusMap = {
 
   "ACTIVE":                    "APPROVED",
 
-  "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
+  "CORRECTIONS REQUIRED":      "ACTION_REQUIRED",
   "UNDER REVIEW":              "UNDER_REVIEW",
   "PLAN REVIEW":               "UNDER_REVIEW",
   "ON HOLD":                   "UNDER_REVIEW",
@@ -429,15 +448,17 @@ export const PHILADELPHIA_STATUS_MAP: StatusMap = {
 
   "ABANDONED":                         "REJECTED",     // 1,907
   "REFUSED":                           "REJECTED",     // 1,308
-  "STOP WORK":                         "UNDER_REVIEW", // 305
-  "AMENDMENT APPLICATION INCOMPLETE":  "UNDER_REVIEW", // 217
-  "AMENDMENT APPLICANT REVISIONS":     "UNDER_REVIEW", // 149
-  "AMENDMENT READY FOR ISSUE":         "PENDING",      // 99
-  "AMENDMENT REVIEW":                  "UNDER_REVIEW", // 78
-  "AMENDMENT REQUESTED":               "UNDER_REVIEW", // 37
-  "AMENDMENT DENIED":                  "REJECTED",     // 8
-  "READY FOR ISSUE":                   "PENDING",      // 1
-  "EXPIRED DENIAL":                    "REJECTED",     // 1
+  "STOP WORK":                         "UNDER_REVIEW",    // 296 — enforcement; who acts is ambiguous
+  // Applicant must act (re-enumerated 2026-09-04)
+  "AMENDMENT APPLICATION INCOMPLETE":  "ACTION_REQUIRED", // 224
+  "AMENDMENT APPLICANT REVISIONS":     "ACTION_REQUIRED", // 157
+  "AMENDMENT READY FOR ISSUE":         "PENDING",         // 111
+  "AMENDMENT REVIEW":                  "UNDER_REVIEW",    // 89
+  "AMENDMENT REQUESTED":               "UNDER_REVIEW",    // 55 — applicant asked for it; city acts
+  "AMENDMENT DENIED":                  "REJECTED",        // 9
+  "IN REVIEW":                         "UNDER_REVIEW",    // 2 — was falling through to the PENDING fallback
+  "READY FOR ISSUE":                   "PENDING",         // 1
+  "EXPIRED DENIAL":                    "REJECTED",        // 1
 
   // ── Primary mappings ──────────────────────────────────────────────────────
 
@@ -456,9 +477,10 @@ export const PHILADELPHIA_STATUS_MAP: StatusMap = {
   "CO ISSUED":                 "CLEARED",
   "FINAL INSPECTION":          "CLEARED",
 
-  // Application received, not yet reviewed / under review
+  // Application received, not yet reviewed / under review.
+  // "IN REVIEW" is a live value and is mapped UNDER_REVIEW in the block above;
+  // it used to sit here as PENDING, which is what the drift check flagged.
   "UNDER REVIEW":              "PENDING",
-  "IN REVIEW":                 "PENDING",
   "PENDING":                   "PENDING",
   "SUBMITTED":                 "PENDING",
   "APPLICATION":               "PENDING",
@@ -467,7 +489,7 @@ export const PHILADELPHIA_STATUS_MAP: StatusMap = {
   "INTAKE":                    "PENDING",
   "PLAN REVIEW":               "PENDING",
   "PLAN CHECK":                "PENDING",
-  "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
+  "CORRECTIONS REQUIRED":      "ACTION_REQUIRED",
   "ON HOLD":                   "UNDER_REVIEW",
   "HOLD":                      "UNDER_REVIEW",
   "ZONING REVIEW":             "UNDER_REVIEW",
@@ -506,14 +528,17 @@ export const PITTSBURGH_STATUS_MAP: StatusMap = {
   "READY FOR ISSUE":                  "PENDING",      // 10 — approved, NOT issued
   "APPLICATION FINALIZATION":         "PENDING",      // 124
 
-  // ── In review / action needed ─────────────────────────────────────────────
-  "AMENDMENT APPLICANT REVISIONS":    "UNDER_REVIEW", // 90
-  "AMENDMENT APPLICATION INCOMPLETE": "UNDER_REVIEW", // 57
-  "STOP WORK":                        "UNDER_REVIEW", // 30 — issued but halted
-  "AMENDMENT REVIEW":                 "UNDER_REVIEW", // 26
-  "APPLICANT REVISIONS":              "UNDER_REVIEW", // 10
-  "AMENDMENT REQUESTED":              "UNDER_REVIEW", // 6
+  // ── Applicant must act (re-enumerated 2026-09-04) ─────────────────────────
+  "AMENDMENT APPLICANT REVISIONS":    "ACTION_REQUIRED", // 86
+  "AMENDMENT APPLICATION INCOMPLETE": "ACTION_REQUIRED", // 60
+  "APPLICANT REVISIONS":              "ACTION_REQUIRED", // 11
+
+  // ── In review — with the city, or ambiguous who acts ──────────────────────
+  "STOP WORK":                        "UNDER_REVIEW", // 32 — issued but halted
+  "AMENDMENT REVIEW":                 "UNDER_REVIEW", // 23
+  "AMENDMENT REQUESTED":              "UNDER_REVIEW", // 2 — applicant asked for it; city acts
   "IN REVIEW":                        "UNDER_REVIEW", // 1
+  "REVIEWS PAUSED":                   "UNDER_REVIEW", // 1 — new since 2026-08-07; reason not published
 
   // ── Terminal negative ─────────────────────────────────────────────────────
   "REVOKED":                          "REJECTED",     // 701
@@ -532,7 +557,7 @@ export const PITTSBURGH_STATUS_MAP: StatusMap = {
   "APPROVED":                  "APPROVED",
   "ACTIVE":                    "APPROVED",
 
-  "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
+  "CORRECTIONS REQUIRED":      "ACTION_REQUIRED",
   "UNDER REVIEW":              "UNDER_REVIEW",
   "PLAN REVIEW":               "UNDER_REVIEW",
   "ON HOLD":                   "UNDER_REVIEW",
@@ -565,15 +590,14 @@ export const PITTSBURGH_STATUS_MAP: StatusMap = {
 // Seattle publishes the richest PRE-ISSUANCE workflow of any city we track:
 // thirteen of the 24 values describe a permit that has not been issued yet.
 //
-// ── THE DISTINCTION THIS UNION CANNOT EXPRESS ────────────────────────────────
+// ── ACTION_REQUIRED vs UNDER_REVIEW ──────────────────────────────────────────
 // Three values mean "the APPLICANT must act": Corrections Required,
 // Additional Info Requested, Awaiting Information. One means "the CITY is
-// working — wait": Reviews In Process. PermitStatus has one bucket for both,
-// UNDER_REVIEW, so they are flattened here exactly as Pittsburgh's "Applicant
-// Revisions" and "In Review" already are. The raw status is preserved verbatim
-// in raw_text / rawStatus so the dashboard and checker still show which one it
-// is. Expressing it properly needs a new PermitStatus (e.g. ACTION_REQUIRED),
-// which is a schema constraint + UI + email change, not a mapping change.
+// working — wait": Reviews In Process. They used to share UNDER_REVIEW; the
+// ACTION_REQUIRED status (migration 020) exists so the first three get a
+// louder badge and an alert that says what to do. "Corrections Submitted" is
+// the applicant's response landing back with the city, so it stays
+// UNDER_REVIEW.
 //
 // "Ready for Issuance" is PENDING, not APPROVED — see Pittsburgh's "Ready For
 // Issue": the permit has not been issued and work may not legally start.
@@ -611,10 +635,10 @@ export const SEATTLE_STATUS_MAP: StatusMap = {
   "REVIEWS IN PROCESS":        "UNDER_REVIEW", // 616
   "CORRECTIONS SUBMITTED":     "UNDER_REVIEW", // 9    [+] applicant responded, back with the city
 
-  // ── In review — APPLICANT must act (flattened; see note above) ────────────
-  "ADDITIONAL INFO REQUESTED": "UNDER_REVIEW", // 10,147
-  "CORRECTIONS REQUIRED":      "UNDER_REVIEW", // 2,109
-  "AWAITING INFORMATION":      "UNDER_REVIEW", // 528
+  // ── APPLICANT must act — the city is waiting on the applicant ─────────────
+  "ADDITIONAL INFO REQUESTED": "ACTION_REQUIRED", // 10,147
+  "CORRECTIONS REQUIRED":      "ACTION_REQUIRED", // 2,109
+  "AWAITING INFORMATION":      "ACTION_REQUIRED", // 528
 
   // ── Terminal negative ─────────────────────────────────────────────────────
   "WITHDRAWN":                 "REJECTED",     // 5,160
@@ -685,8 +709,8 @@ export const DETROIT_STATUS_MAP: StatusMap = {
   "ACCEPTED - DOCUMENT REVIEW REQUIRED":     "PENDING",      // 3,887  — intake accepted, not yet routed
   "ROUTED FOR ELECTRONIC REVIEW":            "UNDER_REVIEW", // 3,583
   "ROUTED FOR PAPER REVIEW":                 "UNDER_REVIEW", // 361
-  // Applicant must act — flattened into UNDER_REVIEW, see the Seattle note.
-  "INCOMPLETE":                              "UNDER_REVIEW", // 1
+  // Applicant must act — the submittal is missing items.
+  "INCOMPLETE":                              "ACTION_REQUIRED", // 1
 
   // ── Generic fallbacks (substring pass only) ───────────────────────────────
   "CERTIFICATE OF OCCUPANCY":  "CLEARED",
@@ -700,7 +724,7 @@ export const DETROIT_STATUS_MAP: StatusMap = {
   "APPROVED":                  "APPROVED",
   "ACTIVE":                    "APPROVED",
 
-  "CORRECTIONS REQUIRED":      "UNDER_REVIEW",
+  "CORRECTIONS REQUIRED":      "ACTION_REQUIRED",
   "UNDER REVIEW":              "UNDER_REVIEW",
   "IN REVIEW":                 "UNDER_REVIEW",
   "REVIEW":                    "UNDER_REVIEW",
