@@ -17,7 +17,14 @@ const CITY_META = routeCityMeta;
 
 // ─── State config, grouped from the same source ───────────────────────────────
 
-type CityEntry = { slug: string; name: string };
+type CityEntry = {
+  slug: string;
+  name: string;
+  /** The city's /locations page, which exists for every city. Used as the
+   *  card target when a city has no Permit Encyclopedia rows, because
+   *  /permits/<city> calls notFound() in that case. */
+  locationsPath: string;
+};
 
 const STATE_META: Record<string, { name: string; abbr: string; cities: CityEntry[] }> =
   getCitiesByState().reduce<Record<string, { name: string; abbr: string; cities: CityEntry[] }>>(
@@ -28,6 +35,7 @@ const STATE_META: Record<string, { name: string; abbr: string; cities: CityEntry
         cities: group.cities.map((c) => ({
           slug: `${c.slug}-${c.stateSlug}`,
           name: c.name,
+          locationsPath: `/locations/${c.stateSlug}/${c.slug}`,
         })),
       };
       return acc;
@@ -207,10 +215,14 @@ async function StatePermitsPage({ slug }: { slug: string }) {
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {meta.cities.map((city) => {
               const count = permitCountByCity[city.slug] ?? 0;
+              // A city with no permit rows has no /permits page — that route
+              // calls notFound() — so send those cards to the city guide
+              // instead of a 404. Seattle is in exactly this state.
+              const hasPermitPage = count > 0;
               return (
                 <Link
                   key={city.slug}
-                  href={`/permits/${city.slug}`}
+                  href={hasPermitPage ? `/permits/${city.slug}` : city.locationsPath}
                   className="group border border-[#FF6B00]/20 p-6 hover:border-[#FF6B00]/60 hover:bg-[#FF6B00]/5 transition-all"
                 >
                   <div className="text-[10px] tracking-[0.3em] text-[#FF6B00] uppercase mb-2 font-mono">
@@ -220,7 +232,7 @@ async function StatePermitsPage({ slug }: { slug: string }) {
                     {city.name.toUpperCase()}
                   </div>
                   <div className="text-xs text-[#F5F0E8]/40 font-mono">
-                    {count > 0 ? `${count} permit types` : "permit guides"} →
+                    {hasPermitPage ? `${count} permit types` : "city guide"} →
                   </div>
                 </Link>
               );

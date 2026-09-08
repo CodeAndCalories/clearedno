@@ -219,6 +219,7 @@ export async function POST(req: NextRequest) {
       await sendWelcomeEmail({
         to:       userEmail,
         userName: profile?.full_name ?? "there",
+        userId,
       });
 
       // Convert any pending referral for this user

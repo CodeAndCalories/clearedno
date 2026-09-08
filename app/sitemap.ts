@@ -1,24 +1,20 @@
 import type { MetadataRoute } from "next";
-import { cities } from "@/lib/cities";
+import { cities, getCitiesByState, routeCitySlugs } from "@/lib/cities";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 
 const BASE = "https://www.clearedno.com";
 
 // ─── Permit Encyclopedia ──────────────────────────────────────────────────────
 
-const PERMIT_CITIES = [
-  "austin-tx",
-  "dallas-tx",
-  "houston-tx",
-  "san-antonio-tx",
-  "columbus-oh",
-  "philadelphia-pa",
-  "grand-rapids-mi",
-  "cleveland-oh",
-  "pittsburgh-pa",
-  "detroit-mi",
-  "cincinnati-oh",
-];
+// Cities for /contractors/<trade>/<city>. Those pages render from
+// lib/cities.ts alone, so every city in the canonical list has one — which is
+// why this is derived rather than typed out. The hand-written copy of this
+// list had gone stale and was missing Seattle.
+const CONTRACTOR_CITIES = routeCitySlugs;
+
+// State hubs at /permits/<state>, likewise derived. Washington was missing
+// here for the same reason.
+const PERMIT_STATE_HUBS = getCitiesByState().map((g) => g.state.toLowerCase());
 
 const CONTRACTOR_TRADES = [
   "roofing",
@@ -126,6 +122,28 @@ function countyToSlug(county: string): string {
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  // ── Permit Encyclopedia cities ────────────────────────────────────────────
+  //
+  // /permits/<city> and its cost/timeline children call notFound() when
+  // city_permits holds no rows for that city, so the sitemap has to be driven
+  // by that table and not by the city list. Seattle is the live example: it is
+  // a tracked city with a /locations page and contractor pages, but no
+  // city_permits rows, so /permits/seattle-wa is a 404 today and must stay out
+  // of the sitemap until those rows are seeded — at which point it appears
+  // here on its own.
+  //
+  // Ordered by the canonical city list so output stays stable between builds.
+  // If the query fails this comes back empty and the permit-encyclopedia URLs
+  // are skipped for that fetch; submitting a URL that 404s costs more than
+  // briefly omitting one that resolves.
+  const { data: permitCityRows } = await supabaseAdmin
+    .from("city_permits")
+    .select("city_slug");
+
+  const seededPermitCities = new Set(
+    (permitCityRows ?? []).map((r) => r.city_slug as string)
+  );
+  const PERMIT_CITIES = routeCitySlugs.filter((slug) => seededPermitCities.has(slug));
   // ── Roofing leads: state pages ─────────────────────────────────────────────
   const leadsStateEntries: MetadataRoute.Sitemap = LEADS_STATES.map((state) => ({
     url: `${BASE}/leads/roofing/${state}`,
@@ -224,7 +242,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // Permit Encyclopedia: state hubs
-  const permitStateEntries: MetadataRoute.Sitemap = ["texas", "ohio", "pennsylvania", "michigan"].map((state) => ({
+  const permitStateEntries: MetadataRoute.Sitemap = PERMIT_STATE_HUBS.map((state) => ({
     url: `${BASE}/permits/${state}`,
     lastModified: new Date(),
     changeFrequency: "monthly" as const,
@@ -294,7 +312,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ];
 
   const contractorPageEntries: MetadataRoute.Sitemap = CONTRACTOR_TRADES.flatMap((trade) =>
-    PERMIT_CITIES.map((city) => ({
+    CONTRACTOR_CITIES.map((city) => ({
       url: `${BASE}/contractors/${trade}/${city}`,
       lastModified: new Date(),
       changeFrequency: "monthly",
@@ -386,6 +404,38 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 0.85,
+    },
+    {
+      url: `${BASE}/permits/landing`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${BASE}/leads/landing`,
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    // Legal pages carry low priority but belong in the sitemap: payment
+    // processors and app reviews expect them to be reachable and indexed.
+    {
+      url: `${BASE}/privacy`,
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+    {
+      url: `${BASE}/terms`,
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.3,
+    },
+    {
+      url: `${BASE}/refunds`,
+      lastModified: new Date(),
+      changeFrequency: "yearly",
+      priority: 0.3,
     },
     ...locationEntries,
     ...blogEntries,

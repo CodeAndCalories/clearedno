@@ -17,15 +17,30 @@ function getResend(): Resend {
 
 const FROM = `${process.env.FROM_NAME || "ClearedNo"} <${process.env.FROM_EMAIL || "alerts@clearedno.com"}>`;
 
+const SITE = process.env.NEXT_PUBLIC_URL || "https://www.clearedno.com";
+
+/**
+ * Per-recipient unsubscribe link.
+ *
+ * The user id is the identifier: it is a UUID, so it cannot be guessed to
+ * unsubscribe somebody else, and /unsubscribe needs no login to honour it.
+ * Never send a bare /unsubscribe — without an id the page cannot act.
+ */
+export function unsubscribeUrlFor(userId: string): string {
+  return `${SITE}/unsubscribe?u=${encodeURIComponent(userId)}`;
+}
+
 export async function sendWelcomeEmail({
   to,
   userName,
+  userId,
 }: {
   to: string;
   userName: string;
+  userId: string;
 }) {
   const html = await render(
-    WelcomeEmail({ userName }) as React.ReactElement
+    WelcomeEmail({ userName, unsubscribeUrl: unsubscribeUrlFor(userId) }) as React.ReactElement
   );
 
   return getResend().emails.send({
@@ -68,5 +83,12 @@ export async function sendDigestEmail({
     subject,
     html,
     text,
+    // The digest is our only recurring bulk email, so it carries the headers
+    // Gmail and Yahoo require of bulk senders: an unsubscribe the mail client
+    // can offer in its own UI, honoured with a single POST (RFC 8058).
+    headers: {
+      "List-Unsubscribe": `<${unsubscribeUrl}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
   });
 }

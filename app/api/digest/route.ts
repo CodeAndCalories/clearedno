@@ -6,7 +6,7 @@
 // Rate-limit aware: sends one email per user, pauses between sends.
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
-import { sendDigestEmail } from "@/lib/email-app";
+import { sendDigestEmail, unsubscribeUrlFor } from "@/lib/email-app";
 import type { DigestPermit } from "@/app/emails/digest";
 import type { PermitStatus, StatusHistoryEntry } from "@/types";
 
@@ -128,7 +128,10 @@ export async function POST(req: NextRequest) {
 
       const changedCount = digestPermits.filter((p) => p.previous_status).length;
 
-      const unsubscribeUrl = `${process.env.NEXT_PUBLIC_URL}/dashboard`;
+      // Points at /unsubscribe, not the dashboard. The old link sent people
+      // to a login wall and a toggle they had to find, which is not an
+      // unsubscribe a bulk sender can rely on.
+      const unsubscribeUrl = unsubscribeUrlFor(profile.user_id);
 
       await sendDigestEmail({
         to: userEmail,

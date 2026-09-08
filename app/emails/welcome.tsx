@@ -14,12 +14,16 @@ import { liveCityList } from "@/lib/cities";
 
 interface Props {
   userName: string;
+  /** Recipient-specific link to /unsubscribe. Built by the sender, which is
+   *  the only place that knows who this email is going to. This used to be a
+   *  bare "/unsubscribe" with no identifier and no page behind it, so every
+   *  welcome email shipped a dead unsubscribe link. */
+  unsubscribeUrl: string;
 }
 
-export function WelcomeEmail({ userName }: Props) {
+export function WelcomeEmail({ userName, unsubscribeUrl }: Props) {
   const addPermitUrl = `${process.env.NEXT_PUBLIC_URL}/dashboard/add`;
   const dashboardUrl = `${process.env.NEXT_PUBLIC_URL}/dashboard`;
-  const unsubscribeUrl = `${process.env.NEXT_PUBLIC_URL}/unsubscribe`;
 
   const greeting = userName && userName !== "there"
     ? `Hi ${userName},`
