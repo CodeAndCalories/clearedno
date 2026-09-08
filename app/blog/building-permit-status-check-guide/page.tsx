@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Building Permit Status Check — How to Find Any Permit in the Midwest | ClearedNo",
   description:
-    "How to check building permit status in any Midwest city. Free lookup tools for Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania by address or permit number.",
+    "How to check building permit status in any Midwest city using each city's own free permit portal — Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania, by address or permit number.",
   keywords: [
     "building permit status check",
     "check building permit status online",
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "Building Permit Status Check — How to Find Any Permit in the Midwest",
     description:
-      "Free lookup tools for Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania by address or permit number.",
+      "Each city's own free permit portal in Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania — search by address or permit number.",
     url: "https://www.clearedno.com/blog/building-permit-status-check-guide",
     type: "article",
   },
@@ -31,11 +31,11 @@ const jsonLd = {
   "@type": "Article",
   headline: "Building Permit Status Check — How to Find Any Permit in the Midwest",
   description:
-    "How to check building permit status in any Midwest city. Free lookup tools for Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania by address or permit number.",
+    "How to check building permit status in any Midwest city using each city's own free permit portal — Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania, by address or permit number.",
   author: { "@type": "Organization", name: "ClearedNo" },
   publisher: { "@type": "Organization", name: "ClearedNo", url: "https://www.clearedno.com" },
   datePublished: "2026-05-12",
-  dateModified: "2026-05-12",
+  dateModified: "2026-09-07",
 };
 
 const CONTRACTOR_REASONS = [

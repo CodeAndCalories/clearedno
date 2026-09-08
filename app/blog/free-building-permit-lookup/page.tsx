@@ -1,10 +1,20 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
+
+// The states this directory covers. The /check funnel below lists only the
+// live-checker cities inside them — a Midwest lookup guide should not pitch
+// Austin or Seattle. Derived from LIVE_CHECKER_CITIES, never hardcoded.
+const POST_STATES = ["OH", "IL", "IN", "MI", "KY", "PA"] as const;
+const liveHere = liveCityList({ separator: ", ", conjunction: "and", format: "city", states: POST_STATES });
 
 export const metadata: Metadata = {
-  title: "Free Building Permit Lookup by Address — OH, IL, IN, MI, KY, PA | ClearedNo",
+  // Retitled 2026-09-07. The old title read like ClearedNo offered a
+  // by-address lookup; this page is a directory of each city's own portal.
+  // "Building permit" + "lookup by address" + the state list stay prominent.
+  title: "How to Look Up a Building Permit by Address in OH, IL, IN, MI, KY & PA | ClearedNo",
   description:
-    "Look up building permits by address in Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania. Free permit search tools for contractors and homeowners.",
+    "How to look up a building permit by address in Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania — the free permit search portal each major city runs, and what each one lets you search by.",
   keywords: [
     "free building permit lookup by address",
     "permit lookup Ohio",
@@ -15,9 +25,9 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://www.clearedno.com/blog/free-building-permit-lookup" },
   openGraph: {
-    title: "Free Building Permit Lookup by Address — OH, IL, IN, MI, KY, PA",
+    title: "How to Look Up a Building Permit by Address in OH, IL, IN, MI, KY & PA",
     description:
-      "Look up building permits by address in Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania. Free permit search tools for contractors and homeowners.",
+      "The free permit search portal each major city runs in Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania — and what each lets you search by.",
     url: "https://www.clearedno.com/blog/free-building-permit-lookup",
     type: "article",
   },
@@ -26,13 +36,13 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Article",
-  headline: "Free Building Permit Lookup by Address — OH, IL, IN, MI, KY, PA",
+  headline: "How to Look Up a Building Permit by Address in OH, IL, IN, MI, KY & PA",
   description:
-    "Look up building permits by address in Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania. Free permit search tools for contractors and homeowners.",
+    "How to look up a building permit by address in Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania — the free permit search portal each major city runs, and what each one lets you search by.",
   author: { "@type": "Organization", name: "ClearedNo" },
   publisher: { "@type": "Organization", name: "ClearedNo", url: "https://www.clearedno.com" },
   datePublished: "2026-04-29",
-  dateModified: "2026-04-29",
+  dateModified: "2026-09-07",
 };
 
 const OHIO = [
@@ -106,12 +116,32 @@ export default function FreeBuildingPermitLookupPost() {
           <span className="text-[10px] text-[#F5F0E8]/25 font-mono">April 2026 · 7 min read</span>
         </div>
         <h1 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] leading-[0.95] mb-6">
-          FREE BUILDING PERMIT LOOKUP BY ADDRESS — OH, IL, IN, MI, KY, PA
+          HOW TO LOOK UP A BUILDING PERMIT BY ADDRESS IN OH, IL, IN, MI, KY &amp; PA
         </h1>
         <p className="text-sm text-[#F5F0E8]/60 leading-relaxed border-l-2 border-[#FF6B00]/40 pl-4">
-          Need to look up a building permit by address? Here are the free online tools for every
-          major city across the Midwest.
+          Need to look up a building permit by address? Every major Midwest city runs its own free
+          online permit portal. Here is the one to use in each city, and what it lets you search by.
         </p>
+
+        {/* This page is a directory of city portals. Anyone who landed here already
+            holding a permit number in a live-checker city should get a real lookup
+            in one click instead of a portal link. */}
+        <div className="mt-6 border border-[#FF6B00]/40 bg-[#FF6B00]/5 p-5 relative">
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FF6B00] -translate-x-px -translate-y-px" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
+          <p className="text-[9px] tracking-[0.3em] text-[#FF6B00] uppercase font-mono mb-2">Have the permit number already?</p>
+          <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-3">
+            Skip the portal. For permits in {liveHere}, our free checker pulls the current status
+            straight from the city&apos;s open-data feed — no login, no signup. Permit number only;
+            for address searches, use the city portals listed below.
+          </p>
+          <Link
+            href="/check"
+            className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-6 py-3 hover:bg-[#F5F0E8] transition-colors"
+          >
+            CHECK A PERMIT&apos;S STATUS FREE →
+          </Link>
+        </div>
       </header>
 
       {/* Body */}
@@ -154,9 +184,9 @@ export default function FreeBuildingPermitLookupPost() {
             logging into each portal individually adds up fast.
           </p>
           <p className="mt-3">
-            ClearedNo&apos;s Permit Tracker monitors status changes automatically across major
-            Midwest cities. You enter your permit numbers once and get email alerts when anything
-            changes — approved, inspected, or flagged.
+            ClearedNo&apos;s Permit Tracker monitors status changes automatically in {liveHere}.
+            You enter your permit numbers once and get email alerts when anything changes —
+            approved, inspected, or flagged.
           </p>
         </section>
 
@@ -166,7 +196,7 @@ export default function FreeBuildingPermitLookupPost() {
           <div className="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
           <h3 className="font-heading text-2xl tracking-widest text-[#F5F0E8] mb-3">SEE HOW PERMIT TRACKER WORKS</h3>
           <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-4">
-            Automatic status alerts across OH, IL, IN, MI, KY, and PA. No more portal-hopping.
+            Automatic status alerts for permits in {liveHere}. No more portal-hopping.
           </p>
           <Link
             href="/"

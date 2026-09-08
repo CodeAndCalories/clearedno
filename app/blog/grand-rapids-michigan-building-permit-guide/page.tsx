@@ -3,7 +3,7 @@ import Link from "next/link";
 import { liveCityList } from "@/lib/cities";
 
 export const metadata: Metadata = {
-  title: "Grand Rapids Michigan Building Permit Guide: How to Search and Track Permits (2026) | ClearedNo",
+  title: "Grand Rapids Michigan Building Permit Guide: How to Search and Check Permits (2026) | ClearedNo",
   description:
     "Grand Rapids uses the BS&A Online portal for permit tracking. Here's how to search by permit number, what the statuses mean, typical timelines, and what contractors commonly get wrong.",
   keywords: [
@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://www.clearedno.com/blog/grand-rapids-michigan-building-permit-guide" },
   openGraph: {
-    title: "Grand Rapids Michigan Building Permit Guide: How to Search and Track Permits (2026)",
+    title: "Grand Rapids Michigan Building Permit Guide: How to Search and Check Permits (2026)",
     description:
       "Grand Rapids uses the BS&A Online portal for permit tracking. Here's how to use it correctly and what timelines to expect.",
     url: "https://www.clearedno.com/blog/grand-rapids-michigan-building-permit-guide",
@@ -26,13 +26,13 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Article",
-  headline: "Grand Rapids Michigan Building Permit Guide: How to Search and Track Permits (2026)",
+  headline: "Grand Rapids Michigan Building Permit Guide: How to Search and Check Permits (2026)",
   description:
     "Grand Rapids uses the BS&A Online portal for permit tracking. Here's how to search correctly and what each status means.",
   author: { "@type": "Organization", name: "ClearedNo" },
   publisher: { "@type": "Organization", name: "ClearedNo", url: "https://www.clearedno.com" },
   datePublished: "2026-03-01",
-  dateModified: "2026-03-30",
+  dateModified: "2026-09-07",
 };
 
 export default function GrandRapidsMichiganPermitPost() {
@@ -47,7 +47,7 @@ export default function GrandRapidsMichiganPermitPost() {
           <span className="text-[10px] text-[#F5F0E8]/25 font-mono">March 2026 · 7 min read</span>
         </div>
         <h1 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] leading-[0.95] mb-6">
-          GRAND RAPIDS MICHIGAN BUILDING PERMIT GUIDE: HOW TO SEARCH AND TRACK PERMITS (2026)
+          GRAND RAPIDS MICHIGAN BUILDING PERMIT GUIDE: HOW TO SEARCH AND CHECK PERMITS (2026)
         </h1>
         <p className="text-sm text-[#F5F0E8]/60 leading-relaxed border-l-2 border-[#FF6B00]/40 pl-4">
           Grand Rapids uses the BS&amp;A Online portal for permit tracking — a platform used across

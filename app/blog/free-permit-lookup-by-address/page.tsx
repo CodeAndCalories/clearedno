@@ -1,10 +1,18 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { liveCityList } from "@/lib/cities";
+
+// Cities where the /check funnel below can actually return a status. Derived
+// from LIVE_CHECKER_CITIES so this page can never advertise a lookup we lack.
+const liveCities = liveCityList({ separator: ", ", conjunction: "and", format: "city" });
 
 export const metadata: Metadata = {
-  title: "Free Building Permit Lookup by Address — Search Any City (2026) | ClearedNo",
+  // Retitled 2026-09-07. The old title read like ClearedNo offered a
+  // by-address search of any city; this page is a directory of each city's
+  // own portal. "Building permit" + "lookup by address" + "(2026)" stay prominent.
+  title: "How to Look Up Any Building Permit by Address (2026) | ClearedNo",
   description:
-    "Free building permit lookup by address in 2026. Find any permit, check inspection status, and verify contractor work in Ohio, Texas, Illinois, Michigan, and more.",
+    "How to look up any building permit by address in 2026: the free permit portal each city runs in Ohio, Texas, Illinois, Michigan, and Pennsylvania, what it shows, and what to do when the record isn't online.",
   keywords: [
     "free building permit lookup by address",
     "permit lookup by address",
@@ -16,9 +24,9 @@ export const metadata: Metadata = {
   ],
   alternates: { canonical: "https://www.clearedno.com/blog/free-permit-lookup-by-address" },
   openGraph: {
-    title: "Free Building Permit Lookup by Address — Search Any City (2026)",
+    title: "How to Look Up Any Building Permit by Address (2026)",
     description:
-      "Find any permit, check inspection status, and verify contractor work in Ohio, Texas, Illinois, Michigan, and more.",
+      "The free permit portal each city runs in Ohio, Texas, Illinois, Michigan, and Pennsylvania — find any permit, check inspection status, and verify contractor work.",
     url: "https://www.clearedno.com/blog/free-permit-lookup-by-address",
     type: "article",
   },
@@ -27,13 +35,13 @@ export const metadata: Metadata = {
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "Article",
-  headline: "Free Building Permit Lookup by Address — Search Any City (2026)",
+  headline: "How to Look Up Any Building Permit by Address (2026)",
   description:
-    "Free building permit lookup by address in 2026. Find any permit, check inspection status, and verify contractor work in Ohio, Texas, Illinois, Michigan, and more.",
+    "How to look up any building permit by address in 2026: the free permit portal each city runs in Ohio, Texas, Illinois, Michigan, and Pennsylvania, what it shows, and what to do when the record isn't online.",
   author: { "@type": "Organization", name: "ClearedNo" },
   publisher: { "@type": "Organization", name: "ClearedNo", url: "https://www.clearedno.com" },
   datePublished: "2026-05-12",
-  dateModified: "2026-05-12",
+  dateModified: "2026-09-07",
 };
 
 const GENERAL_STEPS = [
@@ -276,13 +284,33 @@ export default function FreePermitLookupByAddressPost() {
           <span className="text-[10px] text-[#F5F0E8]/25 font-mono">May 2026 · 9 min read</span>
         </div>
         <h1 className="font-heading text-4xl sm:text-5xl tracking-widest text-[#F5F0E8] leading-[0.95] mb-6">
-          FREE BUILDING PERMIT LOOKUP BY ADDRESS — SEARCH ANY CITY (2026)
+          HOW TO LOOK UP ANY BUILDING PERMIT BY ADDRESS (2026)
         </h1>
         <p className="text-sm text-[#F5F0E8]/60 leading-relaxed border-l-2 border-[#FF6B00]/40 pl-4">
           Building permits are public records. Anyone can look up permit status, inspection history,
-          and contractor information for any address — completely free. Here&apos;s how to do it in
-          every major city.
+          and contractor information for any address — completely free, through the city&apos;s own
+          portal. Here&apos;s which portal to use in every major city, and how.
         </p>
+
+        {/* This page is a directory of city portals. Anyone who landed here already
+            holding a permit number in a live-checker city should get a real lookup
+            in one click instead of a portal link. */}
+        <div className="mt-6 border border-[#FF6B00]/40 bg-[#FF6B00]/5 p-5 relative">
+          <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-[#FF6B00] -translate-x-px -translate-y-px" />
+          <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-[#FF6B00] translate-x-px translate-y-px" />
+          <p className="text-[9px] tracking-[0.3em] text-[#FF6B00] uppercase font-mono mb-2">Have the permit number already?</p>
+          <p className="text-xs text-[#F5F0E8]/60 leading-relaxed mb-3">
+            Skip the portal. For permits in {liveCities}, our free checker pulls the current status
+            straight from the city&apos;s open-data feed — no login, no signup. Permit number only;
+            for address searches, use the city portals listed below.
+          </p>
+          <Link
+            href="/check"
+            className="inline-block bg-[#FF6B00] text-[#0A0A0A] font-mono text-xs font-bold tracking-widest uppercase px-6 py-3 hover:bg-[#F5F0E8] transition-colors"
+          >
+            CHECK A PERMIT&apos;S STATUS FREE →
+          </Link>
+        </div>
       </header>
 
       <div className="prose-custom space-y-8 text-sm text-[#F5F0E8]/70 leading-relaxed">

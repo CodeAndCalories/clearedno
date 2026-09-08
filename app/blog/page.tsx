@@ -321,7 +321,7 @@ const PERMIT_POSTS = [
   },
   {
     href: "/blog/grand-rapids-michigan-building-permit-guide",
-    title: "Grand Rapids Michigan Building Permit Guide: How to Search and Track (2026)",
+    title: "Grand Rapids Michigan Building Permit Guide: How to Search and Check (2026)",
     excerpt:
       "BS&A Online portal explained, how to search by permit number, typical 4–8 week timelines, and what contractors commonly get wrong.",
     tag: "Grand Rapids, MI",
@@ -548,23 +548,23 @@ const PERMIT_POSTS = [
     href: "/blog/building-permit-status-check-guide",
     title: "Building Permit Status Check — How to Find Any Permit in the Midwest",
     excerpt:
-      "Free lookup tools for Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania — by address or permit number.",
+      "Each city's own free permit portal across Ohio, Illinois, Indiana, Michigan, Kentucky, and Pennsylvania — search by address or permit number.",
     tag: "Permits 101",
     date: "May 2026",
     readTime: "7 min read",
   },
   {
     href: "/blog/free-building-permit-lookup",
-    title: "Free Building Permit Lookup by Address — OH, IL, IN, MI, KY, PA",
+    title: "How to Look Up a Building Permit by Address in OH, IL, IN, MI, KY & PA",
     excerpt:
-      "Look up building permits by address across six Midwest states. Free permit search tools for contractors and homeowners.",
+      "Each major city's own free permit portal across six Midwest states, and what each lets you search by.",
     tag: "Permits 101",
     date: "April 2026",
     readTime: "5 min read",
   },
   {
     href: "/blog/free-permit-lookup-by-address",
-    title: "Free Building Permit Lookup by Address — Search Any City (2026)",
+    title: "How to Look Up Any Building Permit by Address (2026)",
     excerpt:
       "Find any permit, check inspection status, and verify contractor work in Ohio, Texas, Illinois, Michigan, and more.",
     tag: "Permits 101",

@@ -397,19 +397,28 @@ export function isLiveCheckerCity(slug: string): boolean {
  * @param format     "abbr" → "Austin TX", "comma" → "Austin, TX", "city" → "Austin"
  * @param conjunction  when set (e.g. "and"), the last entry is joined with it
  *                     instead of the separator, for sentence-shaped copy
+ * @param states     when set, only live cities in these state abbreviations
+ *                   are listed — for pages scoped to a region (e.g. a Midwest
+ *                   guide should not advertise Austin or Seattle). Still
+ *                   derived from LIVE_CHECKER_CITIES, never hardcoded.
  */
 export function liveCityList(
   {
     separator = " · ",
     format = "comma",
     conjunction,
+    states,
   }: {
     separator?: string;
     format?: "abbr" | "comma" | "city";
     conjunction?: string;
+    states?: readonly string[];
   } = {}
 ): string {
-  const names = liveCheckerCities.map((c) =>
+  const pool = states
+    ? liveCheckerCities.filter((c) => states.includes(c.stateAbbr))
+    : liveCheckerCities;
+  const names = pool.map((c) =>
     format === "city"
       ? c.name
       : format === "abbr"
