@@ -1,3 +1,28 @@
+// ── THIS ROUTE HAS NEVER SENT AN EMAIL ───────────────────────────────────────
+//
+// Verified 2026-10-04 against the live database and the Actions run history.
+// The only caller is .github/workflows/leads-digest.yml. It ran 4 times
+// (2026-04-20 → 2026-05-11) and failed here every time, so the notify-alerts
+// step never ran. It has been disabled since 2026-05-12, and it should stay
+// disabled. Three independent blockers, each one enough on its own:
+//
+//   1. profiles.email does not exist. Email lives in auth.users. The profiles
+//      select below fails with 42703, so the send loop is never reached.
+//   2. notify-alerts/route.ts embeds lead_alerts → profiles(...). There is no
+//      FK between them, so PostgREST returns PGRST200. (lead_alerts has 0 rows.)
+//   3. Both routes filter roofing_leads on event_date >= today − 7. NOAA storm
+//      data arrives about 80–100 days after the event, so that window matches
+//      0 rows. Fixing 1 and 2 alone would return 200 and still send nothing
+//      ("No new leads this week").
+//
+// Any revival MUST filter on ingestion date (roofing_leads.created_at), not
+// event_date. It must also look up emails through
+// supabaseAdmin.auth.admin.getUserById, as app/api/digest does.
+// email_digest_enabled and leads_subscription_status exist in the live DB but
+// were added out-of-band. They are in no tracked migration and not in
+// types/index.ts.
+// ─────────────────────────────────────────────────────────────────────────────
+
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Resend } from "resend";

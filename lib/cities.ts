@@ -314,9 +314,15 @@ export const cities: CityData[] = [
     buildingDeptUrl: "https://www.seattle.gov/sdci",
     summary:
       "Seattle's SDCI publishes the most detailed permit workflow of any city we track — intake, review, corrections and issuance are all visible. Reviews run long, and correction cycles are where most projects stall.",
+    // New residential build: SDCI Construction Permit Performance (as of
+    // 2025-10-01), middle housing including single-family, calendar days in
+    // City control: goal 60 (~9 weeks), 75th percentile 117 (~17 weeks).
+    // Keep in step with new-construction avg_approval_days = 120 in
+    // supabase/migrations/add_city_permits_seattle.sql. SDCI says the total
+    // time an applicant experiences is about twice the City-controlled time.
     timelines: [
       { type: "Simple remodel / repair", time: "2–6 weeks" },
-      { type: "New residential build", time: "8–16 weeks" },
+      { type: "New residential build", time: "9–17 weeks" },
       { type: "Commercial tenant improvement", time: "6–12 weeks" },
       { type: "New commercial construction", time: "12–24 weeks" },
     ],

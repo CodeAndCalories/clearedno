@@ -40,6 +40,27 @@ export function generateStaticParams() {
 // Derived from lib/cities — `trackingLive` gates every monitoring claim.
 const CITY_META = routeCityMeta;
 
+// ─── Issuing agency ───────────────────────────────────────────────────────────
+
+// official_url normally points at the city's own permit portal. Where another
+// agency issues the permit, the row links there instead — Seattle plumbing
+// permits come from Public Health – Seattle & King County, not SDCI — so the
+// copy must name that agency rather than "the Seattle permit portal".
+// Keyed by official_url hostname.
+const OTHER_ISSUING_AGENCY: Record<string, string> = {
+  "kingcounty.gov": "King County Public Health",
+};
+
+function otherIssuingAgency(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const host = new URL(url).hostname.replace(/^www\./, "");
+    return OTHER_ISSUING_AGENCY[host] ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type PermitRow = {
@@ -133,6 +154,10 @@ export default async function ProjectTypePermitPage(
       stateFull: row.state,
       trackingLive: false,
     };
+  const agency = otherIssuingAgency(row.official_url);
+  const applyAt = agency
+    ? `through ${agency}, which issues them in ${row.city_name} instead of the city`
+    : `at the official ${row.city_name} permit portal`;
 
   // ── FAQ JSON-LD (uses live DB data — unique per page) ──────────────────────
   const faqSchema = {
@@ -161,8 +186,8 @@ export default async function ProjectTypePermitPage(
         acceptedAnswer: {
           "@type": "Answer",
           text: cityMeta.trackingLive
-            ? `You can apply for a ${row.project_type_label} at the official ${row.city_name} permit portal. ClearedNo can monitor your permit status 24/7 and alert you the moment it's approved.`
-            : `You can apply for a ${row.project_type_label} at the official ${row.city_name} permit portal, and you'll need to check the status there yourself — ClearedNo doesn't offer automated ${row.city_name} tracking yet.`,
+            ? `You can apply for a ${row.project_type_label} ${applyAt}. ClearedNo can monitor your permit status 24/7 and alert you the moment it's approved.`
+            : `You can apply for a ${row.project_type_label} ${applyAt}, and you'll need to check the status there yourself — ClearedNo doesn't offer automated ${row.city_name} tracking yet.`,
         },
       },
     ],
@@ -306,8 +331,17 @@ export default async function ProjectTypePermitPage(
               OFFICIAL PERMIT PORTAL
             </h2>
             <p className="text-sm text-[#F5F0E8]/50 mb-6">
-              Submit your {row.project_type_label.toLowerCase()} application directly
-              through {cityMeta.name}&apos;s official portal.
+              {agency ? (
+                <>
+                  {cityMeta.name} {row.project_type_label.toLowerCase()}s are issued by{" "}
+                  {agency}, not the city. Apply through their permit page.
+                </>
+              ) : (
+                <>
+                  Submit your {row.project_type_label.toLowerCase()} application directly
+                  through {cityMeta.name}&apos;s official portal.
+                </>
+              )}
             </p>
             <a
               href={row.official_url}
@@ -315,7 +349,10 @@ export default async function ProjectTypePermitPage(
               rel="noopener noreferrer"
               className="inline-flex items-center gap-3 border border-[#FF6B00] text-[#FF6B00] font-mono text-sm font-bold tracking-widest uppercase px-8 py-4 hover:bg-[#FF6B00] hover:text-[#0A0A0A] transition-colors"
             >
-              OPEN {cityMeta.name.toUpperCase()} PERMIT PORTAL <span>↗</span>
+              {agency
+                ? `OPEN ${agency.toUpperCase()} PERMITS`
+                : `OPEN ${cityMeta.name.toUpperCase()} PERMIT PORTAL`}{" "}
+              <span>↗</span>
             </a>
           </div>
         </section>

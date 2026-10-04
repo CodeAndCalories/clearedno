@@ -1,3 +1,27 @@
+# ── THIS DIGEST HAS NEVER SENT AN EMAIL. KEEP THE WORKFLOW DISABLED. ──────────
+#
+# Verified 2026-10-04 against the live database and the Actions run history.
+# This workflow ran 4 times (2026-04-20 → 2026-05-11). Every run failed at the
+# digest step (curl exit 22), so the notify-alerts step never ran. It has been
+# disabled in the GitHub UI since 2026-05-12, and nothing else calls these
+# routes (there is no Vercel cron). Three independent blockers, each one enough
+# on its own to stop it:
+#
+#   1. profiles.email does not exist. Email lives in auth.users. The digest's
+#      profiles select fails with 42703 before it reaches the send loop.
+#   2. notify-alerts embeds lead_alerts → profiles(...). There is no FK between
+#      them, so PostgREST returns PGRST200. (lead_alerts has 0 rows anyway.)
+#   3. Both routes filter roofing_leads on event_date >= today − 7. NOAA storm
+#      data arrives about 80–100 days after the event, so that window matches
+#      0 rows. Fixing 1 and 2 alone would turn the job green while it still
+#      sent nothing.
+#
+# Any revival MUST filter on ingestion date (roofing_leads.created_at), not
+# event_date. It must also look up emails through auth.admin.getUserById, as
+# app/api/digest does. Do not re-enable this workflow until all three are
+# fixed and a run has delivered a real email. See app/api/leads-digest/route.ts.
+# ──────────────────────────────────────────────────────────────────────────────
+
 name: Roofing Leads Weekly Digest
 
 on:
