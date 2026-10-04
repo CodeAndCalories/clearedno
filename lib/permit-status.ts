@@ -131,9 +131,12 @@ export const AUSTIN_STATUS_MAP: StatusMap = {
   // Permit issued and active — work may proceed
   "ACTIVE":                           "APPROVED",  // 27,673
 
-  // Application received, not yet reviewed
+  // Ambiguous — see AUSTIN_ISSUE_DATE_AMBIGUOUS. This dataset is "Issued
+  // Construction Permits": every one of its 2,378,779 rows has an issue_date
+  // (2026-10-04), so with the issue date these resolve to APPROVED. PENDING is
+  // only what they map to when no issue date is known.
   "PENDING":                          "PENDING",   // 229
-  "PENDING PERMIT":                   "PENDING",   // 65
+  "PENDING PERMIT":                   "PENDING",   // 56
 
   // Applicant must act — the city is waiting on the applicant
   // (re-enumerated 2026-09-04; "Awaiting Update" no longer appears live)
@@ -313,12 +316,18 @@ export const CLEVELAND_STATUS_MAP: StatusMap = {
   "INSPECTION FAILED":                "ACTION_REQUIRED", // 2     — rework, not rejection
   "NO EXCEPT - MAKE CORR NOTED":      "ACTION_REQUIRED", // 1     — corrections noted on plans
   "CASHIER DECLINED":                 "ACTION_REQUIRED", // 1     — payment must be redone
+  "AWAITING PLANS":                   "ACTION_REQUIRED", // 1     — new 2026-10; city waits on the applicant's plans
   // Intermediate sub-review approvals — NOT permit approval.
   "FIRE REVIEW APPROVED":             "UNDER_REVIEW", // 2
   "PLAN REVIEW APPROVED":             "UNDER_REVIEW", // 1
 
   // ── Pre-issuance ──────────────────────────────────────────────────────────
-  "CASHIER APPROVED":                 "PENDING",   // 5,735 — paid, awaiting issue
+  // Cleveland is deliberately NOT in ISSUE_DATE_AMBIGUOUS, so these stay
+  // PENDING. ISSUE_DATE is set on all 201,363 rows (2026-10-04), including
+  // records the city has not issued: "Application Declined" under task
+  // "Application Acceptance", and "Plans Received" / "Awaiting Plans" under
+  // "Application Review". Here it is not evidence of issuance.
+  "CASHIER APPROVED":                 "PENDING",   // 5,679 — paid, awaiting issue
   "PLANS RECEIVED":                   "PENDING",   // 61
   "PERMIT ISSUANCE PENDING":          "PENDING",   // 1
   "ISSUANCE DOCUMENTS RECEIVED":      "PENDING",   // 1
@@ -387,13 +396,13 @@ export const CINCINNATI_STATUS_MAP: StatusMap = {
   "CLOSED":    "CLEARED",      // 140,342
   "XCLOSED":   "CLEARED",      // 19
   "ISSUED":    "APPROVED",     // 22,233
-  // OPEN QUESTION (2026-10-04): these two may be approved-not-issued, i.e.
-  // READY_TO_ISSUE. "Approved" is its own label, separate from "Permit
-  // Issued", and 430 of its 465 rows have no issueddate; 68 of 81 APRV_NR rows
-  // have none either. Left as APPROVED pending a decision. No tracked permit
-  // is in either state.
-  "APPROVED":  "APPROVED",     // 479
-  "APRV_NR":   "APPROVED",     // 82  — approved, no review required
+  // Ambiguous — see CINCINNATI_ISSUE_DATE_AMBIGUOUS. "Approved" is its own
+  // label, separate from "Permit Issued", and 430 of its 465 rows have no
+  // issueddate; 68 of 81 APRV_NR rows have none either (2026-10-04). Without an
+  // issue date they resolve to READY_TO_ISSUE. APPROVED is only what they map
+  // to when the issue date is present, or unknown.
+  "APPROVED":  "APPROVED",     // 465
+  "APRV_NR":   "APPROVED",     // 81  — approved, no review required
   "TEMPCOFO":  "APPROVED",     // 2   — temporary certificate of occupancy
   "RENEW":     "APPROVED",     // 1
   "ROUTE":     "UNDER_REVIEW", // 5,659 — routed to reviewers
@@ -541,8 +550,9 @@ export const PITTSBURGH_STATUS_MAP: StatusMap = {
   // Approved, NOT issued. 0 live rows on 2026-10-04 (10 on 2026-09-04); kept
   // so the next one resolves correctly.
   "READY FOR ISSUE":                  "READY_TO_ISSUE", // 0
-  // NOT READY_TO_ISSUE: all 125 live rows already carry an issue_date
-  // (checked 2026-10-04), so this is not a pre-issuance state.
+  // Ambiguous — see PITTSBURGH_ISSUE_DATE_AMBIGUOUS. All 125 live rows carry
+  // an issue_date (2026-10-04), so with the issue date it resolves to APPROVED.
+  // PENDING is only what it maps to when no issue date is known.
   "APPLICATION FINALIZATION":         "PENDING",      // 125
 
   // ── Applicant must act (re-enumerated 2026-09-04) ─────────────────────────
@@ -802,6 +812,102 @@ export function resolveStatus(citySlug: string, rawText: string): PermitStatus {
   const map = CITY_STATUS_MAPS[citySlug];
   if (!map) return normalizeStatus(rawText);
   return matchStatus(rawText, map) ?? normalizeStatus(rawText);
+}
+
+// ── Issue date as ground truth ────────────────────────────────────────────────
+//
+// Some labels don't say whether the permit has been issued. Cincinnati's
+// "Approved" sits alongside a separate "Permit Issued" label, and most rows
+// carrying it have no issue date. Austin's "Pending" appears on permits that
+// were issued months ago. Where the city's dataset publishes a trustworthy
+// issue date, it settles those labels:
+//
+//   ambiguous label that maps to APPROVED + no issue date      → READY_TO_ISSUE
+//   ambiguous label that maps to PENDING  + issue date present → APPROVED
+//
+// Getting the first direction wrong is the costly one. It tells a contractor
+// "issued, start work" for a permit that isn't, which is how a stop-work order
+// happens.
+//
+// ONLY labels listed below are touched, by exact match. Explicit labels
+// ("Permit Issued", "Finaled", "Plans Approved", "Ready for Issuance",
+// "Application Accepted") keep their mapping whatever the issue date says.
+// Where a label and the date disagree, the explicit label wins.
+//
+// A city belongs here only if its issue date is real evidence of issuance.
+// Checked 2026-10-04:
+//   Cincinnati  issueddate is mostly absent before issuance (APPLIED 3,240 of
+//               3,246 rows without; ROUTE 5,742 of 5,749 without).   TRUSTED
+//   Austin      dataset is "Issued Construction Permits"; every row has an
+//               issue_date that follows its applieddate.             TRUSTED
+//   Pittsburgh  WPRDC documents the dataset as "permits issued by PLI" and
+//               issue_date as "the date that the permit was issued". TRUSTED
+//   Cleveland   ISSUE_DATE is set on every row, including declined
+//               applications and records still in Application Review.
+//               Undocumented, and contradicted by the city's own
+//               workflow data.                                       NOT USED
+//   Seattle     no issue date field.                                 n/a
+//   Detroit     issuance comes from the permits layer already.       n/a
+
+/** Cincinnati: approval labels that don't say whether the permit is issued. */
+export const CINCINNATI_ISSUE_DATE_AMBIGUOUS: ReadonlySet<string> = new Set([
+  "APPROVED", // statuscurrentmapped "Approved" / statuscurrent APPROVED — 430 of 465 without issueddate
+  "APRV_NR",  // approved, no review required                         — 68 of 81 without issueddate
+]);
+
+/** Austin: "pending" labels on a dataset that only holds issued permits. */
+export const AUSTIN_ISSUE_DATE_AMBIGUOUS: ReadonlySet<string> = new Set([
+  "PENDING",         // 229, all with issue_date
+  "PENDING PERMIT",  // 56,  all with issue_date
+]);
+
+/** Pittsburgh: a "pending"-mapped label that appears only on issued permits. */
+export const PITTSBURGH_ISSUE_DATE_AMBIGUOUS: ReadonlySet<string> = new Set([
+  "APPLICATION FINALIZATION", // 125, all with issue_date
+]);
+
+/** City slug → ambiguous labels. A city absent here never uses the tiebreaker. */
+export const ISSUE_DATE_AMBIGUOUS: Record<string, ReadonlySet<string>> = {
+  cincinnati: CINCINNATI_ISSUE_DATE_AMBIGUOUS,
+  austin:     AUSTIN_ISSUE_DATE_AMBIGUOUS,
+  pittsburgh: PITTSBURGH_ISSUE_DATE_AMBIGUOUS,
+};
+
+/**
+ * Apply the issue-date tiebreaker to an already-mapped status.
+ *
+ * `issueDate` must be what the dataset actually returned for this record:
+ * null or "" means the record has no issue date. Don't call this when the
+ * issue date was never read (e.g. a portal fallback). Unknown is not absent,
+ * and treating it as absent would downgrade a real approval.
+ */
+export function settleByIssueDate(
+  rawText: string,
+  mapped: PermitStatus,
+  issueDate: string | number | null,
+  ambiguousLabels: ReadonlySet<string>
+): PermitStatus {
+  if (!ambiguousLabels.has(rawText.toUpperCase().trim())) return mapped;
+
+  const issued = issueDate !== null && String(issueDate).trim() !== "";
+  if (mapped === "APPROVED" && !issued) return "READY_TO_ISSUE";
+  if (mapped === "PENDING"  &&  issued) return "APPROVED";
+  return mapped;
+}
+
+/**
+ * resolveStatus() plus the issue-date tiebreaker, for callers holding the
+ * record's issue date. The public checker uses this; the scrapers reach the
+ * same logic through BaseScraper.settleByIssueDate().
+ */
+export function resolveStatusWithIssueDate(
+  citySlug: string,
+  rawText: string,
+  issueDate: string | number | null
+): PermitStatus {
+  const mapped    = resolveStatus(citySlug, rawText);
+  const ambiguous = ISSUE_DATE_AMBIGUOUS[citySlug];
+  return ambiguous ? settleByIssueDate(rawText, mapped, issueDate, ambiguous) : mapped;
 }
 
 // ── Lifecycle ─────────────────────────────────────────────────────────────────

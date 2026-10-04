@@ -39,7 +39,7 @@
 
 import { BaseScraper, type ScraperConfig } from "../base-scraper";
 import type { ScrapeResult, PermitStatus } from "../../types";
-import { PITTSBURGH_STATUS_MAP } from "../../lib/permit-status";
+import { PITTSBURGH_STATUS_MAP, PITTSBURGH_ISSUE_DATE_AMBIGUOUS } from "../../lib/permit-status";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -154,7 +154,11 @@ export class PittsburghPaScraper extends BaseScraper {
       };
     }
 
-    const status = this.mapStatus(rawText);
+    // "Application Finalization" is settled by the issue date — see
+    // PITTSBURGH_ISSUE_DATE_AMBIGUOUS.
+    const issueDate = (record.issue_date ?? "").trim() || null;
+    const mapped    = this.mapStatus(rawText);
+    const status    = this.settleByIssueDate(rawText, mapped, issueDate, PITTSBURGH_ISSUE_DATE_AMBIGUOUS);
 
     console.error(
       JSON.stringify({
@@ -165,7 +169,8 @@ export class PittsburghPaScraper extends BaseScraper {
         raw_status:    rawText,
         permit_type:   (record.permit_type ?? "").trim() || null,
         site_address:  (record.address     ?? "").trim() || null,
-        issue_date:    (record.issue_date  ?? "").trim() || null,
+        issue_date:    issueDate,
+        label_status:  mapped,
         status,
         timestamp:     new Date().toISOString(),
       })

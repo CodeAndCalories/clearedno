@@ -31,7 +31,7 @@
 import { chromium } from "playwright";
 import { BaseScraper, type ScraperConfig } from "../base-scraper";
 import type { ScrapeResult, PermitStatus } from "../../types";
-import { AUSTIN_STATUS_MAP } from "../../lib/permit-status";
+import { AUSTIN_STATUS_MAP, AUSTIN_ISSUE_DATE_AMBIGUOUS } from "../../lib/permit-status";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -193,7 +193,11 @@ export class AustinTxScraper extends BaseScraper {
       };
     }
 
-    const status = this.mapStatus(rawText);
+    // "Pending" / "Pending Permit" on an issued permit are settled by the
+    // issue date — see AUSTIN_ISSUE_DATE_AMBIGUOUS. The portal fallback below
+    // never sees an issue date, so it does not apply the tiebreaker.
+    const mapped = this.mapStatus(rawText);
+    const status = this.settleByIssueDate(rawText, mapped, issueDate || null, AUSTIN_ISSUE_DATE_AMBIGUOUS);
 
     console.error(
       JSON.stringify({
@@ -204,6 +208,7 @@ export class AustinTxScraper extends BaseScraper {
         status_current: rawText,
         permit_type:   typeDesc,
         issue_date:    issueDate || null,
+        label_status:  mapped,
         status,
         timestamp:     new Date().toISOString(),
       })

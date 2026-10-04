@@ -43,9 +43,11 @@
 import type { PermitStatus } from "../types";
 import {
   resolveStatus,
+  resolveStatusWithIssueDate,
   normalizeStatus,
   isForwardProgress,
   CITY_STATUS_MAPS,
+  ISSUE_DATE_AMBIGUOUS,
   TERMINAL_STATUSES,
 } from "../lib/permit-status";
 
@@ -132,6 +134,7 @@ const CLEVELAND: Case[] = [
   ["Inspection Failed", "ACTION_REQUIRED"],
   ["Cashier Declined", "ACTION_REQUIRED"],
   ["No Except - Make Corr Noted", "ACTION_REQUIRED"],
+  ["Awaiting Plans", "ACTION_REQUIRED"],   // new 2026-10; city waits on the applicant's plans
   // Intermediate sub-review approvals are NOT permit approval.
   ["Fire Review Approved", "UNDER_REVIEW"],
   ["Plan Review Approved", "UNDER_REVIEW"],
@@ -149,6 +152,9 @@ const CLEVELAND: Case[] = [
 
 // ── Cincinnati, OH — statuscurrent + statuscurrentmapped (complete) ──────────
 
+// "Approved" and APRV_NR are the LABEL-ONLY result here. With the record's
+// issue date they are settled by ISSUE_DATE_CASES below — that is what users
+// actually see.
 const CINCINNATI: Case[] = [
   ["Permit Finaled", "CLEARED"], ["Permit Issued", "APPROVED"],
   ["In Review", "UNDER_REVIEW"], ["Permit Withdrawn", "REJECTED"],
@@ -299,6 +305,54 @@ const NORMALISER: Case[] = [
   ["Permit Issued",                         "APPROVED"],   // issuance itself is not swallowed
 ];
 
+// ── Issue date as ground truth ────────────────────────────────────────────────
+//
+// Resolved through resolveStatusWithIssueDate(), the function the public
+// checker calls and BaseScraper.settleByIssueDate() wraps. null = the record
+// has no issue date.
+
+type DatedCase = [city: string, raw: string, issueDate: string | null, expected: PermitStatus];
+
+const ISSUE_DATE_CASES: DatedCase[] = [
+  // Ambiguous "approved" + NO issue date → READY_TO_ISSUE. This is the
+  // direction that prevents "issued, start work" for an unissued permit.
+  ["cincinnati", "Approved",  null,                      "READY_TO_ISSUE"],
+  ["cincinnati", "APPROVED",  null,                      "READY_TO_ISSUE"],
+  ["cincinnati", "APRV_NR",   null,                      "READY_TO_ISSUE"],
+  // …with an issue date it really is issued.
+  ["cincinnati", "Approved",  "2026-10-02T00:00:00.000", "APPROVED"],
+  ["cincinnati", "APRV_NR",   "2026-09-29T00:00:00.000", "APPROVED"],
+
+  // Ambiguous "pending" + issue date PRESENT → APPROVED.
+  ["austin",     "Pending",                  "2026-09-28T00:00:00.000", "APPROVED"],
+  ["austin",     "Pending Permit",           "2026-01-20T00:00:00.000", "APPROVED"],
+  ["pittsburgh", "Application Finalization", "2025-02-18",              "APPROVED"],
+  // …without one it stays PENDING.
+  ["austin",     "Pending",                  null, "PENDING"],
+  ["austin",     "Pending Permit",           null, "PENDING"],
+  ["pittsburgh", "Application Finalization", null, "PENDING"],
+
+  // Unambiguous labels — the issue date must not move them in either direction.
+  ["cincinnati", "Permit Issued",         null,         "APPROVED"],
+  ["cincinnati", "Permit Finaled",        null,         "CLEARED"],
+  ["cincinnati", "Application Accepted",  "2026-01-01", "PENDING"],       // 6 live rows like this
+  ["cincinnati", "In Review",             "2026-01-01", "UNDER_REVIEW"],  // 7 live rows like this
+  ["detroit",    "Plans Approved",        "2026-10-02", "READY_TO_ISSUE"],
+  ["seattle",    "Ready for Issuance",    "2026-10-02", "READY_TO_ISSUE"],
+  ["pittsburgh", "Ready For Issue",       "2025-01-01", "READY_TO_ISSUE"],
+  ["pittsburgh", "Issued",                null,         "APPROVED"],
+  ["austin",     "Active",                null,         "APPROVED"],
+  ["austin",     "Final",                 null,         "CLEARED"],
+  // Contains "PENDING" but is not the ambiguous label — exact match only.
+  ["austin",     "Inactive Pending Revision", "2026-09-28", "ACTION_REQUIRED"],
+
+  // Cleveland's ISSUE_DATE is on every row, declined applications included,
+  // so it is not trusted and the tiebreaker never runs there.
+  ["cleveland",  "Cashier Approved",      "2018-07-23", "PENDING"],
+  ["cleveland",  "Plans Received",        "2026-10-02", "PENDING"],
+  ["cleveland",  "Awaiting Plans",        "2026-10-01", "ACTION_REQUIRED"],
+];
+
 // ── Lifecycle — forward progress and terminal statuses ────────────────────────
 //
 // READY_TO_ISSUE exists because Detroit BLD2026-01450 went from "Routed for
@@ -443,6 +497,29 @@ async function main(): Promise<void> {
     const got = normalizeStatus(raw);
     check(got === expected, `${raw.padEnd(36)} → ${got}`, expected);
   }
+
+  console.log(`\n── issue date as ground truth (${ISSUE_DATE_CASES.length} cases) ───────────`);
+  for (const [city, raw, issueDate, expected] of ISSUE_DATE_CASES) {
+    const got = resolveStatusWithIssueDate(city, raw, issueDate);
+    check(
+      got === expected,
+      `${city}: ${raw} [${issueDate ? "issued" : "no issue date"}]`.padEnd(54) + ` → ${got}`,
+      expected,
+    );
+  }
+  // Every listed label must map to APPROVED or PENDING on its own; anything
+  // else makes the tiebreaker a silent no-op for it.
+  for (const [city, labels] of Object.entries(ISSUE_DATE_AMBIGUOUS)) {
+    for (const label of labels) {
+      const base = resolveStatus(city, label);
+      check(
+        base === "APPROVED" || base === "PENDING",
+        `${city}: ambiguous "${label}" maps to ${base}`,
+        "APPROVED or PENDING",
+      );
+    }
+  }
+  check(!("cleveland" in ISSUE_DATE_AMBIGUOUS), "cleveland: issue date not trusted", "absent from ISSUE_DATE_AMBIGUOUS");
 
   console.log(`\n── lifecycle: forward progress ─────────────────────────────`);
   for (const [from, to, forward] of PROGRESS) {

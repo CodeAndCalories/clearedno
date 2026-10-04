@@ -22,7 +22,7 @@
 
 import { BaseScraper, type ScraperConfig } from "../base-scraper";
 import type { ScrapeResult, PermitStatus } from "../../types";
-import { CINCINNATI_STATUS_MAP } from "../../lib/permit-status";
+import { CINCINNATI_STATUS_MAP, CINCINNATI_ISSUE_DATE_AMBIGUOUS } from "../../lib/permit-status";
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
@@ -113,7 +113,12 @@ export class CincinnatiOhScraper extends BaseScraper {
       };
     }
 
-    const status = this.mapStatus(rawText);
+    // "Approved" / APRV_NR with no issueddate are approved but NOT issued —
+    // see CINCINNATI_ISSUE_DATE_AMBIGUOUS. Socrata omits null fields, so a
+    // missing issueddate means the record has none.
+    const issuedDate  = ((row.issueddate as string) ?? "").trim() || null;
+    const labelStatus = this.mapStatus(rawText);
+    const status      = this.settleByIssueDate(rawText, labelStatus, issuedDate, CINCINNATI_ISSUE_DATE_AMBIGUOUS);
 
     console.error(
       JSON.stringify({
@@ -125,7 +130,8 @@ export class CincinnatiOhScraper extends BaseScraper {
         status_mapped:  mapped || null,
         permit_type:    ((row.permittypemapped as string) ?? "").trim() || null,
         site_address:   ((row.originaladdress1 as string) ?? "").trim() || null,
-        issued_date:    ((row.issueddate       as string) ?? "").trim() || null,
+        issued_date:    issuedDate,
+        label_status:   labelStatus,
         status,
         timestamp:      new Date().toISOString(),
       })

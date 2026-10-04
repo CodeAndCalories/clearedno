@@ -19,6 +19,7 @@ import type { ScrapeResult, PermitStatus } from "../types";
 import {
   matchStatus as sharedMatchStatus,
   normalizeStatus as sharedNormalizeStatus,
+  settleByIssueDate as sharedSettleByIssueDate,
 } from "../lib/permit-status";
 
 export interface ScraperConfig {
@@ -128,6 +129,27 @@ export abstract class BaseScraper {
    */
   protected normalizeStatus(rawText: string): PermitStatus {
     return sharedNormalizeStatus(rawText);
+  }
+
+  /**
+   * Settle an ambiguous status label with the record's issue date: an
+   * ambiguous "approved" label with no issue date becomes READY_TO_ISSUE, and
+   * an ambiguous "pending" label with one becomes APPROVED. Labels not in
+   * `ambiguousLabels` are returned exactly as mapped.
+   *
+   * Pass the city's set from lib/permit-status (e.g.
+   * CINCINNATI_ISSUE_DATE_AMBIGUOUS), never a local copy — the public checker
+   * reads the same sets through resolveStatusWithIssueDate(). Call it only
+   * with an issue date the dataset actually returned (null = the record has
+   * none); a path that never sees the field must skip it.
+   */
+  protected settleByIssueDate(
+    rawText: string,
+    mapped: PermitStatus,
+    issueDate: string | number | null,
+    ambiguousLabels: ReadonlySet<string>
+  ): PermitStatus {
+    return sharedSettleByIssueDate(rawText, mapped, issueDate, ambiguousLabels);
   }
 
   // ── Private ─────────────────────────────────────────────────────────────

@@ -14,7 +14,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { cities, LIVE_CHECKER_CITIES } from "@/lib/cities";
-import { resolveStatus } from "@/lib/permit-status";
+import { resolveStatus, resolveStatusWithIssueDate } from "@/lib/permit-status";
 
 // ── Rate limiter (in-memory, resets on server restart) ───────────────────────
 
@@ -43,7 +43,10 @@ function checkRateLimit(ip: string): boolean {
 // Status vocabularies live in lib/permit-status.ts and are shared with the
 // scraper engine. This route previously carried its own generic map, which
 // meant the same permit could report one status here and a different one in
-// the dashboard. resolveStatus() is the exact logic the scrapers use.
+// the dashboard. resolveStatus() is the exact logic the scrapers use, and
+// resolveStatusWithIssueDate() is the same issue-date tiebreaker they apply
+// through BaseScraper.settleByIssueDate() — used wherever the city's issue date
+// is trusted (see ISSUE_DATE_AMBIGUOUS).
 
 // ── City checkers ─────────────────────────────────────────────────────────────
 //
@@ -96,7 +99,10 @@ async function checkAustin(permitNumber: string): Promise<CheckResult> {
     .filter(Boolean)
     .join(", ") || undefined;
 
-  const status = rawStatus ? resolveStatus("austin", rawStatus) : "UNKNOWN";
+  // Socrata omits null fields, so a missing issue_date means none.
+  const status = rawStatus
+    ? resolveStatusWithIssueDate("austin", rawStatus, (row.issue_date ?? "").trim() || null)
+    : "UNKNOWN";
 
   return { found: true, status, rawStatus, address };
 }
@@ -259,7 +265,10 @@ async function checkCincinnati(permitNumber: string): Promise<CheckResult> {
 
   return {
     found:     true,
-    status:    rawStatus ? resolveStatus("cincinnati", rawStatus) : "UNKNOWN",
+    // Issue date settles "Approved" / APRV_NR — see CINCINNATI_ISSUE_DATE_AMBIGUOUS.
+    status:    rawStatus
+      ? resolveStatusWithIssueDate("cincinnati", rawStatus, (row.issueddate ?? "").trim() || null)
+      : "UNKNOWN",
     rawStatus,
     address,
   };
@@ -300,7 +309,9 @@ async function checkPittsburgh(permitNumber: string): Promise<CheckResult> {
 
   return {
     found:     true,
-    status:    rawStatus ? resolveStatus("pittsburgh", rawStatus) : "UNKNOWN",
+    status:    rawStatus
+      ? resolveStatusWithIssueDate("pittsburgh", rawStatus, (record.issue_date ?? "").trim() || null)
+      : "UNKNOWN",
     rawStatus,
     address:   (record.address ?? "").trim() || undefined,
   };
