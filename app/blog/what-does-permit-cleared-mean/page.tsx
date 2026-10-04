@@ -163,9 +163,10 @@ export default function PermitClearedMeaningPost() {
           </p>
           <p className="mt-3">
             ClearedNo normalizes all of these into consistent status labels — PENDING, APPROVED,
-            CLEARED, UNDER_REVIEW, ACTION_REQUIRED, REJECTED, and EXPIRED — so you&apos;re not trying to
-            decode city-specific jargon at 7 AM before your crew shows up. ACTION_REQUIRED is the one
-            to watch: it means the city has stopped and is waiting on you.
+            CLEARED, UNDER_REVIEW, ACTION_REQUIRED, READY_TO_ISSUE, REJECTED, and EXPIRED — so you&apos;re
+            not trying to decode city-specific jargon at 7 AM before your crew shows up. ACTION_REQUIRED
+            is the one to watch: it means the city has stopped and is waiting on you. READY_TO_ISSUE is
+            the good news just before APPROVED: plans approved, permit not issued yet.
           </p>
         </section>
 

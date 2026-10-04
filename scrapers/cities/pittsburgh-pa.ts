@@ -20,14 +20,16 @@
 // about permits that have already been issued. These are precisely the states
 // our users are waiting on, so they are mapped individually and deliberately:
 //
-//   Ready For Issue  → PENDING       approved, not yet issued; work may NOT start
-//   In Review        → UNDER_REVIEW  sitting with a reviewer
-//   * Revisions      → UNDER_REVIEW  ball is in the applicant's court
-//   Stop Work        → UNDER_REVIEW  issued but halted — needs attention
+//   Ready For Issue  → READY_TO_ISSUE   approved, not yet issued; work may NOT start
+//   In Review        → UNDER_REVIEW     sitting with a reviewer
+//   * Revisions      → ACTION_REQUIRED  ball is in the applicant's court
+//   Stop Work        → UNDER_REVIEW     issued but halted — needs attention
 //
-// "Ready For Issue" is PENDING rather than APPROVED on purpose: telling a
-// contractor a permit is APPROVED when they cannot legally start work is
-// exactly the class of confidently-wrong answer this codebase avoids.
+// "Ready For Issue" is READY_TO_ISSUE rather than APPROVED on purpose: telling
+// a contractor a permit is APPROVED when they cannot legally start work is
+// exactly the class of confidently-wrong answer this codebase avoids. It was
+// PENDING until migration 021, which made finishing review look like a step
+// backwards.
 //
 // ── NO DEEP LINK ──────────────────────────────────────────────────────────────
 // This dataset exposes no per-permit record URL, so scrape_url falls back to

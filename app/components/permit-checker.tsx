@@ -85,6 +85,7 @@ export function PermitChecker({ defaultCity }: PermitCheckerProps) {
     if (s === "APPROVED")     return "#FF6B00";
     if (s === "UNDER_REVIEW")    return "#EAB308";
     if (s === "ACTION_REQUIRED") return "#F43F5E";
+    if (s === "READY_TO_ISSUE")  return "#2DD4BF";
     if (s === "REJECTED")        return "#DC2626";
     if (s === "EXPIRED")      return "#6B7280";
     return "#6B7280"; // PENDING, UNKNOWN
@@ -196,11 +197,18 @@ export function PermitChecker({ defaultCity }: PermitCheckerProps) {
                     className="font-heading text-4xl tracking-widest"
                     style={{ color: statusColor(result.status) }}
                   >
-                    {result.status}
+                    {result.status.replace(/_/g, " ")}
                   </div>
                   {result.status === "UNKNOWN" && result.rawStatus && (
                     <div className="mt-1 text-[11px] text-[#F5F0E8]/50 font-mono">
                       City reports: &ldquo;{result.rawStatus}&rdquo;
+                    </div>
+                  )}
+                  {/* Good news that is easy to over-read: approved is not issued. */}
+                  {result.status === "READY_TO_ISSUE" && (
+                    <div className="mt-1 text-[11px] text-[#F5F0E8]/50 font-mono max-w-xs">
+                      Plans approved{result.rawStatus ? <> (&ldquo;{result.rawStatus}&rdquo;)</> : null}.
+                      Not issued yet — work can&apos;t start until it is.
                     </div>
                   )}
                 </div>

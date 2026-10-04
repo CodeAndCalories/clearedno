@@ -22,9 +22,9 @@ dotenv.config({ path: ".env.local" });
 
 import { supabaseAdmin } from "../lib/supabase/admin";
 import { sendPermitStatusAlert, sendAdminAlert } from "../lib/email";
+import { TERMINAL_STATUSES, isForwardProgress } from "../lib/permit-status";
 import type {
   Permit,
-  PermitStatus,
   StatusHistoryEntry,
   SubscriptionStatus,
 } from "../types";
@@ -73,17 +73,20 @@ const DRY_RUN = process.env.DRY_RUN === "true";
 // After this many consecutive failures for the same city, email ADMIN_EMAIL.
 const HEALTH_ERROR_THRESHOLD = 3;
 
-// Statuses we consider "terminal" — no point re-checking these permits.
+// Statuses we consider "terminal" — no point re-checking these permits — come
+// from TERMINAL_STATUSES in lib/permit-status, where the regression suite pins
+// them.
 //
-// ACTION_REQUIRED is deliberately NOT here. It means the city is waiting on
-// the applicant; once they respond the status moves again (Corrections
+// ACTION_REQUIRED is deliberately NOT terminal. It means the city is waiting
+// on the applicant; once they respond the status moves again (Corrections
 // Submitted → Reviews In Process → Ready for Issuance in Seattle), and the
-// user needs the alert for each of those. UNDER_REVIEW and PENDING are absent
-// for the same reason.
-const TERMINAL_STATUSES: PermitStatus[] = ["CLEARED", "REJECTED", "EXPIRED"];
+// user needs the alert for each of those. READY_TO_ISSUE is not terminal
+// either: the permit is approved but not issued, and the APPROVED alert that
+// follows is the one that says work can start. UNDER_REVIEW and PENDING are
+// absent for the same reason.
 
-// PostgREST `in` filter literal, derived from the list above so the query and
-// the constant cannot drift apart.
+// PostgREST `in` filter literal, derived from TERMINAL_STATUSES so the query
+// and the constant cannot drift apart.
 const TERMINAL_STATUS_FILTER = `(${TERMINAL_STATUSES.map((s) => `"${s}"`).join(",")})`;
 
 // Subscription statuses whose permits get checked.
@@ -409,6 +412,9 @@ async function runScrapers(): Promise<void> {
       ...permitLog,
       new_status: result.status,
       changed: hasReallyChanged,
+      // Lets a "my permit went backwards" report be checked from the log line
+      // alone. A genuine regression shows forward: false on a change.
+      forward: hasReallyChanged ? isForwardProgress(permit.status, result.status) : undefined,
       raw_text: result.raw_text,
       scrape_url: result.scrape_url,
       message: hasReallyChanged

@@ -28,6 +28,11 @@
 //   BLD2020-02531 → in BOTH: reviews "Plans Approved", permits issued
 //                   2020-08-10 → APPROVED (the permits layer wins)
 //
+// Re-checked 2026-10-04:
+//   BLD2026-01450 → reviews: "Review Complete / Plans Approved" (2026-10-02),
+//                   still absent from permits → READY_TO_ISSUE (was PENDING
+//                   until migration 021)
+//
 // ── RESOLUTION ORDER ─────────────────────────────────────────────────────────
 // Both layers are queried in parallel. If the permits layer has the record
 // with an issued_date, the permit is issued — that is the later state, and the

@@ -72,7 +72,7 @@ const STATUS_GLOSSARY: StatusEntry[] = [
     status: "PENDING",
     label:  "PENDING",
     color:  "#6B7280",
-    means:  "The city has your application, or has approved it, but has not issued the permit. This covers intake queues, scheduled intake appointments, fee-due states, and approved-but-not-issued states like Seattle's \"Ready for Issuance\" or Pittsburgh's \"Ready For Issue\".",
+    means:  "The city has your application, but the permit is not issued and the city is not yet saying it is ready to issue. This covers intake queues, scheduled intake appointments, accepted applications waiting to be routed, fee-due states, and steps like Seattle's \"Reviews Completed\", which does not always lead to issuance.",
     action: "Nothing yet, unless fees are due. Work may not legally start until the status moves to APPROVED.",
   },
   {
@@ -88,6 +88,13 @@ const STATUS_GLOSSARY: StatusEntry[] = [
     color:  "#F43F5E",
     means:  "The city has stopped and is waiting on you. Corrections required, additional information requested, applicant revisions, an incomplete application, a failed inspection, or a declined payment. Review does not resume until you respond.",
     action: "Open the permit record today, read the reviewer's comments, and submit what was asked for. Every day this sits is a day added to your timeline.",
+  },
+  {
+    status: "READY_TO_ISSUE",
+    label:  "READY TO ISSUE",
+    color:  "#2DD4BF",
+    means:  "Review is done and the plans are approved, but the permit has not been issued yet. This covers states like Seattle's \"Ready for Issuance\", Detroit's \"Plans Approved\" and Philadelphia's \"Ready For Issue\". It is the last step before APPROVED.",
+    action: "Usually: pay any remaining permit fees, then pick up or download the issued permit. Check the permit record for the exact steps. Work may not start until the status moves to APPROVED.",
   },
   {
     status: "APPROVED",
@@ -165,8 +172,8 @@ const FAQ: { q: string; a: string }[] = [
     a: "It means the city has paused your permit and is waiting on you: corrections required, additional information requested, applicant revisions, an incomplete application, a failed inspection or a declined payment. Nothing moves until you respond. It is shown in red because it is the one status where not knowing costs you days.",
   },
   {
-    q: "What is the difference between PENDING, UNDER REVIEW and APPROVED?",
-    a: "PENDING means the city has the application but has not issued the permit — including approved-but-not-yet-issued states. UNDER REVIEW means a reviewer or inspector is actively working the file. APPROVED means the permit is issued and work may proceed. Only APPROVED authorises work to start.",
+    q: "What is the difference between PENDING, UNDER REVIEW, READY TO ISSUE and APPROVED?",
+    a: "PENDING means the city has the application but has not issued the permit and is not yet saying it is ready to issue — mostly intake and queue states. UNDER REVIEW means a reviewer or inspector is actively working the file. READY TO ISSUE means review is done and the plans are approved, but the permit has not been issued yet — usually fees or pickup remain. APPROVED means the permit is issued and work may proceed. Only APPROVED authorises work to start.",
   },
   {
     q: "Why does the checker say my permit was not found?",

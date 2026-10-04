@@ -38,6 +38,7 @@ const STATUS_COLORS: Record<string, string> = {
   REJECTED:     "#DC2626",
   UNDER_REVIEW:    "#EAB308",
   ACTION_REQUIRED: "#F43F5E",
+  READY_TO_ISSUE:  "#2DD4BF",
   EXPIRED:         "#6B7280",
   PENDING:      "#6B7280",
   UNKNOWN:      "#6B7280",

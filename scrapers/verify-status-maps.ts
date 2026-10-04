@@ -27,19 +27,27 @@
 //   Cleveland     groupByFieldsForStatistics=CURRENT_TASK_STATUS
 //   Cincinnati    $select=statuscurrent,count(*)&$group=statuscurrent
 //   Philadelphia  SELECT status, count(*) FROM permits GROUP BY status
-//   Pittsburgh    SELECT status, count(*) FROM "<resource>" GROUP BY status
+//   Pittsburgh    datastore_search?fields=status&distinct=true, then a
+//                 filters={"status": …}&limit=0 call per value for its count
+//                 (datastore_search_sql returns 403 as of 2026-10-04)
 //   Seattle       $select=statuscurrent,count(*)&$group=statuscurrent
 //   Detroit       groupByFieldsForStatistics=task_status  (plan-reviews layer;
 //                 the permits layer has no status — "Issued" is synthesised)
 //
 // All eight vocabularies were re-enumerated on 2026-09-04 for the
-// ACTION_REQUIRED remap; counts in lib/permit-status.ts are from that pass.
+// ACTION_REQUIRED remap and again on 2026-10-04 for READY_TO_ISSUE.
 //
 // Run with --live to re-fetch each vocabulary and report any value that has
 // appeared since this file was written.
 
 import type { PermitStatus } from "../types";
-import { resolveStatus, CITY_STATUS_MAPS } from "../lib/permit-status";
+import {
+  resolveStatus,
+  normalizeStatus,
+  isForwardProgress,
+  CITY_STATUS_MAPS,
+  TERMINAL_STATUSES,
+} from "../lib/permit-status";
 
 type Case = [raw: string, expected: PermitStatus];
 
@@ -173,20 +181,23 @@ const PHILADELPHIA: Case[] = [
   ["Amendment Review", "UNDER_REVIEW"],
   ["Amendment Requested", "UNDER_REVIEW"],
   ["In Review", "UNDER_REVIEW"],
-  ["Amendment Ready For Issue", "PENDING"], ["Ready For Issue", "PENDING"],
+  // Review done, issuance next — READY_TO_ISSUE, not PENDING and not APPROVED.
+  ["Amendment Ready For Issue", "READY_TO_ISSUE"], ["Ready For Issue", "READY_TO_ISSUE"],
   ["Amendment Denied", "REJECTED"], ["Expired Denial", "REJECTED"],
 ];
 
 // ── Pittsburgh, PA — status (complete) ───────────────────────────────────────
 //
 // The pre-issuance states are the point of this city — see the notes in
-// scrapers/cities/pittsburgh-pa.ts. "Ready For Issue" must be PENDING, not
-// APPROVED: the permit has not been issued and work may not legally start.
+// scrapers/cities/pittsburgh-pa.ts. "Ready For Issue" must be READY_TO_ISSUE,
+// not APPROVED: the permit has not been issued and work may not legally start.
+// It has 0 live rows as of 2026-10-04 but stays pinned for the next one.
+// "Application Finalization" stays PENDING: every live row has an issue_date.
 
 const PITTSBURGH: Case[] = [
   ["Completed", "CLEARED"],
   ["Issued", "APPROVED"],
-  ["Ready For Issue", "PENDING"],
+  ["Ready For Issue", "READY_TO_ISSUE"],
   ["Application Finalization", "PENDING"],
   ["In Review", "UNDER_REVIEW"],
   ["Reviews Paused", "UNDER_REVIEW"],
@@ -206,10 +217,13 @@ const PITTSBURGH: Case[] = [
 //
 // The pre-issuance states are the point of this city — see the notes in
 // lib/permit-status.ts. Pins that matter:
-//   "Ready for Issuance"  → PENDING, not APPROVED: not issued, work may not start
+//   "Ready for Issuance"  → READY_TO_ISSUE, not APPROVED: not issued, work may
+//                           not start; not PENDING: review is done
 //   "Approved to Occupy"  → CLEARED, not APPROVED: it is the CO
 //   "Plans Approved"-style substring traps: "Application Completed" and
 //   "Reviews Completed" must NOT resolve to CLEARED via "COMPLETED".
+//   "Reviews Completed" stays PENDING, not READY_TO_ISSUE: 192 of its 470 live
+//   rows are ECA/shoreline exemption requests, for which it is the end state.
 
 const SEATTLE: Case[] = [
   // Regression pins — substring collisions
@@ -217,7 +231,7 @@ const SEATTLE: Case[] = [
   ["Reviews Completed",         "PENDING"],
   ["Inspections Completed",     "APPROVED"],
   ["Approved to Occupy",        "CLEARED"],
-  ["Ready for Issuance",        "PENDING"],
+  ["Ready for Issuance",        "READY_TO_ISSUE"],
   ["Phase Issued",              "APPROVED"],
 
   ["Completed", "CLEARED"], ["Closed", "CLEARED"],
@@ -240,15 +254,18 @@ const SEATTLE: Case[] = [
 
 // ── Detroit, MI — task_status (complete) + synthesised "Issued" ───────────────
 //
-// "Plans Approved" must be PENDING, not APPROVED: plan review passed, the
-// permit is not issued. Records that were subsequently issued appear in the
-// permits layer, which the scraper checks first.
+// "Plans Approved" must be READY_TO_ISSUE: plan review passed, the permit is
+// not issued. Not APPROVED (work may not start) and not PENDING (that made
+// BLD2026-01450's review finishing on 2026-10-03 alert as "PERMIT PENDING").
+// Records that were subsequently issued appear in the permits layer, which the
+// scraper checks first.
 
 const DETROIT: Case[] = [
-  // Regression pin — "Plans Approved" is NOT permit approval
-  ["Plans Approved", "PENDING"],
+  // Regression pin — "Plans Approved" is NOT permit approval, and NOT pending
+  ["Plans Approved", "READY_TO_ISSUE"],
 
   ["Issued", "APPROVED"],
+  // Intake outcomes (task "Application Submittal") — not a finished review.
   ["Accepted - Document Review Required", "PENDING"],
   ["Accepted - Document Review Not Required", "PENDING"],
   ["Routed for Electronic Review", "UNDER_REVIEW"],
@@ -268,6 +285,60 @@ const SUITES: [city: string, cases: Case[]][] = [
   ["seattle",      SEATTLE],
   ["detroit",      DETROIT],
 ];
+
+// ── Generic normaliser — cities with no map of their own ──────────────────────
+//
+// Ready-to-issue phrasing must win over the COMPLETE (→ CLEARED) and APPROVED
+// (→ issued) keywords it usually travels with.
+
+const NORMALISER: Case[] = [
+  ["Ready for Issue",                       "READY_TO_ISSUE"],
+  ["Ready to Issue",                        "READY_TO_ISSUE"],
+  ["Approved - Ready for Issuance",         "READY_TO_ISSUE"],
+  ["Reviews Complete - Ready for Issuance", "READY_TO_ISSUE"],
+  ["Permit Issued",                         "APPROVED"],   // issuance itself is not swallowed
+];
+
+// ── Lifecycle — forward progress and terminal statuses ────────────────────────
+//
+// READY_TO_ISSUE exists because Detroit BLD2026-01450 went from "Routed for
+// Electronic Review" to "Plans Approved" on 2026-10-03 — genuine progress —
+// and the alert said "PERMIT PENDING", the label of a fresh application.
+
+type Step = [from: PermitStatus, to: PermitStatus, forward: boolean];
+
+const PROGRESS: Step[] = [
+  // The pin this status was added for.
+  ["UNDER_REVIEW",    "READY_TO_ISSUE",  true],
+  ["ACTION_REQUIRED", "READY_TO_ISSUE",  true],   // corrections accepted, then approved
+  ["PENDING",         "READY_TO_ISSUE",  true],
+  ["READY_TO_ISSUE",  "APPROVED",        true],   // issued — the alert that says "start work"
+  ["APPROVED",        "CLEARED",         true],
+  // What the old PENDING mapping produced, and genuine steps back.
+  ["UNDER_REVIEW",    "PENDING",         false],
+  ["READY_TO_ISSUE",  "PENDING",         false],
+  ["READY_TO_ISSUE",  "UNDER_REVIEW",    false],  // review reopened
+  // Lateral: same review, the other party's move.
+  ["UNDER_REVIEW",    "ACTION_REQUIRED", false],
+  // Off the path entirely.
+  ["READY_TO_ISSUE",  "REJECTED",        false],
+  ["READY_TO_ISSUE",  "EXPIRED",         false],
+];
+
+// Real raw transitions, resolved exactly as the scrapers resolve them.
+type RawStep = [city: string, from: string, to: string];
+
+const RAW_PROGRESS: RawStep[] = [
+  ["detroit",      "Routed for Electronic Review", "Plans Approved"],     // BLD2026-01450
+  ["seattle",      "Reviews In Process",           "Ready for Issuance"],
+  ["philadelphia", "Amendment Review",             "Amendment Ready For Issue"],
+  ["detroit",      "Plans Approved",               "Issued"],
+];
+
+// READY_TO_ISSUE must stay non-terminal: the scraper has to keep checking
+// until the permit is issued, or the APPROVED alert never fires.
+const NON_TERMINAL: PermitStatus[] = ["READY_TO_ISSUE", "ACTION_REQUIRED", "UNDER_REVIEW", "PENDING", "APPROVED"];
+const TERMINAL:     PermitStatus[] = ["CLEARED", "REJECTED", "EXPIRED"];
 
 // Live vocabulary sources, used by --live to detect statuses added since the
 // suite was written.
@@ -308,9 +379,15 @@ const LIVE_SOURCES: Record<string, () => Promise<string[]>> = {
     return (d.rows ?? []).map((x) => x.status ?? "");
   },
   pittsburgh: async () => {
-    const q = encodeURIComponent('SELECT status FROM "f4d1177a-f597-4c32-8cbf-7885f56253f6" GROUP BY status');
-    const r = await fetch(`https://data.wprdc.org/api/3/action/datastore_search_sql?sql=${q}`);
-    const d = await r.json() as { result?: { records?: { status: string }[] } };
+    // datastore_search_sql returns 403 as of 2026-10-04, and its error body
+    // parsed as "0 values, all covered". distinct=true on datastore_search
+    // gives the same vocabulary; a failed call now throws and is reported.
+    const r = await fetch(
+      "https://data.wprdc.org/api/3/action/datastore_search"
+        + "?resource_id=f4d1177a-f597-4c32-8cbf-7885f56253f6&fields=status&distinct=true&limit=1000"
+    );
+    const d = await r.json() as { success?: boolean; result?: { records?: { status: string }[] } };
+    if (!r.ok || !d.success) throw new Error(`HTTP ${r.status}`);
     return (d.result?.records ?? []).map((x) => x.status ?? "");
   },
   seattle: async () => {
@@ -353,6 +430,41 @@ async function main(): Promise<void> {
       console.log(`\n  FAIL  no status map registered for "${city}"`);
       failures++;
     }
+  }
+
+  const check = (ok: boolean, line: string, expected: string): void => {
+    total++;
+    if (!ok) failures++;
+    console.log(`${ok ? "  ok  " : "  FAIL"}  ${line}${ok ? "" : `   (expected ${expected})`}`);
+  };
+
+  console.log(`\n── generic normaliser (${NORMALISER.length} statuses) ─────────────────`);
+  for (const [raw, expected] of NORMALISER) {
+    const got = normalizeStatus(raw);
+    check(got === expected, `${raw.padEnd(36)} → ${got}`, expected);
+  }
+
+  console.log(`\n── lifecycle: forward progress ─────────────────────────────`);
+  for (const [from, to, forward] of PROGRESS) {
+    const got = isForwardProgress(from, to);
+    check(got === forward, `${`${from} → ${to}`.padEnd(36)} forward=${got}`, `forward=${forward}`);
+  }
+  for (const [city, fromRaw, toRaw] of RAW_PROGRESS) {
+    const from = resolveStatus(city, fromRaw);
+    const to   = resolveStatus(city, toRaw);
+    check(
+      isForwardProgress(from, to),
+      `${city}: "${fromRaw}" → "${toRaw}" = ${from} → ${to}`,
+      "forward progress",
+    );
+  }
+
+  console.log(`\n── lifecycle: terminal statuses ────────────────────────────`);
+  for (const s of NON_TERMINAL) {
+    check(!TERMINAL_STATUSES.includes(s), `${s.padEnd(36)} keeps being checked`, "not terminal");
+  }
+  for (const s of TERMINAL) {
+    check(TERMINAL_STATUSES.includes(s), `${s.padEnd(36)} stops being checked`, "terminal");
   }
 
   if (live) {

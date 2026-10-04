@@ -26,6 +26,7 @@ function buildSubject(permit: Permit): string {
     REJECTED:        `⚠️ Permit Rejected — Action Required`,
     UNDER_REVIEW:    `👀 Permit Under Review — ${num}`,
     ACTION_REQUIRED: `🚨 Action Needed on Permit ${num} — the city is waiting on you`,
+    READY_TO_ISSUE:  `🟢 Plans Approved — Permit ${num} Is Ready to Be Issued`,
     EXPIRED:      `⚠️ Permit Expired — ${num}`,
     PENDING:      `🔄 Permit Status Update — ${num}`,
     UNKNOWN:      `🔄 Permit Status Update — ${num}`,
@@ -43,6 +44,7 @@ const STATUS_EMOJI: Record<PermitStatus, string> = {
   REJECTED:        "⚠️",
   UNDER_REVIEW:    "👀",
   ACTION_REQUIRED: "🚨",
+  READY_TO_ISSUE:  "🟢",
   EXPIRED:         "⚠️",
   PENDING:         "🔄",
   UNKNOWN:         "🔄",
@@ -55,6 +57,7 @@ const STATUS_HEADING: Record<PermitStatus, string> = {
   REJECTED:        "PERMIT REJECTED",
   UNDER_REVIEW:    "PERMIT UNDER REVIEW",
   ACTION_REQUIRED: "ACTION REQUIRED ON YOUR PERMIT",
+  READY_TO_ISSUE:  "PLANS APPROVED — READY TO BE ISSUED",
   EXPIRED:         "PERMIT EXPIRED",
   PENDING:         "PERMIT PENDING",
   UNKNOWN:         "PERMIT STATUS UPDATE",
@@ -91,6 +94,43 @@ function actionRequiredBlock(permit: Permit): string {
     </div>`;
 }
 
+/**
+ * READY_TO_ISSUE is good news that used to arrive as "PERMIT PENDING", so the
+ * body says so plainly. It also says the one thing a contractor must not miss:
+ * the permit is not issued, so work cannot start yet. The next steps are
+ * deliberately general. They vary by city, and the permit record is the
+ * authority on them.
+ */
+function readyToIssueBlock(permit: Permit): string {
+  const latest = permit.status_history?.[permit.status_history.length - 1];
+  const cityWording = latest?.raw?.trim();
+  const portalLink  = permit.scrape_url
+    ? `<a href="${permit.scrape_url}" style="color:#FF6B00;">the permit record</a>`
+    : "the permit record on the city portal";
+
+  return `
+    <div style="border:1px solid #2DD4BF;background:rgba(45,212,191,0.08);padding:16px;margin:16px 0;">
+      <p style="color:#2DD4BF;font-weight:bold;margin:0 0 8px 0;letter-spacing:0.1em;">
+        GOOD NEWS — REVIEW IS DONE
+      </p>
+      <p style="color:#F5F0E8;opacity:0.85;margin:0;">
+        ${permit.city} has approved the plans for this permit${
+          cityWording ? ` — the portal shows <strong>"${escapeHtml(cityWording)}"</strong>` : ""
+        }. It is ready to be issued, but it has not been issued yet, so work
+        can't start until it is.
+      </p>
+      <p style="color:#F5F0E8;opacity:0.85;margin:12px 0 0 0;">
+        What usually happens next: pay any remaining permit fees, then pick up
+        or download the issued permit. Check ${portalLink} for the exact steps
+        in ${permit.city}.
+      </p>
+      <p style="color:#F5F0E8;opacity:0.55;margin:12px 0 0 0;font-size:12px;">
+        ClearedNo keeps checking this permit and will alert you the moment it
+        is issued.
+      </p>
+    </div>`;
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, "&amp;")
@@ -111,7 +151,12 @@ export async function sendPermitStatusAlert({
   const emoji   = STATUS_EMOJI[permit.status]   ?? "🔄";
   const heading = STATUS_HEADING[permit.status] ?? `PERMIT ${permit.status}`;
   const dashboardUrl = `${process.env.NEXT_PUBLIC_URL || "https://www.clearedno.com"}/dashboard`;
-  const actionBlock  = permit.status === "ACTION_REQUIRED" ? actionRequiredBlock(permit) : "";
+  const actionBlock  =
+    permit.status === "ACTION_REQUIRED" ? actionRequiredBlock(permit) :
+    permit.status === "READY_TO_ISSUE"  ? readyToIssueBlock(permit)  : "";
+  const headingColor =
+    permit.status === "ACTION_REQUIRED" ? "#F43F5E" :
+    permit.status === "READY_TO_ISSUE"  ? "#2DD4BF" : "#F5F0E8";
 
   const html = `<!DOCTYPE html>
 <html>
@@ -119,13 +164,13 @@ export async function sendPermitStatusAlert({
   <div style="max-width:560px;margin:0 auto;">
     <h1 style="color:#FF6B00;font-size:24px;letter-spacing:0.1em;">CLEAREDNO</h1>
     <hr style="border-color:#FF6B00;opacity:0.3;" />
-    <h2 style="color:${permit.status === "ACTION_REQUIRED" ? "#F43F5E" : "#F5F0E8"};">${emoji} ${heading}</h2>
+    <h2 style="color:${headingColor};">${emoji} ${heading}</h2>
     <p style="color:#F5F0E8;opacity:0.7;">
       Hi ${userName},<br/><br/>
       Permit #: ${permit.permit_number}<br/>
       Address: ${permit.address}<br/>
       City: ${permit.city}, ${permit.state}<br/>
-      Status: ${permit.status.replace("_", " ")}<br/>
+      Status: ${permit.status.replace(/_/g, " ")}<br/>
       Detected: ${new Date().toLocaleString()}
     </p>${actionBlock}
     <a href="${dashboardUrl}"

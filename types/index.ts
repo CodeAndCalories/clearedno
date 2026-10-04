@@ -6,16 +6,21 @@
 //                  missing information, a revised submittal or a payment.
 //                  Not terminal: the permit keeps being checked. This is the
 //                  status where a contractor who doesn't know loses days.
+// READY_TO_ISSUE:  review is done and the plans are approved, but the permit
+//                  is NOT issued — fees, pickup or download remain. Good news,
+//                  but work may not start. Distinct from PENDING (not yet
+//                  reviewed) and APPROVED (issued). Not terminal.
 // EXPIRED:         permit lapsed without action
 //
 // Adding a value here requires a migration widening permits_status_check
-// (see migrations/020) — the DB rejects unknown statuses with 23514.
+// (see migrations/020 and 021) — the DB rejects unknown statuses with 23514.
 export type PermitStatus =
   | "PENDING"
   | "APPROVED"
   | "CLEARED"
   | "UNDER_REVIEW"
   | "ACTION_REQUIRED"
+  | "READY_TO_ISSUE"
   | "REJECTED"
   | "EXPIRED"
   | "UNKNOWN";

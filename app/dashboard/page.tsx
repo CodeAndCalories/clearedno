@@ -130,6 +130,9 @@ const STATUS_CONFIG: Record<PermitStatus, { color: string }> = {
   // Rose, not the yellow of UNDER_REVIEW and not the deep red of REJECTED:
   // urgent but recoverable — the applicant has to do something.
   ACTION_REQUIRED: { color: "#F43F5E" },
+  // Teal: in the green family (good news), but not CLEARED's green and not
+  // APPROVED's orange — approved plans, permit not issued yet.
+  READY_TO_ISSUE:  { color: "#2DD4BF" },
   EXPIRED:         { color: "#6B7280" },
   UNKNOWN:      { color: "#6B7280" },
 };

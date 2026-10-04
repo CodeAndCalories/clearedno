@@ -28,6 +28,10 @@ const STATUS_CONFIG: Record<
   // red. Stronger fill and a pulsing dot — this is the one badge that means
   // "you have to do something today".
   ACTION_REQUIRED: { label: "ACTION REQUIRED", color: "#F43F5E", bg: "rgba(244,63,94,0.18)", dot: "#F43F5E" },
+  // Teal (#2DD4BF): green family because it is good news, but clearly not
+  // CLEARED's green or APPROVED's orange. Plans approved, NOT issued — work
+  // may not start yet.
+  READY_TO_ISSUE:  { label: "READY TO ISSUE",  color: "#2DD4BF", bg: "rgba(45,212,191,0.12)", dot: "#2DD4BF" },
   EXPIRED:      { label: "EXPIRED",      color: "#6B7280", bg: "rgba(107,114,128,0.08)", dot: "#6B7280" },
   UNKNOWN:      { label: "UNKNOWN",      color: "#6B7280", bg: "rgba(107,114,128,0.12)", dot: "#6B7280" },
 };

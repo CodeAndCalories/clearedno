@@ -12,6 +12,7 @@ const STATUS_CONFIG: Record<PermitStatus, { label: string; color: string; bg: st
   REJECTED:     { label: "REJECTED",     color: "#DC2626", bg: "rgba(220,38,38,0.12)" },
   UNDER_REVIEW: { label: "UNDER REVIEW", color: "#EAB308", bg: "rgba(234,179,8,0.12)" },
   ACTION_REQUIRED: { label: "ACTION REQUIRED", color: "#F43F5E", bg: "rgba(244,63,94,0.18)" },
+  READY_TO_ISSUE:  { label: "READY TO ISSUE",  color: "#2DD4BF", bg: "rgba(45,212,191,0.12)" },
   EXPIRED:      { label: "EXPIRED",      color: "#6B7280", bg: "rgba(107,114,128,0.08)" },
   UNKNOWN:      { label: "UNKNOWN",      color: "#6B7280", bg: "rgba(107,114,128,0.12)" },
 };

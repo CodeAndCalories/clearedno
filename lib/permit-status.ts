@@ -72,6 +72,11 @@ export function matchStatus(rawText: string, map: StatusMap): PermitStatus | nul
 export function normalizeStatus(rawText: string): PermitStatus {
   const t = rawText.toUpperCase().trim();
 
+  // Checked first: "Reviews Complete - Ready for Issue" must not hit COMPLETE
+  // (CLEARED), and "Approved - Ready to Issue" must not hit APPROVED (issued).
+  if (t.includes("READY FOR ISSU") || t.includes("READY TO ISSUE")) {
+    return "READY_TO_ISSUE";
+  }
   if (t.includes("FINAL") || t.includes("CLEARED") || t.includes("COMPLETE") || t.includes("CO ISSUED")) {
     return "CLEARED";
   }
@@ -382,6 +387,11 @@ export const CINCINNATI_STATUS_MAP: StatusMap = {
   "CLOSED":    "CLEARED",      // 140,342
   "XCLOSED":   "CLEARED",      // 19
   "ISSUED":    "APPROVED",     // 22,233
+  // OPEN QUESTION (2026-10-04): these two may be approved-not-issued, i.e.
+  // READY_TO_ISSUE. "Approved" is its own label, separate from "Permit
+  // Issued", and 430 of its 465 rows have no issueddate; 68 of 81 APRV_NR rows
+  // have none either. Left as APPROVED pending a decision. No tracked permit
+  // is in either state.
   "APPROVED":  "APPROVED",     // 479
   "APRV_NR":   "APPROVED",     // 82  — approved, no review required
   "TEMPCOFO":  "APPROVED",     // 2   — temporary certificate of occupancy
@@ -452,12 +462,15 @@ export const PHILADELPHIA_STATUS_MAP: StatusMap = {
   // Applicant must act (re-enumerated 2026-09-04)
   "AMENDMENT APPLICATION INCOMPLETE":  "ACTION_REQUIRED", // 224
   "AMENDMENT APPLICANT REVISIONS":     "ACTION_REQUIRED", // 157
-  "AMENDMENT READY FOR ISSUE":         "PENDING",         // 111
+  // Review done, issuance next — READY_TO_ISSUE (migration 021). For an
+  // amendment the original permit is already issued; this is the amendment
+  // that is approved and waiting to be issued. Counts re-checked 2026-10-04.
+  "AMENDMENT READY FOR ISSUE":         "READY_TO_ISSUE",  // 92
   "AMENDMENT REVIEW":                  "UNDER_REVIEW",    // 89
   "AMENDMENT REQUESTED":               "UNDER_REVIEW",    // 55 — applicant asked for it; city acts
   "AMENDMENT DENIED":                  "REJECTED",        // 9
   "IN REVIEW":                         "UNDER_REVIEW",    // 2 — was falling through to the PENDING fallback
-  "READY FOR ISSUE":                   "PENDING",         // 1
+  "READY FOR ISSUE":                   "READY_TO_ISSUE",  // 1
   "EXPIRED DENIAL":                    "REJECTED",        // 1
 
   // ── Primary mappings ──────────────────────────────────────────────────────
@@ -525,8 +538,12 @@ export const PITTSBURGH_STATUS_MAP: StatusMap = {
   "ISSUED":                           "APPROVED",     // 15,484
 
   // ── Pre-issuance — the states our users actually wait on ──────────────────
-  "READY FOR ISSUE":                  "PENDING",      // 10 — approved, NOT issued
-  "APPLICATION FINALIZATION":         "PENDING",      // 124
+  // Approved, NOT issued. 0 live rows on 2026-10-04 (10 on 2026-09-04); kept
+  // so the next one resolves correctly.
+  "READY FOR ISSUE":                  "READY_TO_ISSUE", // 0
+  // NOT READY_TO_ISSUE: all 125 live rows already carry an issue_date
+  // (checked 2026-10-04), so this is not a pre-issuance state.
+  "APPLICATION FINALIZATION":         "PENDING",      // 125
 
   // ── Applicant must act (re-enumerated 2026-09-04) ─────────────────────────
   "AMENDMENT APPLICANT REVISIONS":    "ACTION_REQUIRED", // 86
@@ -599,11 +616,16 @@ export const PITTSBURGH_STATUS_MAP: StatusMap = {
 // the applicant's response landing back with the city, so it stays
 // UNDER_REVIEW.
 //
-// "Ready for Issuance" is PENDING, not APPROVED — see Pittsburgh's "Ready For
-// Issue": the permit has not been issued and work may not legally start.
+// "Ready for Issuance" is READY_TO_ISSUE, not APPROVED: the permit has not
+// been issued and work may not legally start. It is not PENDING either, which
+// would make finishing review read like a step backwards (migration 021).
 // "Approved to Occupy" is CLEARED, not APPROVED — it is the certificate of
 // occupancy, the end of the lifecycle. Both MUST stay exact keys: under
 // substring matching each would hit the "APPROVED" fallback.
+//
+// "Reviews Completed" stays PENDING. It is not always followed by issuance:
+// of 470 live rows (2026-10-04), 192 are ECA/shoreline exemption requests,
+// where it is the final state; 214 are demolition and 62 are building.
 
 export const SEATTLE_STATUS_MAP: StatusMap = {
   // ── Finished ──────────────────────────────────────────────────────────────
@@ -628,8 +650,8 @@ export const SEATTLE_STATUS_MAP: StatusMap = {
   "PENDING":                   "PENDING",      // 2    [+]
 
   // ── Pre-issuance: reviews done, awaiting issuance ─────────────────────────
-  "REVIEWS COMPLETED":         "PENDING",      // 465  — issuance steps remain (NOT "COMPLETED")
-  "READY FOR ISSUANCE":        "PENDING",      // 662  — approved, NOT issued
+  "REVIEWS COMPLETED":         "PENDING",        // 470 — not always followed by issuance (NOT "COMPLETED")
+  "READY FOR ISSUANCE":        "READY_TO_ISSUE", // 665 — approved, NOT issued
 
   // ── In review — with the city, wait ───────────────────────────────────────
   "REVIEWS IN PROCESS":        "UNDER_REVIEW", // 616
@@ -693,18 +715,23 @@ export const SEATTLE_STATUS_MAP: StatusMap = {
 // plan-review task_status is mapped. The task_status block is the COMPLETE
 // live vocabulary, verified by GROUP BY (counts as of 2026-09-04).
 //
-// "Plans Approved" is PENDING, not APPROVED: it means plan review passed, and
-// the permit has NOT been issued (23,762 rows carry it, most of which were
-// later issued — the permits layer wins for those). It MUST stay an exact key
-// or the "APPROVED" fallback would report issued-and-buildable for a permit
-// that cannot legally start.
+// "Plans Approved" (task "Review Complete") is READY_TO_ISSUE, not APPROVED: it
+// means plan review passed, and the permit has NOT been issued (23,810 rows
+// carry it, most of which were later issued — the permits layer wins for
+// those). It MUST stay an exact key or the "APPROVED" fallback would report
+// issued-and-buildable for a permit that cannot legally start. It used to be
+// PENDING, which made BLD2026-01450's UNDER_REVIEW → Plans Approved on
+// 2026-10-03 alert as "PERMIT PENDING" (migration 021).
+//
+// "Accepted - Document Review Not Required" stays PENDING. Its task is
+// "Application Submittal": it is an intake outcome, not a finished review.
 
 export const DETROIT_STATUS_MAP: StatusMap = {
   // ── Issued — synthesised from the permits layer ───────────────────────────
   "ISSUED":                                  "APPROVED",
 
   // ── Pre-issuance (plan reviews layer, task_status) — complete ─────────────
-  "PLANS APPROVED":                          "PENDING",      // 23,762 — review passed, NOT issued
+  "PLANS APPROVED":                          "READY_TO_ISSUE", // 23,810 — review passed, NOT issued
   "ACCEPTED - DOCUMENT REVIEW NOT REQUIRED": "PENDING",      // 8,022  — intake accepted, awaiting issuance
   "ACCEPTED - DOCUMENT REVIEW REQUIRED":     "PENDING",      // 3,887  — intake accepted, not yet routed
   "ROUTED FOR ELECTRONIC REVIEW":            "UNDER_REVIEW", // 3,583
@@ -775,4 +802,46 @@ export function resolveStatus(citySlug: string, rawText: string): PermitStatus {
   const map = CITY_STATUS_MAPS[citySlug];
   if (!map) return normalizeStatus(rawText);
   return matchStatus(rawText, map) ?? normalizeStatus(rawText);
+}
+
+// ── Lifecycle ─────────────────────────────────────────────────────────────────
+
+/**
+ * Statuses the scraper stops checking — nothing further can happen to the
+ * permit. Lives here, not in scrapers/index.ts, so the regression suite can
+ * pin what is and is not on it without importing (and running) the engine.
+ *
+ * ACTION_REQUIRED and READY_TO_ISSUE are deliberately NOT terminal. The first
+ * waits on the applicant; the second waits on issuance, and the user needs
+ * the APPROVED alert that follows it. UNDER_REVIEW and PENDING are absent for
+ * the same reason.
+ */
+export const TERMINAL_STATUSES: readonly PermitStatus[] = ["CLEARED", "REJECTED", "EXPIRED"];
+
+/**
+ * Where each status sits on the way to a usable permit. ACTION_REQUIRED shares
+ * UNDER_REVIEW's stage: the review is mid-way, just waiting on the other
+ * party. Off-path outcomes (REJECTED, EXPIRED) and UNKNOWN have no stage.
+ */
+const LIFECYCLE_STAGE: Record<PermitStatus, number | null> = {
+  PENDING:         1,
+  UNDER_REVIEW:    2,
+  ACTION_REQUIRED: 2,
+  READY_TO_ISSUE:  3,
+  APPROVED:        4,
+  CLEARED:         5,
+  REJECTED:        null,
+  EXPIRED:         null,
+  UNKNOWN:         null,
+};
+
+/**
+ * True when moving from `from` to `to` is a step toward a usable permit.
+ * UNDER_REVIEW → READY_TO_ISSUE is; UNDER_REVIEW → PENDING is not, which is
+ * why "plans approved, not issued" got its own status (migration 021).
+ */
+export function isForwardProgress(from: PermitStatus, to: PermitStatus): boolean {
+  const a = LIFECYCLE_STAGE[from];
+  const b = LIFECYCLE_STAGE[to];
+  return a !== null && b !== null && b > a;
 }
